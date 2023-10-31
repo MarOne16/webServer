@@ -1,31 +1,5 @@
 #include "configParsing.hpp"
 
-char *getFileName(const char *extension)
-{
-    DIR *dir;
-    struct dirent *ent;
-    char *fileName = NULL;
-    int found = 0;
-
-    dir = opendir(".");
-    if (dir != NULL)
-    {
-        while ((ent = readdir(dir)) != NULL)
-        {
-            if (ent->d_type == DT_REG && strstr(ent->d_name, extension) != NULL)
-            {
-                fileName = ent->d_name;
-                found++;
-                break;
-            }
-        }
-        if (found > 1)
-            throw std::runtime_error("More than one .conf file found in the directory.");
-        closedir(dir);
-    }
-    return fileName;
-}
-
 ConfigParser::ConfigParser(const char **argv)
 {
     if (argv[1])
@@ -56,7 +30,89 @@ void ConfigParser::readConfigFile()
 
     while (std::getline(file, line))
     {
+        for (size_t i = 0; i < line.length(); i++)
+        {
+            if ((line[i] == ' ' || line[i] == '\t'))
+                line.erase(i--, 1);
+            if (line[i + 1] != ' ' && line[i + 1])
+                break;
+        }
+        if (line[0] == '#' || line.empty())
+            continue;
         this->content += line;
         this->content += '\n';
     }
+}
+
+void ConfigParser::checkBrackets()
+{
+    int left = 0;
+    int right = 0;
+    for (int i = 0; i < this->content.length(); i++)
+    {
+        if (this->content[i] == '{')
+            left++;
+        if (this->content[i] == '}')
+            right++;
+    }
+    if (left != right)
+        throw std::runtime_error("Brackets are not balanced.");
+}
+
+void ConfigParser::feedConfMap()
+{
+    std::string line;
+}
+
+bool ConfigParser::ifInside(std::string scope, std::string toFind)
+{
+    if (!isValideScope(scope))
+        throw std::runtime_error("Scope is not valid.");
+    std::string scopeTmp = content.substr(content.find(scope));
+    size_t endScop = scopeTmp.find('}');
+    std::string tmp = scopeTmp.substr(0, endScop);
+    if (tmp.find(toFind) != std::string::npos)
+        return true;
+    return false;
+}
+
+int ConfigParser::getPort()
+{
+    std::string port = "";
+    std::string server = content.substr(content.find("server"));
+    if (!ifInside("server", "listen"))
+        throw std::runtime_error("No listen directive found.");
+    size_t pos = this->content.find("listen");
+    if (pos == std::string::npos)
+        throw std::runtime_error("No listen directive found.");
+    for (size_t i = pos + 7 ; i < this->content.length(); i++)
+    {
+        if (content[i] == ';')
+            break;
+        port += content[i];
+    }
+    return toInt(port);
+
+}
+
+bool ConfigParser::isValideScope(std::string scope)
+{
+    std::string scopeTmp = content.substr(content.find(scope));
+    size_t endScop = scopeTmp.find('}');
+    size_t startScop = (scope.length());
+    bool find = false;
+    for (size_t i = startScop; i <= endScop; i++)
+    {
+        if (scopeTmp[i] == ' ' || scopeTmp[i] == '\t' || scopeTmp[i] == '\n')
+            continue;
+        if (scopeTmp[i] == '{' && find == false)
+        {
+            find = true;
+            continue;
+        }
+        if (scopeTmp[i] == '}' && find == true)
+            return true;
+    }
+    return false;
+    
 }

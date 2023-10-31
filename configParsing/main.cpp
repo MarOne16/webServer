@@ -6,7 +6,9 @@ int main(int argc, const char **argv)
     {
         ConfigParser cfp(argv);
         cfp.readConfigFile();
-        std::cout << cfp.content << std::endl;
+        cfp.checkBrackets();
+        std::cout << cfp.getPort() << std::endl;
+
     }
     catch (const std::exception &e)
     {
