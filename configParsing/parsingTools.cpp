@@ -17,10 +17,8 @@ int toInt(std::string str)
     return tmp;
 }
 
-char *getFileName(const char *extension)
+char *ConfigParser::getFileName(const char *extension)
 {
-    DIR *dir;
-    struct dirent *ent;
     char *fileName = NULL;
     int found = 0;
 
@@ -38,21 +36,30 @@ char *getFileName(const char *extension)
         }
         if (found > 1)
             throw std::runtime_error("More than one .conf file found in the directory.");
-        closedir(dir);
     }
     return fileName;
 }
 
-std::map<std::string, std::string> split(std::string str, char delimiter)
+std::list<std::string> split(std::string &str, std::string delimiter)
 {
-    std::map<std::string, std::string> map;
-    std::string key;
-    std::string value;
-    std::istringstream iss(str);
-    std::getline(iss, key, delimiter);
-    std::getline(iss, value, delimiter);
-    map[key] = value;
-    return map;
+    std::list<std::string> tokens;
+    size_t start = 0, end = 0;
+
+    while ((end = str.find(delimiter, start)) != std::string::npos)
+    {
+        if (end != start)
+        {
+            tokens.push_back(str.substr(start, end - start));
+        }
+        start = end + delimiter.length();
+    }
+
+    if (start < str.length())
+    {
+        tokens.push_back(str.substr(start));
+    }
+
+    return tokens;
 }
 
 bool isLast(std::string str, char delimiter)
@@ -65,4 +72,27 @@ bool isLast(std::string str, char delimiter)
             return true;
     }
     return false;
+}
+
+bool notIn(std::string str, std::string s)
+{
+    for (size_t i = 0; i < str.length(); i++)
+    {
+        if (s.find(str[i]) == std::string::npos)
+            return true;
+    }
+    return false;
+}
+
+void ereaseContent(std::string &content, size_t pos)
+{
+    for (size_t i = pos; i < content.length(); i++)
+    {
+        if (content[i] == ';')
+        {
+            content.erase(i--, 1);
+            break;
+        }
+        content.erase(i--, 1);
+    }
 }

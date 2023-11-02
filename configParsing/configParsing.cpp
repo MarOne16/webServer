@@ -20,6 +20,8 @@ ConfigParser::ConfigParser(const char **argv)
 
 ConfigParser::~ConfigParser()
 {
+    closedir(dir);
+    // puts("ConfigParser destructor called.");
     // system("leaks a.out");
 }
 
@@ -76,24 +78,6 @@ bool ConfigParser::ifInside(std::string scope, std::string toFind)
     return false;
 }
 
-int ConfigParser::getPort()
-{
-    std::string port = "";
-    std::string server = content.substr(content.find("server"));
-    if (!ifInside("server", "listen"))
-        throw std::runtime_error("No listen directive found.");
-    size_t pos = this->content.find("listen");
-    if (pos == std::string::npos)
-        throw std::runtime_error("No listen directive found.");
-    for (size_t i = pos + 7 ; i < this->content.length(); i++)
-    {
-        if (content[i] == ';')
-            break;
-        port += content[i];
-    }
-    return toInt(port);
-
-}
 
 bool ConfigParser::isValideScope(std::string scope)
 {
@@ -114,5 +98,137 @@ bool ConfigParser::isValideScope(std::string scope)
             return true;
     }
     return false;
-    
+}
+
+int ConfigParser::getPort()
+{
+    std::string port = "";
+    if (!ifInside("server", "listen"))
+        throw std::runtime_error("No listen directive found.");
+    size_t pos = this->content.find("listen");
+    if (pos == std::string::npos)
+        throw std::runtime_error("No listen directive found.");
+    for (size_t i = pos + 7 ; i < this->content.length(); i++)
+    {
+        if (content[i] == ';')
+            break;
+        port += content[i];
+    }
+    return toInt(port);
+
+}
+
+std::string ConfigParser::getServerName()
+{
+    if (!ifInside("server", "server_name"))
+        return "localhost";
+    size_t pos = this->content.find("server_name");
+    if (pos == std::string::npos)
+        return "localhost";
+    std::string serverName = "";
+    for (size_t i = pos + 12; i < this->content.length(); i++)
+    {
+        if (content[i] == ';')
+            break;
+        serverName += content[i];
+    }
+    for (size_t i = 0; i < serverName.length(); i++)
+    {
+        if (serverName[i] == ' ' || serverName[i] == '\t' || serverName[i] == '\n')
+            serverName.erase(i--, 1);
+    }
+    for (size_t i = 0; i < serverName.length(); i++)
+    {
+        if(isalnum(serverName[i]) || serverName[i] == '.' || serverName[i] == '-' || serverName[i] == '_')
+            continue;
+        else
+            throw std::runtime_error("Server name is not valid.");
+    }
+    return serverName;
+}
+
+std::string ConfigParser::getHost()
+{
+    if (!ifInside("server", "host"))
+        return "localhost";
+    size_t pos = this->content.find("host");
+    if (pos == std::string::npos)
+        return "localhost";
+    std::string host = "";
+    for (size_t i = pos + 4; i < this->content.length(); i++)
+    {
+        if (content[i] == ';')
+            break;
+        host += content[i];
+    }
+    for (size_t i = 0; i < host.length(); i++)
+    {
+        if (host[i] == ' ' || host[i] == '\t' || host[i] == '\n')
+            host.erase(i--, 1);
+    }
+    for (size_t i = 0; i < host.length(); i++)
+    {
+        if(isalnum(host[i]) || host[i] == '.' || host[i] == '-' || host[i] == '_')
+            continue;
+        else
+            throw std::runtime_error("Host is not valid.");
+    }
+    return host;
+}
+
+std::string ConfigParser::getMaxBodySize()
+{
+    if (!ifInside("server", "max_body_size"))
+        throw std::runtime_error("No max body size directive found.");
+    size_t pos = this->content.find("max_body_size");
+    if (pos == std::string::npos)
+        throw std::runtime_error("No max body size directive found.");
+    std::string maxBodySize = "";
+    for (size_t i = pos + 13; i < this->content.length(); i++)
+    {
+        if (content[i] == ';')
+            break;
+        maxBodySize += content[i];
+    }
+    for (size_t i = 0; i < maxBodySize.length(); i++)
+    {
+        if (maxBodySize[i] == ' ' || maxBodySize[i] == '\t' || maxBodySize[i] == '\n')
+            maxBodySize.erase(i--, 1);
+    }
+    if (notIn(maxBodySize, "0123456789 mM"))
+        throw std::runtime_error("Max body size is not valid.");
+    return maxBodySize;
+}
+
+std::map<std::string , std::string> ConfigParser::getErrorPages()
+{
+    std::map<std::string, std::string> errorPages;
+    if (!ifInside("server", "error_page"))
+        throw std::runtime_error("No error page directive found.");
+    size_t pos = this->content.find("error_page");
+    if (pos == std::string::npos)
+        throw std::runtime_error("No error page directive found.");
+    std::string errorPage = "";
+    for (size_t i = pos + 10; i < this->content.length(); i++)
+    {
+        if (content[i] == ';')
+            break;
+        errorPage += content[i];
+    }
+    ereaseContent(this->content, pos);
+    std::list<std::string> errorPageList = split(errorPage, " ");
+    std::list<std::string>::iterator it = errorPageList.begin();
+    std::list<std::string>::iterator ite = errorPageList.end();
+    std::list<std::string>::iterator last = --errorPageList.end();
+    if ((*last).find(".html") == std::string::npos)
+        throw std::runtime_error("Error page is not valid.");
+    for (; it != ite; it++)
+    {
+        if (it == last)
+            break;
+        if (notIn(*it, "0123456789") || (*it).length() != 3)
+            throw std::runtime_error("Error page is not valid.");
+        errorPages[*it] = *last;
+    }
+    return errorPages;
 }
