@@ -8,6 +8,12 @@
 #include <vector>
 #include <map>
 
+        struct  RequestBody
+       {
+           std::string  ContentDisposition;
+           std::string Content;
+       };
+
         struct http_items
         {
 
@@ -21,10 +27,12 @@
             std::map<std::string , std::string> Headers;
             std::vector<std::string> Req;
             std::string Body;
-            std::vector<std::string> ChunkedBody;
+            std::vector<RequestBody*> ChunkedBody;
             std::string bondary;
             std::map<std::string , std::string> EncodedFormbody;
        };
+
+       
 class Requese {
     private:
         http_items response_items;

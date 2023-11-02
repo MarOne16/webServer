@@ -53,25 +53,35 @@ Requese::Requese(std::string req):req(req),status_response_code(0)
         else if(response_items.Headers["Content-Type"].find("multipart/form-data") != -1)
         {
             std::stringstream os(req);
-            int i = 0;
-            // = this->response_items.ChunkedBody.begin();
-            while(std::getline(os, token, '\n'))
-            {
-                // std::cout << "|>>>|" <<token <<  "||"  <<std::endl;
-                if(token != this->response_items.bondary)
+            RequestBody *ele;
+            int i = 0;    
+            while (std::getline(os, token, '\n')) {
+            ele = new RequestBody;
+        while (token != this->response_items.bondary) {
+            // std::cout << token << std::endl;
+
+                if (token.find("Content-Disposition") != -1) 
                 {
-                    this->response_items.ChunkedBody.push_back(token);
-                    // it++;
-                    // i++;
+                    // puts("here");
+                    ele->ContentDisposition = token;
+                                    // std::cout << ">>>>>>>>>>" << token << std::endl;
+                } 
+                else {
+                    // std::cout << ">>>>>>>>>>" << token << std::endl;
+                   ele->Content += token;
                 }
-            }
-            
-             std::vector<std::string>::iterator it = this->response_items.ChunkedBody.begin();
-            while(it != this->response_items.ChunkedBody.end())
-            {
-                    std::cout << "|   |"  << *it <<"|" <<  std::endl;
-                    it++;
-            }
+                std::getline(os, token, '\n');
+        }
+        if(!ele->ContentDisposition.empty() && !ele->Content.empty() )
+        {
+                this->response_items.ChunkedBody.push_back(new RequestBody({ele->ContentDisposition , ele->Content}) );
+                // std::cout << "|"  << ele->ContentDisposition << ele->Content  <<  "|"<< std::endl;
+                delete ele;
+        }
+    }
+       for (const auto& it : this->response_items.ChunkedBody) {
+        std::cout << "Dispotio-content: " << it->ContentDisposition  << ", Content: " << it->Content<< std::endl;
+    }
         }
         else
             this->response_items.Body =  req;
