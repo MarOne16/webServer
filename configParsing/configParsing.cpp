@@ -106,8 +106,6 @@ int ConfigParser::getPort()
     if (!ifInside("server", "listen"))
         throw std::runtime_error("No listen directive found.");
     size_t pos = this->content.find("listen");
-    if (pos == std::string::npos)
-        throw std::runtime_error("No listen directive found.");
     for (size_t i = pos + 7 ; i < this->content.length(); i++)
     {
         if (content[i] == ';')
@@ -123,8 +121,6 @@ std::string ConfigParser::getServerName()
     if (!ifInside("server", "server_name"))
         return "localhost";
     size_t pos = this->content.find("server_name");
-    if (pos == std::string::npos)
-        return "localhost";
     std::string serverName = "";
     for (size_t i = pos + 12; i < this->content.length(); i++)
     {
@@ -152,8 +148,6 @@ std::string ConfigParser::getHost()
     if (!ifInside("server", "host"))
         return "localhost";
     size_t pos = this->content.find("host");
-    if (pos == std::string::npos)
-        return "localhost";
     std::string host = "";
     for (size_t i = pos + 4; i < this->content.length(); i++)
     {
@@ -181,8 +175,6 @@ std::string ConfigParser::getMaxBodySize()
     if (!ifInside("server", "max_body_size"))
         throw std::runtime_error("No max body size directive found.");
     size_t pos = this->content.find("max_body_size");
-    if (pos == std::string::npos)
-        throw std::runtime_error("No max body size directive found.");
     std::string maxBodySize = "";
     for (size_t i = pos + 13; i < this->content.length(); i++)
     {
@@ -203,11 +195,10 @@ std::string ConfigParser::getMaxBodySize()
 std::map<std::string , std::string> ConfigParser::getErrorPages()
 {
     std::map<std::string, std::string> errorPages;
+    start:
     if (!ifInside("server", "error_page"))
         throw std::runtime_error("No error page directive found.");
     size_t pos = this->content.find("error_page");
-    if (pos == std::string::npos)
-        throw std::runtime_error("No error page directive found.");
     std::string errorPage = "";
     for (size_t i = pos + 10; i < this->content.length(); i++)
     {
@@ -230,5 +221,7 @@ std::map<std::string , std::string> ConfigParser::getErrorPages()
             throw std::runtime_error("Error page is not valid.");
         errorPages[*it] = *last;
     }
+    if (this->content.find("error_page") != std::string::npos)
+        goto start;
     return errorPages;
 }
