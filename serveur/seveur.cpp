@@ -11,27 +11,20 @@
 // /* ************************************************************************** */
 
 
-// #include<iostream>
-// #include <netinet/in.h>
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <string.h>
-// #include <sys/socket.h>
-// #include <unistd.h>
-
-
 #include <sys/socket.h> // For socket functions
 #include <netinet/in.h> // For sockaddr_in
 #include <cstdlib> // For exit() and EXIT_FAILURE
 #include <iostream> // For cout
 #include <unistd.h> // For read
+
+
+
+//one serveur 
 int main(int ac , char **av)
 {
-    
-
     struct  sockaddr_in address ;
- socklen_t addrlen = sizeof(address);
-int  fd; 
+    socklen_t addrlen = sizeof(address);
+    int  fd; 
     // address.sin_len = ;
     // address.sin_zero = ;
     if(  (fd = socket(  AF_INET, SOCK_STREAM ,0)) < 0 )
@@ -45,16 +38,15 @@ int  fd;
     address.sin_family =  AF_INET;
     address.sin_port = htons(8080);
     std::cout<<"soket correcte\n";
-     std::cout<<fd<<"\n";
+    std::cout<<fd<<"\n";
     if(bind( fd,(struct sockaddr *) &address,sizeof(address) ) < 0 )
     {
-            perror("bind failed");
-        return(0);
-        
+        perror("bind failed");
+        return(0);    
     }
-     std::cout<<fd<<"\n";
-      std::cout<<"bind  correcte\n";
-      
+    std::cout<<fd<<"\n";
+    std::cout<<"bind  correcte\n";
+  
     if(listen(fd, 3) < 0 )
     {
         perror("listen failed : ");
@@ -78,22 +70,7 @@ int  fd;
   send(co, response.c_str(), response.size(), 0);
 //  close(fd);
 //  close(co);
-    // if(ac == 2)
-    // {
-        
-
-    // }
-    // else 
-    // {
-
-    // }
-
-    //serveur    
-    // int socket(int domain, int type, int protocol);
-    
-
-
-
+ 
     return(0);
 
 }

@@ -14,7 +14,6 @@ int main()
     if(fd < 0)
         perror("soket_errors : ");
     // std::cout<<"soket_good \n";
- 
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(8080);
