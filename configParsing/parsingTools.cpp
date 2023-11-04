@@ -84,11 +84,11 @@ bool notIn(std::string str, std::string s)
     return false;
 }
 
-void ereaseContent(std::string &content, size_t pos)
+void ereaseContent(std::string &content, size_t pos, char dekimiter)
 {
     for (size_t i = pos; i < content.length(); i++)
     {
-        if (content[i] == ';')
+        if (content[i] == dekimiter)
         {
             content.erase(i--, 1);
             break;

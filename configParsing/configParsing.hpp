@@ -33,10 +33,10 @@ class ConfigParser
         DIR *dir;           // for reading directory
         struct dirent *ent; // for reading directory
         char *m_fileName;
-        std::map<std::string, location> m_locations;
         ConfigParser();
 
     public:
+        std::map<std::string, location> m_locations;
         std::string content;
         // methods for parsing
         char *getFileName(const char *extension);
@@ -51,7 +51,15 @@ class ConfigParser
         std::string getHost();
         std::string getMaxBodySize();
         std::map<std::string, std::string> getErrorPages();
-        void feedLocations();
+        void feedLocations(); // feed m_locations
+        bool isInsidLocation(std::string location ,std::string toFind);
+        std::string getRoot(std::string location); // get root from location
+        std::string getIndex(std::string location); // get index from location
+        std::string getCgiPath(std::string location); // get cgi_path from location
+        std::string getAutoindex(std::string location); // get autoindex from location
+        std::string getCgiExtension(std::string location); // get cgi_extension from location
+        std::string getAllowedMethods(std::string location); // get allowed_methods from location
+        std::string getReturnCodeUrl(std::string location); // get return_code_url from location
         void feedConfMap();
         ConfigParser(const char **argv);
         ~ConfigParser();
@@ -62,4 +70,4 @@ int toInt(std::string str);
 std::list<std::string> split(std::string &str, std::string delimiter);
 bool isLast(std::string str, char delimiter);
 bool notIn(std::string str, std::string s);
-void ereaseContent(std::string &content, size_t pos);
+void ereaseContent(std::string &content, size_t pos, char dekimiter);

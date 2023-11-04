@@ -50,7 +50,7 @@ void ConfigParser::checkBrackets()
 {
     int left = 0;
     int right = 0;
-    for (int i = 0; i < this->content.length(); i++)
+    for (size_t i = 0; i < this->content.length(); i++)
     {
         if (this->content[i] == '{')
             left++;
@@ -206,7 +206,7 @@ std::map<std::string , std::string> ConfigParser::getErrorPages()
             break;
         errorPage += content[i];
     }
-    ereaseContent(this->content, pos);
+    ereaseContent(this->content, pos, ';');
     std::list<std::string> errorPageList = split(errorPage, " ");
     std::list<std::string>::iterator it = errorPageList.begin();
     std::list<std::string>::iterator ite = errorPageList.end();
