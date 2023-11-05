@@ -1,5 +1,5 @@
 NAME   = configParsing
-FLAGS  = -Wall -Wextra -Werror -std=c++98
+FLAGS  = -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address
 CC     = c++
 FILES  = main.cpp getLocation.cpp configParsing.cpp parsingTools.cpp
 OBJS   = $(FILES:.cpp=.o)

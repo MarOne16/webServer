@@ -20,7 +20,6 @@ ConfigParser::ConfigParser(const char **argv)
 
 ConfigParser::~ConfigParser()
 {
-    closedir(dir);
     // puts("ConfigParser destructor called.");
     // system("leaks a.out");
 }
@@ -41,29 +40,61 @@ void ConfigParser::readConfigFile()
         }
         if (line[0] == '#' || line.empty())
             continue;
-        this->content += line;
-        this->content += '\n';
+        this->servers_content += line;
+        this->servers_content += '\n';
     }
+}
+
+void ConfigParser::feedContent()
+{
+    if (this->servers_content.find("server") == std::string::npos)
+        throw std::runtime_error("No server directive found.");
+    size_t pos = this->servers_content.find("server");
+    std::string server = "";
+    for (size_t i = pos; i < this->servers_content.length(); i++)
+    {
+        if (servers_content[i] == '}')
+        {
+            server += servers_content[i];
+            break;
+        }
+        server += servers_content[i];
+    }
+    ereaseContent(this->servers_content, pos, '}');
+    this->content = server;
+    feedServers();
 }
 
 void ConfigParser::checkBrackets()
 {
     int left = 0;
     int right = 0;
-    for (size_t i = 0; i < this->content.length(); i++)
+    for (size_t i = 0; i < this->servers_content.length(); i++)
     {
-        if (this->content[i] == '{')
+        if (this->servers_content[i] == '{')
             left++;
-        if (this->content[i] == '}')
+        if (this->servers_content[i] == '}')
             right++;
     }
     if (left != right)
         throw std::runtime_error("Brackets are not balanced.");
+    feedContent();
 }
 
-void ConfigParser::feedConfMap()
+void ConfigParser::feedServers()
 {
-    std::string line;
+    static int i;
+    server server_tmp;
+    server_tmp.port = getPort();
+    server_tmp.server_name = getServerName();
+    server_tmp.host = getHost();
+    server_tmp.max_body_size = getMaxBodySize();
+    server_tmp.error_pages = getErrorPages();
+    feedLocations();
+    server_tmp.locations = m_locations;
+    m_servers[i++] = server_tmp;
+    if (this->servers_content.find("server") != std::string::npos)
+        feedContent();
 }
 
 bool ConfigParser::ifInside(std::string scope, std::string toFind)
@@ -224,4 +255,9 @@ std::map<std::string , std::string> ConfigParser::getErrorPages()
     if (this->content.find("error_page") != std::string::npos)
         goto start;
     return errorPages;
+}
+
+unsigned int ConfigParser::getNumber_ofServers()
+{
+    return m_servers.size();
 }

@@ -27,6 +27,16 @@ typedef struct s_location
     std::string upload_store_directory;
 } location;
 
+typedef struct s_server
+{
+    std::string server_name;
+    std::string host;
+    int port;
+    std::string max_body_size;
+    std::map<std::string, std::string> error_pages;
+    std::map<std::string, location> locations;
+} server;
+
 class ConfigParser
 {
     private:
@@ -37,16 +47,20 @@ class ConfigParser
 
     public:
         std::map<std::string, location> m_locations;
+        std::map<unsigned int , server> m_servers;
         std::string content;
+        std::string servers_content; // content of one server
         // methods for parsing
         char *getFileName(const char *extension);
         bool isValideScope(std::string scope);
         bool ifInside(std::string scope, std::string toFind);
         void readConfigFile();
         void checkBrackets();
+        void feedContent();
 
         // geters
         int getPort();
+        unsigned int getNumber_ofServers();
         std::string getServerName();
         std::string getHost();
         std::string getMaxBodySize();
@@ -60,7 +74,7 @@ class ConfigParser
         std::string getCgiExtension(std::string location); // get cgi_extension from location
         std::string getAllowedMethods(std::string location); // get allowed_methods from location
         std::string getReturnCodeUrl(std::string location); // get return_code_url from location
-        void feedConfMap();
+        void feedServers(); // feed m_servers
         ConfigParser(const char **argv);
         ~ConfigParser();
 };

@@ -8,26 +8,38 @@ int main(int argc, const char **argv)
         ConfigParser cfp(argv);
         cfp.readConfigFile();
         cfp.checkBrackets();
-        std::cout << cfp.getPort() << std::endl;
-        std::cout << cfp.getServerName() << std::endl;
-        std::cout << cfp.getHost() << std::endl;
-        std::cout << cfp.getMaxBodySize() << std::endl;
-        std::map<std::string, std::string> errorPages = cfp.getErrorPages();
-        for (std::map<std::string, std::string>::iterator it = errorPages.begin(); it != errorPages.end(); it++)
-            std::cout << it->first << " " << it->second << std::endl;
-        cfp.feedLocations();
-        for (std::map<std::string, location>::iterator it = cfp.m_locations.begin(); it != cfp.m_locations.end(); it++)
+        std::map<unsigned int, server>::iterator it = cfp.m_servers.begin();
+        while (it != cfp.m_servers.end())
         {
-            std::cout << "location: " << it->first << std::endl;
-            std::cout << "root: " << it->second.root << std::endl;
-            std::cout << "index: " << it->second.index << std::endl;
-            std::cout << "cgi_path: " << it->second.cgi_path << std::endl;
-            std::cout << "autoindex: " << it->second.autoindex << std::endl;
-            std::cout << "cgi_extension: " << it->second.cgi_extension << std::endl;
-            std::cout << "allowed_methods: " << it->second.allowed_methods << std::endl;
-            std::cout << "return_code_url: " << it->second.return_code_url << std::endl;
-            
+            std::cout << "server_name: " << it->second.server_name << std::endl;
+            std::cout << "host: " << it->second.host << std::endl;
+            std::cout << "port: " << it->second.port << std::endl;
+            std::cout << "max_body_size: " << it->second.max_body_size << std::endl;
+            std::cout << "error_pages: " << std::endl;
+            std::map<std::string, std::string>::iterator it2 = it->second.error_pages.begin();
+            while (it2 != it->second.error_pages.end())
+            {
+                std::cout << it2->first << ": " << it2->second << std::endl;
+                it2++;
+            }
+            std::cout << "locations: " << std::endl;
+            std::map<std::string, location>::iterator it3 = it->second.locations.begin();
+            while (it3 != it->second.locations.end())
+            {
+                std::cout << "root: " << it3->second.root << std::endl;
+                std::cout << "index: " << it3->second.index << std::endl;
+                std::cout << "cgi_path: " << it3->second.cgi_path << std::endl;
+                std::cout << "autoindex: " << it3->second.autoindex << std::endl;
+                std::cout << "cgi_extension: " << it3->second.cgi_extension << std::endl;
+                std::cout << "allowed_methods: " << it3->second.allowed_methods << std::endl;
+                std::cout << "return_code_url: " << it3->second.return_code_url << std::endl;
+                std::cout << "upload_store_directory: " << it3->second.upload_store_directory << std::endl;
+                it3++;
+            }
+            it++;
         }
+        std::cout << "----------------------------------------" << std::endl;
+        std::cout << "the number of servers: " << cfp.getNumber_ofServers() << std::endl;
 
     }
     catch (const std::exception &e)

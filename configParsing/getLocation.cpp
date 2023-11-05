@@ -78,6 +78,8 @@ std::string ConfigParser::getAutoindex(std::string location)
             i--;
         }
     }
+    if (autoindex != "on" && autoindex != "off")
+        throw std::runtime_error("autoindex must be on or off.");
     return autoindex;
 }
 
