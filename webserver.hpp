@@ -7,6 +7,9 @@
 #include <exception>
 #include <vector>
 #include <map>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
         struct  RequestBody
        {
@@ -26,21 +29,23 @@
             std::string http_version;
             std::map<std::string , std::string> Headers;
             std::vector<std::string> Req;
+            int lenghtbody;
             std::string Body;
             std::vector<RequestBody*> ChunkedBody;
             std::string bondary;
             std::map<std::string , std::string> EncodedFormbody;
+            std::string Extension;
        };
 
        
 class Requese {
     private:
-        http_items response_items;
-        std::vector<std::string> Initial_Request_Line;
-        int status_response_code;
         // std::streamstring os;
         std::string req;
     public:
+        http_items response_items;
+        std::vector<std::string> Initial_Request_Line;
+        int status_response_code;
        Requese(std::string req);
        void parser_init_line(std::string   Initial_Request_Line);
        void Headers_elements();
@@ -59,6 +64,22 @@ class Requese {
                 const char *what() const throw();
 
        };
+};
+
+
+class Response
+{
+    private:
+        int status;
+        http_items response_items;
+        std::vector<std::string> init_line;
+        std::stringstream response;
+        std::string bad_req;
+        std::string HTTP_NOT_SUPPORTED;
+        std::string Resource_not_found;
+    public:
+        Response(int status,  std::vector<std::string> init_line,  http_items response_items);
+        void build_response();
 };
 
 

@@ -4,9 +4,10 @@
 
 // GET /path/to/file/index.html HTTP/1.0 \r\n
 
-Requese::Requese(std::string req):req(req),status_response_code(0)
+Requese::Requese(std::string req):req(req),status_response_code(200)
 {
     this->response_items.chunked_body = 0;
+    this->response_items.lenghtbody = 0;
     std::string token;
     int i = 0;
     int pos = 0;
@@ -41,7 +42,6 @@ Requese::Requese(std::string req):req(req),status_response_code(0)
         {
             pos = req.find("&");
             // std::cout << 
-            std::cout << "|" << response_items.Headers["Content-Type"]<< "|" << std::endl;
             while(pos != -1 && !req.empty())
             {
                 token = req.substr(0, pos);
@@ -74,17 +74,33 @@ Requese::Requese(std::string req):req(req),status_response_code(0)
         }
         if(!ele->ContentDisposition.empty() && !ele->Content.empty() )
         {
+                this->response_items.lenghtbody +=  ele->Content.length();
                 this->response_items.ChunkedBody.push_back(new RequestBody({ele->ContentDisposition , ele->Content}) );
                 // std::cout << "|"  << ele->ContentDisposition << ele->Content  <<  "|"<< std::endl;
                 delete ele;
         }
+    //    for (const auto& it : this->response_items.ChunkedBody) {
+    //     std::cout << "Dispotio-content: " << it->ContentDisposition  << ", Content: " << it->Content<< std::endl;
     }
-       for (const auto& it : this->response_items.ChunkedBody) {
-        std::cout << "Dispotio-content: " << it->ContentDisposition  << ", Content: " << it->Content<< std::endl;
     }
-        }
-        else
-            this->response_items.Body =  req;
+    else
+    {
+        this->response_items.Body =  req;
+        this->response_items.lenghtbody +=  this->response_items.Body.length();
+    }
+    //add check max size and Extension for Path
+    if(this->response_items.Path.substr(this->response_items.Path.find('.') + 1) !=  this->response_items.Extension )
+        this->status_response_code = 400;
+    if(this->response_items.method ==  "GET" && this->response_items.lenghtbody != 0 )
+        this->status_response_code = 400;
+    if(this->response_items.method !=  "GET" && this->response_items.lenghtbody == 0)
+        this->status_response_code = 400;
+    if(this->response_items.lenghtbody != 0 && this->response_items.Headers.find("Content-Length") == this->response_items.Headers.end())
+        this->status_response_code = 400;
+    else if(atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody)
+        this->status_response_code = 400;
+    std::cout << this->response_items.Headers.find("Content-Length")->second << std::endl;
+    // if(this->response_items.lenghtbody != atoi(this->response_items.Headers.find("Content-Length")))
     }catch(std::exception& e)
     {
         std::cout << e.what() << std::endl;
@@ -141,6 +157,8 @@ void Requese::parser_init_line(std::string  Initial_Request_Line)
           this->response_items.Fragment_iden = "";
           this->response_items.Query_String = "";
      }
+    if(line.size() != 3)
+        this->status_response_code = 400;
     i = 0;
     while(i < 3)
     {
@@ -172,19 +190,31 @@ void Requese::Headers_elements()
     while(it !=  this->response_items.Req.end())
     {
         pos = (*it).find(":");
+        // break;
+        // if(*it[pos + 1]) == ' ')
+        // {
+        //     this->status_response_code = 400;
+        //     break;
+        // }
         if(pos == -1)
         {
             this->status_response_code = 400;
             break;
         }
+        // break;
         key = trim((*it).substr(0 , pos));
         value = trim((*it).substr(pos + 1));
+        if((*it).substr(pos + 1, 1).c_str()[0]  != 32)
+        {
+                std::cout << ":::::" << (*it).substr(pos + 1, 1).c_str()[0] << std::endl;
+            this->status_response_code = 400;
+            // break;
+        }
         this->trim(key);
         this->trim(value);
         this->response_items.Headers[key] = value;
         if(key.empty() || value.empty() || check_elemens(key) == 0 || check_more_element(key, value) == 0 )
         {
-            // std::cout << "here" << std::endl;
             this->status_response_code = 400;
             return ;
         }
@@ -343,7 +373,11 @@ int Requese::check_content_type(std::string &value)
     while(it !=  contentTypes.end())
     {
         if(*it == token)
+        {
+            this->response_items.Extension = token.substr(token.find("/") + 1);
             return 1;
+        }
+
         it++;
     }
     return 0;
@@ -448,7 +482,7 @@ int Requese::check_more_element(std::string& key, std::string& value)
     if(key == "Host")
         return (this->check_host(value));
     if(key == "Date")
-            return (this->check_date(value));
+        return (this->check_date(value));
     if(key == "Content-Length")
         return (this->is_alpha(value));
     if( key == "Content-Type")
