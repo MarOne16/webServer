@@ -38,7 +38,6 @@ int main(int argc, const char **argv)
             }
             it++;
         }
-        std::cout << "----------------------------------------" << std::endl;
         std::cout << "the number of servers: " << cfp.getNumber_ofServers() << std::endl;
 
     }
