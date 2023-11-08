@@ -10,7 +10,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
+#include <ctime>
+#include <dirent.h>
         struct  RequestBody
        {
            std::string  ContentDisposition;
@@ -35,6 +36,7 @@
             std::string bondary;
             std::map<std::string , std::string> EncodedFormbody;
             std::string Extension;
+            std::string server;
        };
 
        
@@ -80,6 +82,12 @@ class Response
     public:
         Response(int status,  std::vector<std::string> init_line,  http_items response_items);
         void build_response();
+        std::string get_Content_type();
+        std::string get_Date();
+        std::string check_index_file();
+        void build_GET();
+        // void build_POST();
+        void build_DELETE();
 };
 
 

@@ -89,8 +89,8 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
         this->response_items.lenghtbody +=  this->response_items.Body.length();
     }
     //add check max size and Extension for Path
-    if(this->response_items.Path.substr(this->response_items.Path.find('.') + 1) !=  this->response_items.Extension )
-        this->status_response_code = 400;
+    // if(this->response_items.Path.substr(this->response_items.Path.find('.') + 1) !=  this->response_items.Extension )
+    //     this->status_response_code = 400;
     if(this->response_items.method ==  "GET" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
     if(this->response_items.method !=  "GET" && this->response_items.lenghtbody == 0)
@@ -99,7 +99,7 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
         this->status_response_code = 400;
     else if(atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody)
         this->status_response_code = 400;
-    std::cout << this->response_items.Headers.find("Content-Length")->second << std::endl;
+    // std::cout << this->response_items.Headers.find("Content-Length")->second << std::endl;
     // if(this->response_items.lenghtbody != atoi(this->response_items.Headers.find("Content-Length")))
     }catch(std::exception& e)
     {
@@ -157,6 +157,11 @@ void Requese::parser_init_line(std::string  Initial_Request_Line)
           this->response_items.Fragment_iden = "";
           this->response_items.Query_String = "";
      }
+     if(this->response_items.Path.rfind(".") != -1)
+        this->response_items.Extension = this->response_items.Path.substr(this->response_items.Path.rfind(".") + 1);
+    else
+         this->response_items.Extension  = "";
+     std::cout <<  "|" <<  this->response_items.Extension << std::endl;
     if(line.size() != 3)
         this->status_response_code = 400;
     i = 0;
@@ -374,7 +379,7 @@ int Requese::check_content_type(std::string &value)
     {
         if(*it == token)
         {
-            this->response_items.Extension = token.substr(token.find("/") + 1);
+            // this->response_items.Extension = token.substr(token.rfind("/") + 1);
             return 1;
         }
 
@@ -422,6 +427,7 @@ int Requese::check_host(std::string&value)
     }
     else
         host = value;
+    this->response_items.server = host;
     if(!port.empty())
     {
         for (size_t i = 1; i < port.length(); ++i)
