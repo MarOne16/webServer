@@ -1,9 +1,12 @@
-NAME   = configParsing
+NAME   = servers
 FLAGS  = -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address
 CC     = c++
-FILES  = main.cpp getLocation.cpp configParsing.cpp parsingTools.cpp
+FILES  = ../configParsing/getLocation.cpp \
+		../configParsing/configParsing.cpp \
+		../configParsing/parsingTools.cpp \
+		 servers.cpp
 OBJS   = $(FILES:.cpp=.o)
-HEADER = configParsing.hpp
+HEADER = servers.hpp
 
 all: $(NAME)
 
