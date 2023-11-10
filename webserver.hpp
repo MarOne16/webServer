@@ -12,6 +12,12 @@
 #include <fcntl.h>
 #include <ctime>
 #include <dirent.h>
+#include <fstream>
+#include <unistd.h>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
         struct  RequestBody
        {
            std::string  ContentDisposition;
@@ -88,6 +94,10 @@ class Response
         void build_GET();
         // void build_POST();
         void build_DELETE();
+        int get_permission(std::string& file);
+        std::string read_file(const std::string& filename);
+        void not_found();
+        int remove_all_files();
 };
 
 

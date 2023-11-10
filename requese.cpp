@@ -34,8 +34,8 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
         // ckeck Headers and parser some special Headers
         Headers_elements();
         std::cout <<  "----" << std::endl;
-        std::cout <<  this->status_response_code << std::endl;
-        token.clear();
+        std::cout <<  this->status_response_code  << std::endl;
+        // token.clear();
         // std::cout << req << std::endl;
         // store body 
         if(response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
@@ -60,6 +60,7 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
         while (token != this->response_items.bondary) {
             // std::cout << token << std::endl;
 
+            // std::cout << "hi" << std::endl;
                 if (token.find("Content-Disposition") != -1) 
                 {
                     // puts("here");
@@ -75,7 +76,8 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
         if(!ele->ContentDisposition.empty() && !ele->Content.empty() )
         {
                 this->response_items.lenghtbody +=  ele->Content.length();
-                this->response_items.ChunkedBody.push_back(new RequestBody({ele->ContentDisposition , ele->Content}) );
+                // ele = new RequestBody({ele->ContentDisposition , ele->Content});
+                this->response_items.ChunkedBody.push_back(ele);
                 // std::cout << "|"  << ele->ContentDisposition << ele->Content  <<  "|"<< std::endl;
                 delete ele;
         }
@@ -91,6 +93,7 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
     //add check max size and Extension for Path
     // if(this->response_items.Path.substr(this->response_items.Path.find('.') + 1) !=  this->response_items.Extension )
     //     this->status_response_code = 400;
+    std::cout << "|" << this->response_items.lenghtbody<< std::endl;
     if(this->response_items.method ==  "GET" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
     if(this->response_items.method !=  "GET" && this->response_items.lenghtbody == 0)
@@ -231,12 +234,12 @@ void Requese::Headers_elements()
         return ;
     }
     // print HEaders Elements
-    std::map<std::string, std::string>::iterator it1 = this->response_items.Headers.begin();
-    while(it1 != this->response_items.Headers.end())
-    {
-        // std::cout << it1->first  << "   "<< it1->second << std::endl;
-        it1++;
-    }
+    // std::map<std::string, std::string>::iterator it1 = this->response_items.Headers.begin();
+    // while(it1 != this->response_items.Headers.end())
+    // {
+    //     // std::cout << it1->first  << "   "<< it1->second << std::endl;
+    //     it1++;
+    // }
     // std::cout << this->status_response_code << std::endl;
 }
 
@@ -338,7 +341,7 @@ int Requese::check_content_type(std::string &value)
 {
     int pos = -1;
     std::string token;
-    std::vector<std::string> contentTypes = {
+    std::string contentTypes[] = {
         "text/plain",
         "text/html",
         "text/css",
@@ -364,7 +367,7 @@ int Requese::check_content_type(std::string &value)
         "application/vnd.api+json"
         // Add more as needed
     };
-    std::vector<std::string>::iterator it = contentTypes.begin();
+    int it = 0;
     token = value;
     pos = token.find(";");
     if(pos != -1)
@@ -375,9 +378,9 @@ int Requese::check_content_type(std::string &value)
             this->response_items.bondary = value.substr(value.find("boundary=") + 9);
 
     }
-    while(it !=  contentTypes.end())
+    while(it <  contentTypes->length())
     {
-        if(*it == token)
+        if( contentTypes[it]== token)
         {
             // this->response_items.Extension = token.substr(token.rfind("/") + 1);
             return 1;
@@ -390,7 +393,7 @@ int Requese::check_content_type(std::string &value)
 
 int Requese::check_Transfer_Encoding(std::string& value)
     {
-        std::vector<std::string> transferEncodings = {
+        std::string transferEncodings[] = {
             "chunked",
             "gzip",
             "deflate",
@@ -398,15 +401,15 @@ int Requese::check_Transfer_Encoding(std::string& value)
             "identity"
         // Add more as needed
     };
-    std::vector<std::string>::iterator it =  transferEncodings.begin();
-    while(it != transferEncodings.end())
+    int it =  0;
+    while(it < transferEncodings->length())
     {
         if(value == "chunked")
         {
             this->response_items.chunked_body = 1;
             return 1;
         }
-        if(value == *it)
+        if(value == transferEncodings[it])
             return 1;
     }
     return 0;
@@ -460,7 +463,7 @@ int Requese::check_host(std::string&value)
 
 int Requese::check_connection(std::string& value)
 {
-     std::vector<std::string> connectionValues = {
+    std::string connectionValues[] = {
         "Keep-Alive",
         "close",
         "Upgrade",
@@ -473,10 +476,10 @@ int Requese::check_connection(std::string& value)
         "Sec-WebSocket-Accept"
         // Add more as needed
     };
-     std::vector<std::string>::iterator it = connectionValues.begin();
-    while(it !=  connectionValues.end())
+    int  it = 0;
+    while(it <  connectionValues->length())
     {
-        if(*it == value)
+        if(connectionValues[it] == value)
             return 1;
         it++;
     }

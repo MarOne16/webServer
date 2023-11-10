@@ -15,6 +15,7 @@ Response::Response(int status, std::vector<std::string> init_line,  http_items r
 
 void Response::build_response()
 {
+    // std::cout << this->status << " <<<<"  << std::endl;
     if(this->status == 400)
     {
         response << "HTTP/1.1 400 Bad Request\r\n";
@@ -26,7 +27,7 @@ void Response::build_response()
         response << this->bad_req;
         // std::cout << this->response.str() << std::endl;
     }
-    if(this->status == 505)
+    else if (this->status == 505)
     {
         response << "HTTP/1.1 505 Version Not Supported\r\n";
         response << "Content-Type: text/html\r\n";
@@ -36,11 +37,11 @@ void Response::build_response()
         response << "\r\n"; // Blank line to separate headers and body
         response << this->HTTP_NOT_SUPPORTED;
     }
-    if(this->response_items.method == "GET")
+    else if(this->response_items.method == "GET")
     {
         this->build_GET();
     }
-    if(this->response_items.method == "DELETE")
+    else if(this->response_items.method == "DELETE")
     {
         std::cout << "DELETE METHOD" << std::endl;
         this->build_DELETE();
@@ -83,7 +84,7 @@ std::string Response::get_Date()
 
 std::string Response::check_index_file()
 {
-    DIR *dir = opendir("root/dir");
+    DIR *dir = opendir("root/dir/");
     std::string files[] = {"index", "index.html", "index.php"};
     if(dir == NULL)
         return "";
@@ -99,6 +100,7 @@ std::string Response::check_index_file()
                 return files[i];
             entity = readdir(dir);
         }
+        i++;
     }
     closedir(dir);
     return "";
@@ -109,11 +111,12 @@ void Response::build_GET()
 
        struct stat buffer;
         int         status;
-        std::string URI = "/mnt/d/web_server/root";
+        // std::cout << "GET " << std::endl;
+        std::string URI = "root";
 
         URI += this->response_items.Path;
-        status = stat(URI.c_str() ,  &buffer);
-        // std::cout << this->status << "|||||" << std::endl;
+        status = stat("root/dir/",  &buffer);
+        // std::cout << status << "|||||" << std::endl;
         if(status != -1)
         {
             // response << "HTTP/1.1 200 ok\r\n";
@@ -133,9 +136,12 @@ void Response::build_GET()
                 else
                 {
                     std::string index  =  this->check_index_file();
-                    std::string get_auto_index = "off"; // change by getter 
+                    std::cout << "---------------> :" << index << "\r\n";
+                    std::string get_auto_index = "on"; // change by getter 
                     if(index.empty())
                     {
+                        DIR *dir = opendir(this->response_items.Path.c_str());
+                        struct dirent* entity;
                         if(get_auto_index == "off")
                         {
                             response << "HTTP/1.1 403 Forbiden\r\n";
@@ -146,74 +152,281 @@ void Response::build_GET()
                         }
                         else
                         {
+                          
                             response << "HTTP/1.1 200 ok\r\n";
                             response << "Content-Length: 0\r\n";
-                            response << "Connection: close\r\n\r\n";
+                            response << "Connection: close\r\n";
+                            response << "Date: " << this->get_Date()<< "\r\n\r\n";
+                            
+                            std::string autoIndexPage;
+                                    autoIndexPage = "<!DOCTYPE html>\n<html lang=\"en\">\n\
+                                                    <head>\n\
+                                                    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\
+                                                    <title>AUTO INDEX</title>\n\
+                                                    </head>\n\
+                                                    <body>\n\
+                                                    <div style=\"margin-left: 5%; margin-top:10%;\">\n\
+                                                    <hr>\n";
+                            entity = readdir(dir);
+                            while(entity != NULL)
+                            {
+                                puts("hi");
+                                std::string filename = entity->d_name;
+                                if(entity->d_type == DT_DIR)
+                                    filename += '/';
+                                autoIndexPage.append("<p><a href='" + filename +"' /> " + filename + " </p>");
+                                autoIndexPage.append("<br>");
+                                entity = readdir(dir);
+                            }   
+                            closedir(dir);
+                            autoIndexPage += "\
+                                        <hr>\n\
+                                        </div>\n\
+                                        </body>\n\
+                                        </html>\n";
+                            response << autoIndexPage;
                             // add body for index
                         }
 
                     } 
                     else{
-                            std::cout << "check cgi" << std::endl;
-                    }                   // // if()
+                        std::string cgi_path = ""; //change path with valid path from config;
+                        if(!cgi_path.empty())
+                        {
+                            response << "HTTP/1.1 200 ok\r\n";
+                            response << "Content-Length: 0\r\n";
+                            response << "Connection: close\r\n";
+                            response << "Date: " << this->get_Date() << "\r\n\r\n";
+                            //response << resturn of CGI;
+                        }
+                        else
+                        {
+                            URI +=index;
+                            if(this->get_permission(URI) == -1)
+                                this->not_found();
+                            else if(this->get_permission(URI) == -2)
+                            {
+                                response << "HTTP/1.1 403 Forbidden\r\n";
+                                response << "Content-Type: text/html\r\n";
+                                response << "Content-Length: 46"<< "\r\n";
+                                response << "Server: " << this->response_items.server << "\r\n";
+                                response << "Date: " << this->get_Date() <<  "\r\n";
+                                response << "\r\n"; // Blank line to separate headers and body
+                                response << "You don't have permission to access the requested resource.";
+
+                            }
+                            else
+                            {
+                                //file with permissions
+                                std::cout << URI << " here me" << std::endl;
+                                std::string content_body = read_file(URI);
+                                response << "HTTP/1.1 200 ok\r\n";
+                                response << "Content-Length: "<< content_body.length()<<"\r\n";
+                                response << "Connection: close\r\n";
+                                response << "Date: " << this->get_Date() << "\r\n\r\n";
+                                response << content_body;
+                            }
+
+                            
+                        }
+                         // doesn't cgi in location 
+
+
+                    
+                        } 
 
                 }
             }
             else
             {
-                std::cout << "---------->" << this->response_items.Extension << std::endl;
-                std::cout << "is file check cgi " << std::endl;
+                 std::string cgi_path = ""; //change path with valid path from config;
+                if(!cgi_path.empty())
+                {
+                    response << "HTTP/1.1 200 ok\r\n";
+                    response << "Content-Length: 0\r\n";
+                    response << "Connection: close\r\n";
+                    response << "Date: " << this->get_Date()<< "\r\n\r\n";
+                    //response << resturn of CGI;
+                }
+                else
+                {
+                     if(this->get_permission(URI) == -1)
+                            this->not_found();
+                            else if(this->get_permission(URI) == -2)
+                            {
+                                response << "HTTP/1.1 403 Forbidden\r\n";
+                                response << "Content-Type: text/html\r\n";
+                                response << "Content-Length: 46"<< "\r\n";
+                                response << "Server: " << this->response_items.server << "\r\n";
+                                response << "Date: " << this->get_Date() <<  "\r\n";
+                                response << "\r\n"; // Blank line to separate headers and body
+                                response << "You don't have permission to access the requested resource.";
+
+                            }
+                            else
+                            {
+                                std::string content_body = read_file(URI);
+                                response << "HTTP/1.1 200 ok\r\n";
+                                response << "Content-Length: "<< content_body.length()<<"\r\n";
+                                response << "Connection: close\r\n";
+                                response << "Date: " << this->get_Date() << "\r\n\r\n";
+                                response << content_body;
+                            }
+                    
+                }
             }
         }
         else
-        {
-            response << "HTTP/1.1 404 ok\r\n";
-            response << "Content-Type: text/html\r\n";
-            response << "Content-Length: " << this->Resource_not_found.length() << "\r\n";
-            response << "Server: " << this->response_items.server << "\r\n";
-            response << "Date: " << this->get_Date() <<  "\r\n";
-            response << "\r\n"; // Blank line to separate headers and body
-            response << this->Resource_not_found;
-        }
-}
+            this->not_found();
 
+
+}
 
 
 void Response::build_DELETE()
 {
     struct stat buffer;
     int         status;
-    std::string URI = "/mnt/d/web_server/root";
-
+    std::string URI = "root"; // get root form config;
+    std::cout << "DELETE HI "  << std::endl;
     URI += this->response_items.Path;
     status = stat(URI.c_str() ,  &buffer);
     if(status != -1)
     {
      if(this->response_items.Extension.empty())
      {
-        if(this->response_items.Path[this->response_items.Path.size() - 1] == "/");
+        if(this->response_items.Path[this->response_items.Path.size() - 1] == '/')
         {
+            std::string cgi_path = ""; //change path with valid path from config;
+            if(!cgi_path.empty())
+            {
+                // std::cout << URI << std::endl; 
+                std::string index = check_index_file();
+                if(index.empty())
+                {
+                    response << "HTTP/1.1 403 Forbidden\r\n";
+                    response << "Content-Type: text/plain" << "\r\n";
+                    response << "Content-length: 0" << "\r\n";
+                    response << "Connection: close\r\n";
+                    response  << "Date: " << this->get_Date() << "\r\n\r\n";
 
+                }
+                else
+                {
+            std::cout << "ERROR" << std::endl;
+                    // run cgi on requested file with DELTE REQUEST_METHOD;
+                }
+            }
+            else
+            {
+                int res = remove_all_files();
+                if(res == 1)
+                {
+                // std::cout << "HTTP/1.1 403 Forbidden" << std::endl;
+                    response << "HTTP/1.1 403 Forbidden\r\n";
+                    response << "Content-Type: text/plain" << "\r\n";
+                    response << "Content-length: 0" << "\r\n";
+                    response << "Connection: close\r\n";
+                    response  << "Date: " << this->get_Date() << "\r\n\r\n";
+                }
+                else
+                {
+                    response << "HTTP/1.1 204 NO Content\r\n";
+                    response << "Content-Type: text/plain" << "\r\n";
+                    response << "Content-length: 0" << "\r\n";
+                    response << "Connection: close\r\n";
+                    response  << "Date: " << this->get_Date() << "\r\n\r\n";
+                }
+            }
         }
         else 
         {
                 response << "HTTP/1.1 409 Conflict\r\n";
                 response << "Location: " << this->response_items.Path << "/\r\n";
-                response << "Content-Length: 0\r\n";
-                response << "Connection: close\r\n\r\n";
+                response << "Content-Length: 314\r\n";
+                response << "Content-Type: text/plain" << "\r\n";
+                response << "Connection: close\r\n";
+                response  << "Date: " << this->get_Date() << "\r\n\r\n";
+                response << "<h1>409 Conflict:<1><p>The requested operation cannot be completed due to a conflict with the current state of the resource.<p>";
         }
      }
      else
-        std::cout << "is file" << std::endl;
+       {
+        std::string cgi_path = ""; //change path with valid path from config;
+        if(cgi_path.empty())
+        {
+            // std::cout << URI << std::endl; 
+            // URI +=this->response_items.Path;
+            remove(URI.c_str());
+            response << "HTTP/1.1 204 NO Content\r\n";
+            response << "Content-Type: text/plain" << "\r\n";
+            response << "Content-length: 0" << "\r\n";
+            response << "Connection: close\r\n";
+            response  << "Date: " << this->get_Date() << "\r\n\r\n";
+        }
+        else
+        {
+            std::cout << "still case with CGI" << std::endl;
+        }
+       }
     }
     else
-    {
-            response << "HTTP/1.1 404 ok\r\n";
-            response << "Content-Type: text/html\r\n";
-            response << "Content-Length: " << this->Resource_not_found.length() << "\r\n";
-            response << "Server: " << this->response_items.server << "\r\n";
-            response << "Date: " << this->get_Date() <<  "\r\n";
-            response << "\r\n"; // Blank line to separate headers and body
-            response << this->Resource_not_found; 
-    }
+           this->not_found();
 }
+
+
+int Response::get_permission(std::string& file)
+{
+    if(access(file.c_str(), F_OK) == -1)
+        return -1;
+    if(access(file.c_str(), R_OK) == -1)
+        return -2;
+    return 0;
+}
+
+std::string Response::read_file(const std::string& filename)
+{
+    std::ifstream file(filename);
+    std::stringstream ss;
+    if(!file.is_open())
+    {
+        return "errot opne file";
+    }
+    ss << file.rdbuf();
+    return ss.str();
+
+}
+
+
+void  Response::not_found()
+{
+    std::string body = "<h1 style='color:red'>Error 404</h1><h2>OOPS! PAGE NOT FOUND :-(</h2><p>Sorry, the page you're looking for doesn't exist.</p>";
+
+    response << "HTTP/1.1 404 NOT FOUND\r\n";
+    response << "Content-Type: text/html\r\n";
+    response << "Content-Length: " << body.length() << "\r\n";
+    response << "Server: " << this->response_items.server << "\r\n";
+    response << "Date: " << this->get_Date() <<  "\r\n\r\n";
+    response << body;
+}
+
+
+
+int Response::remove_all_files()
+{
+     DIR *dir = opendir("root/dir/");
+    if(dir == NULL)
+        return -1;
+    struct dirent* entity;
+    int i = 0;
+    entity = readdir(dir);
+    while(entity != NULL)
+    {
+        if(access(entity->d_name, W_OK) == -1)
+            return 1;
+        remove(entity->d_name);
+        entity = readdir(dir);
+    }
+    closedir(dir);
+    return 0;
+    }
