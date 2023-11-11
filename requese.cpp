@@ -6,6 +6,8 @@
 
 Requese::Requese(std::string req):req(req),status_response_code(200)
 {
+    // this->response_items = new http_items;
+    this->response_items.location = new s_location;
     this->response_items.chunked_body = 0;
     this->response_items.lenghtbody = 0;
     std::string token;
@@ -13,6 +15,7 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
     int pos = 0;
     std::string value;
     std::string key;
+    std::map<std::string, s_location> lc;
     try{
         //read Header request 
         while(pos != -1)
@@ -31,12 +34,12 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
         } 
         //parser line-request 
         parser_init_line(response_items.Req[0]);
+
         // ckeck Headers and parser some special Headers
         Headers_elements();
-        std::cout <<  "----" << std::endl;
-        std::cout <<  this->status_response_code  << std::endl;
-        // token.clear();
-        // std::cout << req << std::endl;
+
+        //find match location
+        find_location(lc, this->response_items.Path);
         // store body 
         if(response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
         {
@@ -55,35 +58,45 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
             std::stringstream os(req);
             RequestBody *ele;
             int i = 0;    
-            while (std::getline(os, token, '\n')) {
-            ele = new RequestBody;
-        while (token != this->response_items.bondary) {
-            // std::cout << token << std::endl;
-
-            // std::cout << "hi" << std::endl;
-                if (token.find("Content-Disposition") != -1) 
-                {
-                    // puts("here");
-                    ele->ContentDisposition = token;
-                                    // std::cout << ">>>>>>>>>>" << token << std::endl;
-                } 
-                else {
-                    // std::cout << ">>>>>>>>>>" << token << std::endl;
-                   ele->Content += token;
-                }
-                std::getline(os, token, '\n');
-        }
+            std::cout << "elel->" << this->response_items.bondary << std::endl;
+            // exit(0);
+            while (std::getline(os, token, '\n'))
+            {
+                ele = new RequestBody;
+                std:;
+            // exit(0);
+                // if(token != this->response_items.bondary)
+                // {
+                    // std::cout << token << std::endl;
+                    while(token != this->response_items.bondary)
+                    {
+                        // std::cout << "Supported " << std::endl;
+                        // std::cout << "hi" << std::endl;
+                        if (token.find("Content-Disposition") != -1) 
+                            {
+                                // puts("here");
+                                ele->ContentDisposition = token;
+                                std::cout  << "ContentDisposition : " << token << std::endl;
+                            } 
+                            else {
+                                ele->Content += token;
+                                std::cout  << "content : " << token << std::endl;
+                            }
+                        if(os.eof() ||  token == this->response_items.bondary)
+                            break;
+                        std::getline(os, token, '\n');
+                    }
         if(!ele->ContentDisposition.empty() && !ele->Content.empty() )
         {
+                                // std::cout << ">>>>>>2>>>>" << ele->Content << std::endl;
+                                // std::cout << ">>>>>>2>>>>" << ele->ContentDisposition << std::endl;
                 this->response_items.lenghtbody +=  ele->Content.length();
                 // ele = new RequestBody({ele->ContentDisposition , ele->Content});
                 this->response_items.ChunkedBody.push_back(ele);
-                // std::cout << "|"  << ele->ContentDisposition << ele->Content  <<  "|"<< std::endl;
                 delete ele;
         }
-    //    for (const auto& it : this->response_items.ChunkedBody) {
-    //     std::cout << "Dispotio-content: " << it->ContentDisposition  << ", Content: " << it->Content<< std::endl;
-    }
+                }
+                        // std::getline(os, token, '\n');
     }
     else
     {
@@ -91,8 +104,6 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
         this->response_items.lenghtbody +=  this->response_items.Body.length();
     }
     //add check max size and Extension for Path
-    // if(this->response_items.Path.substr(this->response_items.Path.find('.') + 1) !=  this->response_items.Extension )
-    //     this->status_response_code = 400;
     std::cout << "|" << this->response_items.lenghtbody<< std::endl;
     if(this->response_items.method ==  "GET" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
@@ -374,8 +385,11 @@ int Requese::check_content_type(std::string &value)
     {
         token = token.substr(0, pos);
         value = value.substr(pos + 1);
-        if(token == "multipart/form-data")
+        std::cout << "hi: "<< token  << " "<< value.find("boundary=") + 1 << std::endl;
+        if(token == "Content-Type: multipart/form-data")
             this->response_items.bondary = value.substr(value.find("boundary=") + 9);
+        // std::cout << "Bondary: " << this->response_items.bondary  << std::endl;
+        // exit(0);
 
     }
     while(it <  contentTypes->length())
@@ -506,4 +520,47 @@ int Requese::check_more_element(std::string& key, std::string& value)
 const char *Requese::ErrorSyntax::what() const throw()
 {
     return "Error  requese Headers or body";
+}
+
+std::string Requese::find_location(std::map<std::string , s_location>& location, std::string& PATH)
+{
+    std::cout << PATH   << std::endl;
+    std::string Path = PATH;
+    int pos = 0;
+
+    pos = Path.rfind("/");
+   std::map<std::string , s_location>::iterator it;
+    while(pos != -1)
+    {
+        Path = Path.substr(0, pos);
+        it = location.find(Path);
+        if(it != location.end())
+        {
+            this->response_items.location->allowed_methods = it->second.allowed_methods;
+            this->response_items.location->root = it->second.root;
+            this->response_items.location->index = it->second.index;
+            this->response_items.location->cgi_extension = it->second.cgi_extension;
+            this->response_items.location->return_code_url = it->second.return_code_url;
+            this->response_items.location->upload_store_directory = it->second.upload_store_directory;
+            this->response_items.location->cgi_path = it->second.cgi_path;
+            this->response_items.location->upload_enable = it->second.upload_enable;
+            return Path;
+        }
+        pos = Path.rfind("/"); 
+    }
+    Path = "/";
+   it = location.find(Path);
+    if(it != location.end())
+    {
+        this->response_items.location->allowed_methods = it->second.allowed_methods;
+        this->response_items.location->root = it->second.root;
+        this->response_items.location->index = it->second.index;
+        this->response_items.location->cgi_extension = it->second.cgi_extension;
+        this->response_items.location->return_code_url = it->second.return_code_url;
+        this->response_items.location->upload_store_directory = it->second.upload_store_directory;
+        this->response_items.location->cgi_path = it->second.cgi_path;
+        this->response_items.location->upload_enable = it->second.upload_enable;
+    }
+        std::cout << "==========>" << std::endl;
+    return Path;
 }

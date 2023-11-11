@@ -46,6 +46,11 @@ void Response::build_response()
         std::cout << "DELETE METHOD" << std::endl;
         this->build_DELETE();
     }
+    else if(this->response_items.method == "POST")
+    {
+        std::cout << "POST METHOD" << std::endl;
+        this->build_POST();
+    }
     std::cout << response.str() << std::endl;
 }
 
@@ -85,7 +90,7 @@ std::string Response::get_Date()
 std::string Response::check_index_file()
 {
     DIR *dir = opendir("root/dir/");
-    std::string files[] = {"index", "index.html", "index.php"};
+    std::string files[] = {"index", "index.html", "index.php"}; // change by value depends on location
     if(dir == NULL)
         return "";
     struct dirent* entity;
@@ -111,19 +116,12 @@ void Response::build_GET()
 
        struct stat buffer;
         int         status;
-        // std::cout << "GET " << std::endl;
-        std::string URI = "root";
+        std::string URI = "root"; //change by value depends on location
 
         URI += this->response_items.Path;
         status = stat("root/dir/",  &buffer);
-        // std::cout << status << "|||||" << std::endl;
         if(status != -1)
         {
-            // response << "HTTP/1.1 200 ok\r\n";
-            // response << "Content-Type: " << this->get_Content_type() << "\r\n";
-            // response << "Server: " << this->response_items.server << "\r\n";
-            // response << "Date: " << this->get_Date() <<  "\r\n";
-            // response << "\r\n";
             if(this->response_items.Extension.empty() == 1)
             {
                 if(this->response_items.Path[this->response_items.Path.size() - 1] != '/')
@@ -190,21 +188,21 @@ void Response::build_GET()
 
                     } 
                     else{
-                        std::string cgi_path = ""; //change path with valid path from config;
-                        if(!cgi_path.empty())
+                        std::string cgi_path = "fgdasfiudfa"; //change path with valid path from config;
+                        if(!cgi_path.empty() && (this->response_items.Extension == "php" || this->response_items.Extension == "py"))
                         {
                             response << "HTTP/1.1 200 ok\r\n";
                             response << "Content-Length: 0\r\n";
                             response << "Connection: close\r\n";
                             response << "Date: " << this->get_Date() << "\r\n\r\n";
-                            //response << resturn of CGI;
+                            response << "resturn of CGI";
                         }
                         else
                         {
                             URI +=index;
                             if(this->get_permission(URI) == -1)
                                 this->not_found();
-                            else if(this->get_permission(URI) == -2)
+                             else if(this->get_permission(URI) == -2 ||  this->response_items.Extension == "php" || this->response_items.Extension == "py")
                             {
                                 response << "HTTP/1.1 403 Forbidden\r\n";
                                 response << "Content-Type: text/html\r\n";
@@ -218,7 +216,6 @@ void Response::build_GET()
                             else
                             {
                                 //file with permissions
-                                std::cout << URI << " here me" << std::endl;
                                 std::string content_body = read_file(URI);
                                 response << "HTTP/1.1 200 ok\r\n";
                                 response << "Content-Length: "<< content_body.length()<<"\r\n";
@@ -228,11 +225,7 @@ void Response::build_GET()
                             }
 
                             
-                        }
-                         // doesn't cgi in location 
-
-
-                    
+                        }                
                         } 
 
                 }
@@ -240,19 +233,19 @@ void Response::build_GET()
             else
             {
                  std::string cgi_path = ""; //change path with valid path from config;
-                if(!cgi_path.empty())
+                if(!cgi_path.empty() && (this->response_items.Extension == "php" || this->response_items.Extension == "py"))
                 {
                     response << "HTTP/1.1 200 ok\r\n";
                     response << "Content-Length: 0\r\n";
                     response << "Connection: close\r\n";
                     response << "Date: " << this->get_Date()<< "\r\n\r\n";
-                    //response << resturn of CGI;
+                    response << "resturn of CGI";
                 }
                 else
                 {
                      if(this->get_permission(URI) == -1)
                             this->not_found();
-                            else if(this->get_permission(URI) == -2)
+                            else if(this->get_permission(URI) == -2 ||  this->response_items.Extension == "php" || this->response_items.Extension == "py")
                             {
                                 response << "HTTP/1.1 403 Forbidden\r\n";
                                 response << "Content-Type: text/html\r\n";
@@ -287,7 +280,7 @@ void Response::build_DELETE()
 {
     struct stat buffer;
     int         status;
-    std::string URI = "root"; // get root form config;
+    std::string URI = "root"; //change path with valid path from config;
     std::cout << "DELETE HI "  << std::endl;
     URI += this->response_items.Path;
     status = stat(URI.c_str() ,  &buffer);
@@ -300,7 +293,6 @@ void Response::build_DELETE()
             std::string cgi_path = ""; //change path with valid path from config;
             if(!cgi_path.empty())
             {
-                // std::cout << URI << std::endl; 
                 std::string index = check_index_file();
                 if(index.empty())
                 {
@@ -313,16 +305,15 @@ void Response::build_DELETE()
                 }
                 else
                 {
-            std::cout << "ERROR" << std::endl;
                     // run cgi on requested file with DELTE REQUEST_METHOD;
                 }
             }
             else
             {
-                int res = remove_all_files();
+                int res = remove_all_files(URI.c_str());
                 if(res == 1)
                 {
-                // std::cout << "HTTP/1.1 403 Forbidden" << std::endl;
+                    std::cout << "ERROR" << std::endl;
                     response << "HTTP/1.1 403 Forbidden\r\n";
                     response << "Content-Type: text/plain" << "\r\n";
                     response << "Content-length: 0" << "\r\n";
@@ -375,6 +366,111 @@ void Response::build_DELETE()
 }
 
 
+void Response::build_POST()
+{
+    
+    struct stat buffer;
+    int         status;
+    std::string upload_enable = "on"; // replace it by location value
+    std::string upload_store_directory ="/root"; // replace it by location value
+    std::string URI = "root"; // get root form config;
+    std::string cgi_path = "adsgfjdsg"; // get valid value form config
+    std::cout << "POST HI "  << std::endl;
+    URI += this->response_items.Path;
+    status = stat(URI.c_str() ,  &buffer);
+    if(upload_enable == "off")
+    {
+        std::cout << "status: " << buffer.st_mode << std::endl;
+        if(status != -1)
+        {
+            if(!this->response_items.Extension.empty())
+            {
+                if(!cgi_path.empty())
+                {
+                        std::cout << "Returtn Code Depend on cgi ";
+                }
+                else
+                {
+                    response << "HTTP/1.1 403 Forbiden\r\n";
+                        response << "Location: " << this->response_items.Path << "/\r\n";
+                        response << "Content-Length: 0\r\n";
+                        response << "Content-Type: text/html";
+                        response << "Connection: close\r\n\r\n";
+                        // response << "";
+                }
+            }
+            else
+            {
+                if(this->response_items.Path[this->response_items.Path.size() - 1] == '/')
+                {
+                    response << "HTTP/1.1 301 Moved Permanently\r\n";
+                    response << "Location: " << this->response_items.Path << "/\r\n";
+                    response << "Content-Length: 0\r\n";
+                    response << "Connection: close\r\n\r\n";
+                }
+                else
+                {
+                    std::string index = this->check_index_file();
+                    if(index.empty())
+                    {
+                        response << "HTTP/1.1 403 Forbiden\r\n";
+                        response << "Location: " << this->response_items.Path << "/\r\n";
+                        response << "Content-Length: 0\r\n";
+                        response << "Content-Type: text/html";
+                        response << "Connection: close\r\n\r\n";
+                        // response << "";
+                    }
+                    else{
+                        if(cgi_path.empty())
+                        {
+                            response << "HTTP/1.1 403 Forbiden\r\n";
+                            response << "Location: " << this->response_items.Path << "/\r\n";
+                            response << "Content-Length: 0\r\n";
+                            response << "Content-Type: text/html";
+                            response << "Connection: close\r\n\r\n"; 
+                        }
+                        else
+                        {
+                            URI += index;
+                            std::cout << "Returtn Code Depend on cgi";
+                        }
+
+                    }
+
+                }
+            }
+                // std::cout << "supported upload mode: " << this->response_items.Extension << std::endl;
+        }
+        else
+        {
+            this->not_found();
+        }
+    }
+    else
+    {
+   
+        if(this->response_items.Headers.find("Content-Type")->second.find("multipart/form-data") != -1)
+        {
+                std::vector<RequestBody*>::iterator it;
+                it = this->response_items.ChunkedBody.begin();
+                while(it != this->response_items.ChunkedBody.end())
+                {
+                    // if(*(it).Content)
+                    // std::cout << "Content : " << (*it)->Content << std::endl;
+                    it++;
+                }
+        }
+            //  std::cout << "supported :" << std::endl;
+        response <<  "HTTP/1.1 202 Accepted" << "\r\n";
+        response << "Content-Length: 0" <<  "\r\n";
+
+
+    }
+         std::cout << "uplaod the Post Request Body" << std::endl;
+}
+
+
+
 int Response::get_permission(std::string& file)
 {
     if(access(file.c_str(), F_OK) == -1)
@@ -412,17 +508,16 @@ void  Response::not_found()
 
 
 
-int Response::remove_all_files()
+int Response::remove_all_files(const char *dirname)
 {
-     DIR *dir = opendir("root/dir/");
+    struct dirent* entity;
+     DIR *dir = opendir(dirname);
     if(dir == NULL)
         return -1;
-    struct dirent* entity;
-    int i = 0;
     entity = readdir(dir);
     while(entity != NULL)
     {
-        if(access(entity->d_name, W_OK) == -1)
+        if(access(entity->d_name, W_OK) != 0)
             return 1;
         remove(entity->d_name);
         entity = readdir(dir);

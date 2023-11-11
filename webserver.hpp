@@ -18,31 +18,55 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+
+ struct s_location
+{
+    std::string root;
+    std::string index;
+    std::string cgi_path;
+    std::string autoindex;
+    std::string cgi_extension;
+    std::string allowed_methods;
+    std::string return_code_url;
+    std::string upload_store_directory;
+    std::string upload_enable;
+} ;
+
         struct  RequestBody
        {
            std::string  ContentDisposition;
            std::string Content;
        };
 
-        struct http_items
+        class  http_items
         {
-
-            int chunked_body;
-            std::string method;
-            std::string Scheme_name;
-            std::string Path;
-            std::string Query_String ;
-            std::string Fragment_iden;
-            std::string http_version;
-            std::map<std::string , std::string> Headers;
-            std::vector<std::string> Req;
-            int lenghtbody;
-            std::string Body;
-            std::vector<RequestBody*> ChunkedBody;
-            std::string bondary;
-            std::map<std::string , std::string> EncodedFormbody;
-            std::string Extension;
-            std::string server;
+            public:
+                int chunked_body;
+                std::string method;
+                std::string Scheme_name;
+                std::string Path;
+                std::string Query_String ;
+                std::string Fragment_iden;
+                std::string http_version;
+                std::map<std::string , std::string> Headers;
+                std::vector<std::string> Req;
+                int lenghtbody;
+                std::string Body;
+                std::vector<RequestBody*> ChunkedBody;
+                std::string bondary;
+                std::map<std::string , std::string> EncodedFormbody;
+                std::string Extension;
+                std::string server;
+                s_location *location;
+            // std::string root;
+            // std::string index;
+            // std::string cgi_path;
+            // std::string autoindex;
+            // std::string cgi_extension;
+            // std::string allowed_methods;
+            // std::string return_code_url;
+            // std::string upload_store_directory;
+            // std::string upload_enable;
        };
 
        
@@ -53,6 +77,7 @@ class Requese {
     public:
         http_items response_items;
         std::vector<std::string> Initial_Request_Line;
+        
         int status_response_code;
        Requese(std::string req);
        void parser_init_line(std::string   Initial_Request_Line);
@@ -66,6 +91,7 @@ class Requese {
         int check_host(std::string& value);
         int  check_Transfer_Encoding(std::string& value);
         int  check_connection(std::string& value);
+        std::string find_location(std::map<std::string , s_location>& location, std::string& PATH);
     //    void  set_Initial_Request_line(std::string req) 
        class ErrorSyntax:  public std::exception{
             public:
@@ -92,12 +118,13 @@ class Response
         std::string get_Date();
         std::string check_index_file();
         void build_GET();
-        // void build_POST();
+        void build_POST();
         void build_DELETE();
         int get_permission(std::string& file);
         std::string read_file(const std::string& filename);
         void not_found();
-        int remove_all_files();
+        int remove_all_files(const char *dirname);
+
 };
 
 
