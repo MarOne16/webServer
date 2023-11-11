@@ -20,7 +20,6 @@ ConfigParser::ConfigParser(const char **argv)
 
 ConfigParser::~ConfigParser()
 {
-    // puts("ConfigParser destructor called.");
     // system("leaks a.out");
 }
 
@@ -90,6 +89,7 @@ void ConfigParser::feedServers()
     server_tmp.host = getHost();
     server_tmp.max_body_size = getMaxBodySize();
     server_tmp.error_pages = getErrorPages();
+    server_tmp.default_location = getRoot(this->content);
     feedLocations();
     server_tmp.locations = m_locations;
     m_servers[i++] = server_tmp;

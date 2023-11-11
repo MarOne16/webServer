@@ -31,6 +31,7 @@ int main(int argc, const char **argv)
                 std::cout << "cgi_path: " << it3->second.cgi_path << std::endl;
                 std::cout << "autoindex: " << it3->second.autoindex << std::endl;
                 std::cout << "cgi_extension: " << it3->second.cgi_extension << std::endl;
+                std::cout << "fastcgi_pass: " << it3->second.fastcgi_pass << std::endl;
                 std::cout << "allowed_methods: " << it3->second.allowed_methods << std::endl;
                 std::cout << "return_code_url: " << it3->second.return_code_url << std::endl;
                 std::cout << "upload_store_directory: " << it3->second.upload_store_directory << std::endl;

@@ -98,3 +98,14 @@ void ereaseContent(std::string &content, size_t pos, char dekimiter)
         content.erase(i--, 1);
     }
 }
+
+bool findFile(std::string path)
+{
+    std::ifstream file(path.c_str());
+    if (file.is_open())
+    {
+        file.close();
+        return true;
+    }
+    return false;
+}

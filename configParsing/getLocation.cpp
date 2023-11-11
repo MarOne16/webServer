@@ -13,7 +13,12 @@ bool ConfigParser::isInsidLocation(std::string location ,std::string toFind)
 std::string ConfigParser::getRoot(std::string location)
 {
     if (!isInsidLocation(location, "root"))
-        throw std::runtime_error("Root path is not aviabile.");
+    {
+        if (findFile("../pages_location/root.html"))
+            return (std::string("../pages_location/root.html"));
+        else
+            throw std::runtime_error("Root path is not available.");
+    }
     std::string root = "";
     size_t start = location.find("root");
     size_t end = location.find(';', start);
@@ -26,8 +31,7 @@ std::string ConfigParser::getRoot(std::string location)
             i--;
         }
     }
-    std::ifstream file(root.c_str());
-    if (!file.good())
+    if (findFile(root) == false)
         throw std::runtime_error("Root path is not valid.");
     return root;
 }
@@ -60,8 +64,7 @@ std::string ConfigParser::getCgiPath(std::string location)
             i--;
         }
     }
-    std::ifstream file(cgi_path.c_str());
-    if (!file.good())
+    if (findFile(cgi_path) == false)
         throw std::runtime_error("Cgi path is not valid.");
     return cgi_path;
 }
@@ -90,21 +93,46 @@ std::string ConfigParser::getAutoindex(std::string location)
 std::string ConfigParser::getCgiExtension(std::string location)
 {
     std::string cgi_extension = "";
-    for (std::string::iterator it = location.begin(); it != location.end(); it++)
+    size_t braket = location.find('(');
+    for (size_t i = 0; i < location.size(); i++)
     {
-        if (*it == '.')
+        if (location[i] == '.' && i < braket)
         {
             cgi_extension = "";
-            while (*(it) != '(')
+            while (location[i] != '(' && i < location.size())
             {
-                cgi_extension += *it;
-                it++;
+                cgi_extension += location[i];
+                i++;
             }
             break;
         }
     }
-    return cgi_extension;
+    return (cgi_extension);
+}
 
+
+std::string ConfigParser::getFastcgiPass(std::string location)
+{
+    std::string cgi_extension = getCgiExtension(location);
+    if (cgi_extension == "")
+        return "";
+    std::string fastcgi_pass = "";
+    size_t start = location.find("fastcgi_pass");
+    size_t end = location.find(';', start);
+    if (start == std::string::npos || end == std::string::npos)
+        throw std::runtime_error("No fastcgi pass found.");
+    fastcgi_pass = location.substr(start + 12, end - start - 12);
+    for (size_t i = 0; i < fastcgi_pass.size(); i++)
+    {
+        if (fastcgi_pass[i] == ' ')
+        {
+            fastcgi_pass.erase(i, 1);
+            i--;
+        }
+    }
+    if (fastcgi_pass == "")
+        throw std::runtime_error("Fastcgi pass is not found.");
+    return fastcgi_pass;
 }
 
 std::string ConfigParser::getAllowedMethods(std::string location)
@@ -173,9 +201,10 @@ void ConfigParser::feedLocations()
         tmp.index = getIndex(this->content.substr(start2, end));
         tmp.cgi_path = getCgiPath(this->content.substr(start, end));
         tmp.autoindex = getAutoindex(this->content.substr(start2, end));
+        tmp.fastcgi_pass = getFastcgiPass(this->content.substr(start, end));
         tmp.cgi_extension = getCgiExtension(this->content.substr(start, end));
-        tmp.allowed_methods = getAllowedMethods(this->content.substr(start2, end));
         tmp.return_code_url = getReturnCodeUrl(this->content.substr(start2, end));
+        tmp.allowed_methods = getAllowedMethods(this->content.substr(start2, end));
     }
     this->m_locations.insert(std::pair<std::string, location>(locationname, tmp));
     ereaseContent(this->content, start, ')');

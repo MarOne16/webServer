@@ -15,11 +15,10 @@
 #include "servers.hpp"
 
 ///multi serveurs whit multi clients 
-//TO   DO 
+//TODO 
 ///service_name     
 ///chankese request
 ///merege requset whit serveur 
-
 
 void ports(std::vector<int> &port, std::map<unsigned int , server> &data_serv)
 {
@@ -89,7 +88,6 @@ int main(int ac,const char **av)
 
     while (true)
     {
-        // int co;
         int ret = poll(fds.data(), fds.size(), -1);
         if (ret == -1)
         {
@@ -137,7 +135,9 @@ int main(int ac,const char **av)
                     }
                     else
                     {
+                        puts("this is the server");
                         std::cout << buf;
+                        data_conf.
                     }
                     // messgae wssel
                 }

@@ -21,6 +21,7 @@ typedef struct s_location
     std::string index;
     std::string cgi_path;
     std::string autoindex;
+    std::string fastcgi_pass;
     std::string cgi_extension;
     std::string allowed_methods;
     std::string return_code_url;
@@ -31,10 +32,12 @@ typedef struct s_server
 {
     std::string server_name;
     std::string host;
-    int port;
+    int         port;
+    std::string default_location;
     std::string max_body_size;
     std::map<std::string, std::string> error_pages;
     std::map<std::string, location> locations;
+    std::string request_content;
 } server;
 
 class ConfigParser
@@ -59,11 +62,11 @@ class ConfigParser
         void feedContent();
 
         // geters
-        int getPort();
-        unsigned int getNumber_ofServers();
-        std::string getServerName();
-        std::string getHost();
-        std::string getMaxBodySize();
+        int             getPort();
+        unsigned int    getNumber_ofServers();
+        std::string     getServerName();
+        std::string     getHost();
+        std::string     getMaxBodySize();
         std::map<std::string, std::string> getErrorPages();
         void feedLocations(); // feed m_locations
         bool isInsidLocation(std::string location ,std::string toFind);
@@ -71,6 +74,7 @@ class ConfigParser
         std::string getIndex(std::string location); // get index from location
         std::string getCgiPath(std::string location); // get cgi_path from location
         std::string getAutoindex(std::string location); // get autoindex from location
+        std::string getFastcgiPass(std::string location); // get fastcgi_pass from location
         std::string getCgiExtension(std::string location); // get cgi_extension from location
         std::string getAllowedMethods(std::string location); // get allowed_methods from location
         std::string getReturnCodeUrl(std::string location); // get return_code_url from location
@@ -85,3 +89,4 @@ std::list<std::string> split(std::string &str, std::string delimiter);
 bool isLast(std::string str, char delimiter);
 bool notIn(std::string str, std::string s);
 void ereaseContent(std::string &content, size_t pos, char dekimiter);
+bool findFile(std::string path);
