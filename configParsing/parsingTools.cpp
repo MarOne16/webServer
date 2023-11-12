@@ -101,11 +101,19 @@ void ereaseContent(std::string &content, size_t pos, char dekimiter)
 
 bool findFile(std::string path)
 {
-    std::ifstream file(path.c_str());
-    if (file.is_open())
-    {
-        file.close();
+    struct stat buffer;
+    if (stat(path.c_str(), &buffer) == 0)
         return true;
+    else 
+        return false;
+}
+
+bool ifClosed(std::string line)
+{
+    for (size_t i = 0; i < line.length(); i++)
+    {
+        if(line[i] == ';')
+            return true;
     }
     return false;
 }

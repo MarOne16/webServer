@@ -1,5 +1,15 @@
 #pragma once
 
+//colors
+#define RESET   "\033[0m"
+#define RED     "\033[31m"      /* Red */
+#define GREEN   "\033[32m"      /* Green */
+#define YELLOW  "\033[33m"      /* Yellow */
+#define BLUE    "\033[34m"      /* Blue */
+#define MAGENTA "\033[35m"      /* Magenta */
+#define CYAN    "\033[36m"      /* Cyan */
+
+
 #include <string>
 #include <vector>
 #include <map>
@@ -65,6 +75,7 @@ class ConfigParser
         int             getPort();
         unsigned int    getNumber_ofServers();
         std::string     getServerName();
+        std::string     getRootServ();
         std::string     getHost();
         std::string     getMaxBodySize();
         std::map<std::string, std::string> getErrorPages();
@@ -90,3 +101,4 @@ bool isLast(std::string str, char delimiter);
 bool notIn(std::string str, std::string s);
 void ereaseContent(std::string &content, size_t pos, char dekimiter);
 bool findFile(std::string path);
+bool ifClosed(std::string line);

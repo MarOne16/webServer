@@ -15,7 +15,7 @@ std::string ConfigParser::getRoot(std::string location)
     if (!isInsidLocation(location, "root"))
     {
         if (findFile("../pages_location/root.html"))
-            return (std::string("../pages_location/root.html"));
+            return ("../pages_location/root.html");
         else
             throw std::runtime_error("Root path is not available.");
     }
