@@ -34,9 +34,9 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
         } 
         //parser line-request 
         parser_init_line(response_items.Req[0]);
-
         // ckeck Headers and parser some special Headers
         Headers_elements();
+         std::cout << "hadi::" << this->status_response_code<< std::endl;
 
         //find match location
         find_location(lc, this->response_items.Path);
@@ -76,11 +76,11 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
                             {
                                 // puts("here");
                                 ele->ContentDisposition = token;
-                                std::cout  << "ContentDisposition : " << token << std::endl;
+                                // std::cout  << "ContentDisposition : " << token << std::endl;
                             } 
                             else {
                                 ele->Content += token;
-                                std::cout  << "content : " << token << std::endl;
+                                // std::cout  << "content : " << token << std::endl;
                             }
                         if(os.eof() ||  token == this->response_items.bondary)
                             break;
@@ -88,12 +88,11 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
                     }
         if(!ele->ContentDisposition.empty() && !ele->Content.empty() )
         {
-                                // std::cout << ">>>>>>2>>>>" << ele->Content << std::endl;
-                                // std::cout << ">>>>>>2>>>>" << ele->ContentDisposition << std::endl;
                 this->response_items.lenghtbody +=  ele->Content.length();
+                this->response_items.lenghtbody +=  ele->ContentDisposition.length();
                 // ele = new RequestBody({ele->ContentDisposition , ele->Content});
                 this->response_items.ChunkedBody.push_back(ele);
-                delete ele;
+                // delete ele;
         }
                 }
                         // std::getline(os, token, '\n');
@@ -103,8 +102,21 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
         this->response_items.Body =  req;
         this->response_items.lenghtbody +=  this->response_items.Body.length();
     }
+
+
+    //  std::vector<RequestBody*>::iterator it;
+    //             it = this->response_items.ChunkedBody.begin();
+    //             while(it != this->response_items.ChunkedBody.end())
+    //             {
+    //                 if(!(*it)->Content.empty() && !(*it)->ContentDisposition.empty())
+    //                     std::cout << "Content : " << (*it)->Content << std::endl;
+    //                     std::cout << "ContentDisposition : " << (*it)->ContentDisposition << std::endl;
+    //                 it++;
+    //             }
+    // exit(0);
     //add check max size and Extension for Path
-    std::cout << "|" << this->response_items.lenghtbody<< std::endl;
+
+   
     if(this->response_items.method ==  "GET" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
     if(this->response_items.method !=  "GET" && this->response_items.lenghtbody == 0)
@@ -234,6 +246,7 @@ void Requese::Headers_elements()
         this->response_items.Headers[key] = value;
         if(key.empty() || value.empty() || check_elemens(key) == 0 || check_more_element(key, value) == 0 )
         {
+            std::cout << "hna" << std::endl;
             this->status_response_code = 400;
             return ;
         }
@@ -244,14 +257,6 @@ void Requese::Headers_elements()
         this->status_response_code = 400;
         return ;
     }
-    // print HEaders Elements
-    // std::map<std::string, std::string>::iterator it1 = this->response_items.Headers.begin();
-    // while(it1 != this->response_items.Headers.end())
-    // {
-    //     // std::cout << it1->first  << "   "<< it1->second << std::endl;
-    //     it1++;
-    // }
-    // std::cout << this->status_response_code << std::endl;
 }
 
 
@@ -375,7 +380,7 @@ int Requese::check_content_type(std::string &value)
         "multipart/byteranges",
         "application/x-www-form-urlencoded",
         "application/graphql",
-        "application/vnd.api+json"
+        "application/vnd.api+json",
         // Add more as needed
     };
     int it = 0;
@@ -385,8 +390,7 @@ int Requese::check_content_type(std::string &value)
     {
         token = token.substr(0, pos);
         value = value.substr(pos + 1);
-        std::cout << "hi: "<< token  << " "<< value.find("boundary=") + 1 << std::endl;
-        if(token == "Content-Type: multipart/form-data")
+        if(token == "multipart/form-data")
             this->response_items.bondary = value.substr(value.find("boundary=") + 9);
         // std::cout << "Bondary: " << this->response_items.bondary  << std::endl;
         // exit(0);
@@ -394,9 +398,8 @@ int Requese::check_content_type(std::string &value)
     }
     while(it <  contentTypes->length())
     {
-        if( contentTypes[it]== token)
+        if(contentTypes[it].compare(token))
         {
-            // this->response_items.Extension = token.substr(token.rfind("/") + 1);
             return 1;
         }
 
@@ -509,7 +512,10 @@ int Requese::check_more_element(std::string& key, std::string& value)
     if(key == "Content-Length")
         return (this->is_alpha(value));
     if( key == "Content-Type")
+    {
+        std::cout << "hta " << std::endl;
         return check_content_type(value);
+    }
     if(key == "Transfer-Encoding")
         return check_Transfer_Encoding(value);
     if(key == "Connection")

@@ -15,7 +15,7 @@ Response::Response(int status, std::vector<std::string> init_line,  http_items r
 
 void Response::build_response()
 {
-    // std::cout << this->status << " <<<<"  << std::endl;
+    std::cout << this->status << " <<<<"  << std::endl;
     if(this->status == 400)
     {
         response << "HTTP/1.1 400 Bad Request\r\n";
@@ -73,6 +73,24 @@ std::string Response::get_Content_type()
 		return "image/jpg";
 	else
 		return "text/plain";
+}
+
+std::string Response::get_Content_type(std::string extension)
+{
+	// if (_request.get_header_value("Content-Type:").size())
+	// 	return _request.get_header_value("Content-Type:");
+	if (extension.compare("text/html; charset=UTF-8") == 0 || extension.compare("text/html;") == 0)
+		return ".html";
+	else if (extension.compare("application/json") == 0)
+		return ".json";
+	else if (extension.compare("image/x-icon") == 0)
+		return ".ico";
+	else if (extension.compare("image/jpeg") == 0)
+		return "jpeg";
+	else if (extension.compare("mage/jpg") == 0)
+		return ".jpg";
+	else
+		return ".txt";
 }
 
 
@@ -453,11 +471,46 @@ void Response::build_POST()
         {
                 std::vector<RequestBody*>::iterator it;
                 it = this->response_items.ChunkedBody.begin();
-                while(it != this->response_items.ChunkedBody.end())
+                std::string namefile;
+                std::ofstream file;
+                std::cout << "lenght of ChunkBody" <<  this->response_items.ChunkedBody.size() << std::endl;
+                int pos = 0;
+                int k = 0;
+                while(k < this->response_items.ChunkedBody.size())
                 {
-                    // if(*(it).Content)
-                    // std::cout << "Content : " << (*it)->Content << std::endl;
+                    if(!(*it)->ContentDisposition.empty())
+                    {
+                        pos = (*it)->ContentDisposition.find("name=");
+                        if(pos != -1)
+                        {
+                            namefile = (*it)->ContentDisposition.substr(pos + 5);
+                            pos = (*it)->ContentDisposition.find("Content-Disposition=");
+                            namefile += get_Content_type(trim((*it)->ContentDisposition.substr(pos + 21)));
+                            std::cout << "file name :" << namefile << std::endl;
+                        }
+                        else
+                        {
+
+                            std::cout << "not open file make response to handle error";
+                            return;
+                        }
+                        file.open(namefile);
+                        if(!file.is_open())
+                        {
+                            std::cout << "not open file make response to handle error";
+                        }
+                        
+                        
+                    }
+                    if(!(*it)->Content.empty())
+                    {
+                        file << (*it)->Content;
+                    }
+                        std::cout << "Content : " << (*it)->Content << std::endl;
+                        std::cout << "ContentDisposition : " << (*it)->ContentDisposition << std::endl;
+                     file.clear();
                     it++;
+                    k++;
                 }
         }
             //  std::cout << "supported :" << std::endl;
@@ -525,3 +578,22 @@ int Response::remove_all_files(const char *dirname)
     closedir(dir);
     return 0;
     }
+
+std::string Response::trim(std::string original)
+{
+    unsigned int begin_index = 0;
+    unsigned int i = 0;
+    if(original.size() == 0)
+        return "";
+    while(isblank(original[i]) != 0 && i <= original.size())
+    {
+        begin_index++;
+        i++;
+    }
+    i = original.size() - 1;
+    while(isblank(original[i]) != 0 && i != 0)
+        i--;
+     if(begin_index == original.size())
+        return "";
+    return original.substr(begin_index, i + 1);
+}

@@ -124,6 +124,8 @@ class Response
         std::string read_file(const std::string& filename);
         void not_found();
         int remove_all_files(const char *dirname);
+        std::string trim(std::string original);
+        std::string get_Content_type(std::string extension);
 
 };
 
