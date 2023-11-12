@@ -20,6 +20,21 @@
 ///chankese request
 ///merege requset whit serveur 
 
+void feedRequest(unsigned int index, std::map<unsigned int , server> &serv, std::string content)
+{
+    std::map<unsigned int , server>::iterator it = serv.begin();
+    while (it != serv.end())
+    {
+        if (it->first == index)
+        {
+            it->second.request_content = content;
+            break;
+        }
+        it++;
+    }
+    
+}
+
 void ports(std::vector<int> &port, std::map<unsigned int , server> &data_serv)
 {
     std::map<unsigned int , server>::iterator itb = data_serv.begin();
@@ -137,7 +152,8 @@ int main(int ac,const char **av)
                     {
                         puts("this is the server");
                         std::cout << buf;
-                        data_conf.
+                        //TODO feed Request using feedRequest(); 
+
                     }
                     // messgae wssel
                 }
