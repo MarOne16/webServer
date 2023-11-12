@@ -45,6 +45,7 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
         {
             pos = req.find("&");
             // std::cout << 
+                this->response_items.lenghtbody += req.length();
             while(pos != -1 && !req.empty())
             {
                 token = req.substr(0, pos);
@@ -55,6 +56,8 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
         }
         else if(response_items.Headers["Content-Type"].find("multipart/form-data") != -1)
         {
+            if(req[req.length() - 1] != '\n')
+                req +='\n';
             std::stringstream os(req);
             RequestBody *ele;
             int i = 0;    
@@ -63,39 +66,27 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
             while (std::getline(os, token, '\n'))
             {
                 ele = new RequestBody;
-                std:;
-            // exit(0);
-                // if(token != this->response_items.bondary)
-                // {
-                    // std::cout << token << std::endl;
                     while(token != this->response_items.bondary)
                     {
-                        // std::cout << "Supported " << std::endl;
-                        // std::cout << "hi" << std::endl;
                         if (token.find("Content-Disposition") != -1) 
-                            {
-                                // puts("here");
                                 ele->ContentDisposition = token;
-                                // std::cout  << "ContentDisposition : " << token << std::endl;
-                            } 
-                            else {
-                                ele->Content += token;
-                                // std::cout  << "content : " << token << std::endl;
-                            }
-                        if(os.eof() ||  token == this->response_items.bondary)
+                        else 
+                            ele->Content += token;
+                        if(os.eof())
                             break;
                         std::getline(os, token, '\n');
                     }
-        if(!ele->ContentDisposition.empty() && !ele->Content.empty() )
-        {
-                this->response_items.lenghtbody +=  ele->Content.length();
-                this->response_items.lenghtbody +=  ele->ContentDisposition.length();
-                // ele = new RequestBody({ele->ContentDisposition , ele->Content});
-                this->response_items.ChunkedBody.push_back(ele);
-                // delete ele;
-        }
-                }
-                        // std::getline(os, token, '\n');
+                    if(!ele->Content.empty() )
+                    {
+                        if(!ele->ContentDisposition.empty())
+                        {
+                            this->response_items.lenghtbody +=  ele->ContentDisposition.length();
+                        }
+                        this->response_items.lenghtbody +=  ele->Content.length();
+                        this->response_items.ChunkedBody.push_back(ele);
+                    }
+            }
+            std::cout << req <<  std::endl;
     }
     else
     {
@@ -104,19 +95,19 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
     }
 
 
-    //  std::vector<RequestBody*>::iterator it;
-    //             it = this->response_items.ChunkedBody.begin();
-    //             while(it != this->response_items.ChunkedBody.end())
-    //             {
-    //                 if(!(*it)->Content.empty() && !(*it)->ContentDisposition.empty())
-    //                     std::cout << "Content : " << (*it)->Content << std::endl;
-    //                     std::cout << "ContentDisposition : " << (*it)->ContentDisposition << std::endl;
-    //                 it++;
-    //             }
+     std::vector<RequestBody*>::iterator it;
+                it = this->response_items.ChunkedBody.begin();
+                while(it != this->response_items.ChunkedBody.end())
+                {
+                    // if(!(*it)->Content.empty() && !(*it)->ContentDisposition.empty())
+                        std::cout << "Content : " << (*it)->Content << std::endl;
+                        std::cout << "ContentDisposition : " << (*it)->ContentDisposition << std::endl;
+                    it++;
+                }
     // exit(0);
     //add check max size and Extension for Path
 
-   
+   std::cout << this->response_items.lenghtbody  << std::endl;
     if(this->response_items.method ==  "GET" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
     if(this->response_items.method !=  "GET" && this->response_items.lenghtbody == 0)
@@ -158,6 +149,7 @@ void Requese::parser_init_line(std::string  Initial_Request_Line)
     std::stringstream line_init(Initial_Request_Line);
     std::string part;
     std::vector<std::string> line;
+    std::string url_caracteres ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
     // std::vector<std::string>::iterator it;
     std::string Methode[3] = {"GET", "POST", "DELETE"};
     int i;
@@ -206,6 +198,16 @@ void Requese::parser_init_line(std::string  Initial_Request_Line)
     }
     if(this->response_items.http_version != "HTTP/1.1")
          this->status_response_code = 505;
+    i = 0;
+    while(this->response_items.Path[i])
+    {
+        if(url_caracteres.find(this->response_items.Path[i])  == -1)
+        {
+            this->status_response_code = 400;
+            break;
+        }
+        i++;
+    }
 
 }
 

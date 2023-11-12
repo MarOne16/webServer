@@ -473,9 +473,11 @@ void Response::build_POST()
                 it = this->response_items.ChunkedBody.begin();
                 std::string namefile;
                 std::ofstream file;
+                time_t current_time;
                 std::cout << "lenght of ChunkBody" <<  this->response_items.ChunkedBody.size() << std::endl;
                 int pos = 0;
                 int k = 0;
+                std::stringstream ss;
                 while(k < this->response_items.ChunkedBody.size())
                 {
                     if(!(*it)->ContentDisposition.empty())
@@ -488,38 +490,35 @@ void Response::build_POST()
                             namefile += get_Content_type(trim((*it)->ContentDisposition.substr(pos + 21)));
                             std::cout << "file name :" << namefile << std::endl;
                         }
-                        else
-                        {
-
-                            std::cout << "not open file make response to handle error";
-                            return;
-                        }
-                        file.open(namefile);
-                        if(!file.is_open())
-                        {
-                            std::cout << "not open file make response to handle error";
-                        }
-                        
-                        
                     }
+                    else
+                    {
+                        std::cout << "here is not valid content-disposition " << std::endl;
+                        time(&current_time);
+                        ss <<  static_cast<int>(current_time);
+                        namefile += ss.str(); 
+                        namefile  += ".txt";
+                        std::cout <<  namefile  << "not open file make response to handle error";
+                    }
+                    file.open(namefile);
+                    namefile.clear();
+                    if(!file.is_open())
+                    {
+                       this->not_found();
+                       return;
+                    } 
                     if(!(*it)->Content.empty())
                     {
                         file << (*it)->Content;
                     }
-                        std::cout << "Content : " << (*it)->Content << std::endl;
-                        std::cout << "ContentDisposition : " << (*it)->ContentDisposition << std::endl;
-                     file.clear();
+                     file.close();
                     it++;
                     k++;
                 }
         }
-            //  std::cout << "supported :" << std::endl;
         response <<  "HTTP/1.1 202 Accepted" << "\r\n";
         response << "Content-Length: 0" <<  "\r\n";
-
-
     }
-         std::cout << "uplaod the Post Request Body" << std::endl;
 }
 
 
@@ -572,7 +571,7 @@ int Response::remove_all_files(const char *dirname)
     {
         if(access(entity->d_name, W_OK) != 0)
             return 1;
-        remove(entity->d_name);
+         ;
         entity = readdir(dir);
     }
     closedir(dir);
