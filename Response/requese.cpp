@@ -1,10 +1,10 @@
 #include "./webserver.hpp"
-#include "webserver.hpp"
+// #include "webserver.hpp"
 
 
 // GET /path/to/file/index.html HTTP/1.0 \r\n
 
-Requese::Requese(std::string req, server& server_date):req(req),status_response_code(200)
+Requese::Requese(std::string req, server& server_data):req(req),status_response_code(200)
 {
     // this->response_items = new http_items;
     this->response_items.location = new s_location;
@@ -32,13 +32,13 @@ Requese::Requese(std::string req, server& server_date):req(req),status_response_
             // std::cout << token << "\n";
             i++;
         } 
+        //find match location
+        find_location(server_data, this->response_items.Path);
         //parser line-request 
-        parser_init_line(response_items.Req[0], );
+        parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
         // ckeck Headers and parser some special Headers
         Headers_elements();
 
-        //find match location
-        find_location(lc, this->response_items.Path);
         // store body 
         if(response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
         {
@@ -59,7 +59,7 @@ Requese::Requese(std::string req, server& server_date):req(req),status_response_
                 req +='\n';
             std::stringstream os(req);
             RequestBody *ele;
-            int i = 0;    
+            // int i = 0;    
             std::cout << "elel->" << this->response_items.bondary << std::endl;
             // exit(0);
             while (std::getline(os, token, '\n'))
@@ -149,7 +149,8 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
     std::string part;
     std::vector<std::string> line;
     std::string url_caracteres ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
-    std::vector<std::string> Methode = split_v(method, ' ');
+    std::string del = " ";
+    std::vector<std::string> Methode = split_v(methods, del);
     int i;
     while(line_init >> part)
         line.push_back(part);
@@ -180,7 +181,7 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
     if(line.size() != 3)
         this->status_response_code = 400;
     i = 0;
-    while(i < Method0.size())
+    while(i < Methode.size())
     {
         if(Methode[i] == line[0])
             break;
@@ -373,7 +374,7 @@ int Requese::check_content_type(std::string &value)
         "application/vnd.api+json",
         // Add more as needed
     };
-    int it = 0;
+    unsigned int it = 0;
     token = value;
     pos = token.find(";");
     if(pos != -1)
@@ -408,7 +409,7 @@ int Requese::check_Transfer_Encoding(std::string& value)
             "identity"
         // Add more as needed
     };
-    int it =  0;
+    unsigned  it =  0;
     while(it < transferEncodings->length())
     {
         if(value == "chunked")
@@ -483,7 +484,7 @@ int Requese::check_connection(std::string& value)
         "Sec-WebSocket-Accept"
         // Add more as needed
     };
-    int  it = 0;
+    unsigned int  it = 0;
     while(it <  connectionValues->length())
     {
         if(connectionValues[it] == value)

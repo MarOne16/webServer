@@ -7,7 +7,7 @@ FILES  = ./configParsing/getLocation.cpp \
 		./Response/mainResponse.cpp \
 		./Response/requese.cpp \
 		./Response/response.cpp \
-		./Response/tool.cpp \
+		./Response/tools.cpp \
 		./serveurs-clients/servers.cpp 
 
 OBJS   = $(FILES:.cpp=.o)

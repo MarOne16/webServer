@@ -36,6 +36,7 @@ typedef struct s_location
     std::string allowed_methods;
     std::string return_code_url;
     std::string upload_store_directory;
+    std::string upload_enable;
 } location;
 
 typedef struct s_server
