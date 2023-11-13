@@ -2,7 +2,7 @@
 
 
 
-Response::Response(int status, std::vector<std::string> init_line,  http_items response_items)
+Response::Response(int status, std::vector<std::string> init_line,  http_items& response_items)
 {
     // this->status = status;
     this->status = status;
@@ -108,12 +108,12 @@ std::string Response::get_Date()
 std::string Response::check_index_file()
 {
     DIR *dir = opendir("root/dir/");
-    std::string files[] = {"index", "index.html", "index.php"}; // change by value depends on location
+    std::vector<std::string>files = this.http_items.location->index; // change by value depends on location
     if(dir == NULL)
         return "";
     struct dirent* entity;
     int i = 0;
-    while(i < files->length())
+    while(i < files->size())
     {
         entity = readdir(dir);
         while(entity != NULL)
@@ -134,10 +134,14 @@ void Response::build_GET()
 
        struct stat buffer;
         int         status;
-        std::string URI = "root"; //change by value depends on location
+        std::string URI = this->response_items.location->root //change by value depends on location
+        std::string get_auto_index = this->response_items.location->autoindex; // change by getter 
+        std::string cgi_path = this->response_items.location->cgi_path //change path with valid path from config;
+        std::string index;
+        std::string autoIndexPage;
 
         URI += this->response_items.Path;
-        status = stat("root/dir/",  &buffer);
+        status = stat(URI,  &buffer);
         if(status != -1)
         {
             if(this->response_items.Extension.empty() == 1)
@@ -151,9 +155,7 @@ void Response::build_GET()
                 } 
                 else
                 {
-                    std::string index  =  this->check_index_file();
-                    std::cout << "---------------> :" << index << "\r\n";
-                    std::string get_auto_index = "on"; // change by getter 
+                    index  =  this->check_index_file();
                     if(index.empty())
                     {
                         DIR *dir = opendir(this->response_items.Path.c_str());
@@ -173,8 +175,6 @@ void Response::build_GET()
                             response << "Content-Length: 0\r\n";
                             response << "Connection: close\r\n";
                             response << "Date: " << this->get_Date()<< "\r\n\r\n";
-                            
-                            std::string autoIndexPage;
                                     autoIndexPage = "<!DOCTYPE html>\n<html lang=\"en\">\n\
                                                     <head>\n\
                                                     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\
@@ -186,7 +186,6 @@ void Response::build_GET()
                             entity = readdir(dir);
                             while(entity != NULL)
                             {
-                                puts("hi");
                                 std::string filename = entity->d_name;
                                 if(entity->d_type == DT_DIR)
                                     filename += '/';
@@ -206,7 +205,6 @@ void Response::build_GET()
 
                     } 
                     else{
-                        std::string cgi_path = "fgdasfiudfa"; //change path with valid path from config;
                         if(!cgi_path.empty() && (this->response_items.Extension == "php" || this->response_items.Extension == "py"))
                         {
                             response << "HTTP/1.1 200 ok\r\n";
@@ -250,7 +248,7 @@ void Response::build_GET()
             }
             else
             {
-                 std::string cgi_path = ""; //change path with valid path from config;
+                //  std::string cgi_path = ""; //change path with valid path from config;
                 if(!cgi_path.empty() && (this->response_items.Extension == "php" || this->response_items.Extension == "py"))
                 {
                     response << "HTTP/1.1 200 ok\r\n";
@@ -263,26 +261,26 @@ void Response::build_GET()
                 {
                      if(this->get_permission(URI) == -1)
                             this->not_found();
-                            else if(this->get_permission(URI) == -2 ||  this->response_items.Extension == "php" || this->response_items.Extension == "py")
-                            {
-                                response << "HTTP/1.1 403 Forbidden\r\n";
-                                response << "Content-Type: text/html\r\n";
-                                response << "Content-Length: 46"<< "\r\n";
-                                response << "Server: " << this->response_items.server << "\r\n";
-                                response << "Date: " << this->get_Date() <<  "\r\n";
-                                response << "\r\n"; // Blank line to separate headers and body
-                                response << "You don't have permission to access the requested resource.";
+                    else if(this->get_permission(URI) == -2 ||  this->response_items.Extension == "php" || this->response_items.Extension == "py")
+                    {
+                        response << "HTTP/1.1 403 Forbidden\r\n";
+                        response << "Content-Type: text/html\r\n";
+                        response << "Content-Length: 46"<< "\r\n";
+                        response << "Server: " << this->response_items.server << "\r\n";
+                        response << "Date: " << this->get_Date() <<  "\r\n";
+                        response << "\r\n"; // Blank line to separate headers and body
+                        response << "You don't have permission to access the requested resource.";
 
-                            }
-                            else
-                            {
-                                std::string content_body = read_file(URI);
-                                response << "HTTP/1.1 200 ok\r\n";
-                                response << "Content-Length: "<< content_body.length()<<"\r\n";
-                                response << "Connection: close\r\n";
-                                response << "Date: " << this->get_Date() << "\r\n\r\n";
-                                response << content_body;
-                            }
+                    }
+                    else
+                    {
+                        std::string content_body = read_file(URI);
+                        response << "HTTP/1.1 200 ok\r\n";
+                        response << "Content-Length: "<< content_body.length()<<"\r\n";
+                        response << "Connection: close\r\n";
+                        response << "Date: " << this->get_Date() << "\r\n\r\n";
+                        response << content_body;
+                    }
                     
                 }
             }
@@ -298,7 +296,9 @@ void Response::build_DELETE()
 {
     struct stat buffer;
     int         status;
-    std::string URI = "root"; //change path with valid path from config;
+    std::string URI = this->response_items.location->root //change by value depends on location
+    std::string get_auto_index = this->response_items.location->autoindex; // change by getter 
+    std::string cgi_path = this->response_items.location->cgi_path //change path with valid path from config;
     std::cout << "DELETE HI "  << std::endl;
     URI += this->response_items.Path;
     status = stat(URI.c_str() ,  &buffer);
@@ -308,7 +308,6 @@ void Response::build_DELETE()
      {
         if(this->response_items.Path[this->response_items.Path.size() - 1] == '/')
         {
-            std::string cgi_path = ""; //change path with valid path from config;
             if(!cgi_path.empty())
             {
                 std::string index = check_index_file();
@@ -361,11 +360,8 @@ void Response::build_DELETE()
      }
      else
        {
-        std::string cgi_path = ""; //change path with valid path from config;
         if(cgi_path.empty())
         {
-            // std::cout << URI << std::endl; 
-            // URI +=this->response_items.Path;
             remove(URI.c_str());
             response << "HTTP/1.1 204 NO Content\r\n";
             response << "Content-Type: text/plain" << "\r\n";
@@ -389,12 +385,20 @@ void Response::build_POST()
     
     struct stat buffer;
     int         status;
-    std::string upload_enable = "on"; // replace it by location value
-    std::string upload_store_directory ="/root"; // replace it by location value
-    std::string URI = "root"; // get root form config;
-    std::string cgi_path = "adsgfjdsg"; // get valid value form config
-    std::cout << "POST HI "  << std::endl;
+    std::string upload_enable = this->response_items.location->upload_enable; // replace it by location value
+    std::string upload_store_directory = this->response_items.location->upload_store_directory;; // replace it by location value
+    std::string URI = this->response_items.location->root //change by value depends on location
+    std::string get_auto_index = this->response_items.location->autoindex; // change by getter 
+    std::string cgi_path = this->response_items.location->cgi_path //change path with valid path from config;
+    std::string namefile;
+    std::ofstream file;
+    time_t current_time;
     URI += this->response_items.Path;
+    std::string index ;
+    int pos = 0;
+    int k = 0;
+    std::stringstream ss;
+    
     status = stat(URI.c_str() ,  &buffer);
     if(upload_enable == "off")
     {
@@ -428,7 +432,7 @@ void Response::build_POST()
                 }
                 else
                 {
-                    std::string index = this->check_index_file();
+                    index = this->check_index_file();
                     if(index.empty())
                     {
                         response << "HTTP/1.1 403 Forbiden\r\n";
@@ -471,13 +475,7 @@ void Response::build_POST()
         {
                 std::vector<RequestBody*>::iterator it;
                 it = this->response_items.ChunkedBody.begin();
-                std::string namefile;
-                std::ofstream file;
-                time_t current_time;
                 std::cout << "lenght of ChunkBody" <<  this->response_items.ChunkedBody.size() << std::endl;
-                int pos = 0;
-                int k = 0;
-                std::stringstream ss;
                 while(k < this->response_items.ChunkedBody.size())
                 {
                     if(!(*it)->ContentDisposition.empty())

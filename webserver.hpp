@@ -32,6 +32,19 @@
     std::string upload_enable;
 } ;
 
+typedef struct s_server
+{
+    std::string server_name;
+    std::string host;
+    int         port;
+    std::string default_location;
+    std::string max_body_size;
+    std::map<std::string, std::string> error_pages;
+    std::map<std::string, location> locations;
+    std::string request_content;
+} server;
+
+
         struct  RequestBody
        {
            std::string  ContentDisposition;
@@ -79,8 +92,8 @@ class Requese {
         std::vector<std::string> Initial_Request_Line;
         
         int status_response_code;
-       Requese(std::string req);
-       void parser_init_line(std::string   Initial_Request_Line);
+       Requese(std::string req, server& server_data);
+       void parser_init_line(std::string   Initial_Request_Line, std::string& methods);
        void Headers_elements();
        int check_elemens(std::string& key);
        int is_alpha(std::string value);
@@ -91,7 +104,8 @@ class Requese {
         int check_host(std::string& value);
         int  check_Transfer_Encoding(std::string& value);
         int  check_connection(std::string& value);
-        std::string find_location(std::map<std::string , s_location>& location, std::string& PATH);
+        // std::string find_location(std::map<std::string , s_location>& location, std::string& PATH);
+        std::string find_location(server& server_data, std::string& PATH);
     //    void  set_Initial_Request_line(std::string req) 
        class ErrorSyntax:  public std::exception{
             public:
@@ -112,7 +126,7 @@ class Response
         std::string HTTP_NOT_SUPPORTED;
         std::string Resource_not_found;
     public:
-        Response(int status,  std::vector<std::string> init_line,  http_items response_items);
+        Response(int status,  std::vector<std::string> init_line,  http_items& response_items);
         void build_response();
         std::string get_Content_type();
         std::string get_Date();
@@ -130,4 +144,6 @@ class Response
 };
 
 
+
+std::list<std::string> split(std::string &str, std::string delimiter)
 #endif

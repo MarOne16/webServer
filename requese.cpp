@@ -4,7 +4,7 @@
 
 // GET /path/to/file/index.html HTTP/1.0 \r\n
 
-Requese::Requese(std::string req):req(req),status_response_code(200)
+Requese::Requese(std::string req, server& server_date):req(req),status_response_code(200)
 {
     // this->response_items = new http_items;
     this->response_items.location = new s_location;
@@ -33,10 +33,9 @@ Requese::Requese(std::string req):req(req),status_response_code(200)
             i++;
         } 
         //parser line-request 
-        parser_init_line(response_items.Req[0]);
+        parser_init_line(response_items.Req[0], );
         // ckeck Headers and parser some special Headers
         Headers_elements();
-         std::cout << "hadi::" << this->status_response_code<< std::endl;
 
         //find match location
         find_location(lc, this->response_items.Path);
@@ -144,14 +143,13 @@ std::string Requese::trim(std::string original)
 }
 
 
-void Requese::parser_init_line(std::string  Initial_Request_Line)
+void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& methods )
 {
     std::stringstream line_init(Initial_Request_Line);
     std::string part;
     std::vector<std::string> line;
     std::string url_caracteres ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
-    // std::vector<std::string>::iterator it;
-    std::string Methode[3] = {"GET", "POST", "DELETE"};
+    std::vector<std::string> Methode = split(method, ' ');
     int i;
     while(line_init >> part)
         line.push_back(part);
@@ -179,11 +177,10 @@ void Requese::parser_init_line(std::string  Initial_Request_Line)
         this->response_items.Extension = this->response_items.Path.substr(this->response_items.Path.rfind(".") + 1);
     else
          this->response_items.Extension  = "";
-     std::cout <<  "|" <<  this->response_items.Extension << std::endl;
     if(line.size() != 3)
         this->status_response_code = 400;
     i = 0;
-    while(i < 3)
+    while(i < Method0.size())
     {
         if(Methode[i] == line[0])
             break;
@@ -191,10 +188,7 @@ void Requese::parser_init_line(std::string  Initial_Request_Line)
     }
     if(i == 3)
     {
-        if(line[0] == "HEAD")
             this->status_response_code = 405;
-        else
-            this->status_response_code = 400;
     }
     if(this->response_items.http_version != "HTTP/1.1")
          this->status_response_code = 505;
@@ -223,12 +217,6 @@ void Requese::Headers_elements()
     while(it !=  this->response_items.Req.end())
     {
         pos = (*it).find(":");
-        // break;
-        // if(*it[pos + 1]) == ' ')
-        // {
-        //     this->status_response_code = 400;
-        //     break;
-        // }
         if(pos == -1)
         {
             this->status_response_code = 400;
@@ -530,10 +518,11 @@ const char *Requese::ErrorSyntax::what() const throw()
     return "Error  requese Headers or body";
 }
 
-std::string Requese::find_location(std::map<std::string , s_location>& location, std::string& PATH)
+std::string Requese::find_location(server& server_data, std::string& PATH)
 {
     std::cout << PATH   << std::endl;
     std::string Path = PATH;
+    std::map<std::string , s_location> location = server_data.locations;
     int pos = 0;
 
     pos = Path.rfind("/");
