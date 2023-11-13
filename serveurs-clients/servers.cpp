@@ -12,7 +12,7 @@
 
 // 1.1.7.1.3.5.8.3.8
 
-#include "servers.hpp"
+#include "../Response/webserver.hpp"
 
 ///multi serveurs whit multi clients 
 //TODO 
@@ -33,6 +33,17 @@ void feedRequest(unsigned int index, std::map<unsigned int , server> &serv, std:
         it++;
     }
     
+}
+std::string  sendResponse(unsigned int index, std::map<unsigned int , server> &serv)
+{
+    std::map<unsigned int , server>::iterator it = serv.begin();
+    while (it != serv.end())
+    {
+        if (it->first == index)
+            return(Get_response(it->second));
+        it++;
+    }
+    return ("");
 }
 
 void ports(std::vector<int> &port, std::map<unsigned int , server> &data_serv)
@@ -64,6 +75,7 @@ int main(int ac,const char **av)
     std::vector<struct sockaddr_in> addresses;
     std::vector<socklen_t> addresselent;
     std::vector<int> new_cont;
+    std::string respense;
     ports(port, data_conf.m_servers);
     for (unsigned int i = 0; i < data_conf.getNumber_ofServers(); i++)
     {
@@ -152,9 +164,13 @@ int main(int ac,const char **av)
                     {
                         puts("this is the server");
                         std::cout << buf;
-                        //TODO feed Request using feedRequest(); 
+                        feedRequest((unsigned int )i, data_conf.m_servers, buf);
+                        //TODO send response to client
+                        respense = sendResponse(i, data_conf.m_servers);
+                        ////////////////////////////////////////////////
 
                     }
+
                     // messgae wssel
                 }
             }
