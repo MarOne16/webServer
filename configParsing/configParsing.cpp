@@ -262,29 +262,53 @@ unsigned int ConfigParser::getNumber_ofServers()
 
 std::string ConfigParser::getRootServ()
 {
-    size_t first = content.find("root");
-    if (first == std::string::npos)
+    if (content.find("root") == std::string::npos)
+        return "check default location";
+    if (!ifOutsideLocation(content))
+        return "one of location has root";
+    std::string root = "";
+    size_t pos = content.find("root");
+    for (size_t i = pos + 4; i < content.length(); i++)
     {
-        if (findFile("../pages_location/root.html"))
-            return ("../pages_location/root.html");
-        else
-            throw std::runtime_error("Root path is not available.");
-    }
-    std::string Root = "";
-    for (size_t i = first + 4; i < content.length(); i++)
-    {
-        if (content[i] == ' ')
-            i++;
-        if (content[i] == ';')
+        if (content[i] == ' ' || content[i] == '\t')
+            continue;
+        if (content[i] == ';' || content[i] == '\n')
         {
-            Root += content[i];
+            if (content[i] == ';')
+                root += content[i];
             break;
         }
-        Root += content[i];
+        root += content[i];
     }
-    if (!ifClosed(Root) || !findFile(Root.erase((Root.length() - 1), 1)))
-        throw std::runtime_error("error in root path.");
-    ereaseContent(content, first, ';');
-    std::cout << MAGENTA << Root << RESET << std::endl;
-    return (Root);
+    if (!ifClosed(root))
+        throw std::runtime_error("Root directive is not closed.");
+    return root.erase(root.length() - 1, 1);
+}
+
+bool ConfigParser::ifOutsideLocation(std::string line)
+{
+    size_t first_pos = content.find(line);
+    size_t second_pos = first_pos + line.length();
+    for (size_t i = 0; i < content.length(); i++)
+    {
+        size_t first = 0;
+        size_t second = 0;
+        if (content[i] == '(')
+        {
+            first = i;
+            for (size_t j = i; j < content.length(); j++)
+            {
+                if (content[j] == ')')
+                {
+                    second = j;
+                    break;
+                }
+            }
+            if (first < first_pos && second > second_pos)
+                return false;
+            if (second != 0)
+                i = second;
+        }
+    }
+    return true;
 }

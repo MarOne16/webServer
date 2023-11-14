@@ -10,30 +10,28 @@ bool ConfigParser::isInsidLocation(std::string location ,std::string toFind)
     return false;
 }
 
-std::string ConfigParser::getRoot(std::string location)
+std::string ConfigParser::getRootLocation(std::string location)
 {
     if (!isInsidLocation(location, "root"))
-    {
-        if (findFile("../pages_location/root.html"))
-            return ("../pages_location/root.html");
-        else
-            throw std::runtime_error("Root path is not available.");
-    }
+        return "";
     std::string root = "";
     size_t start = location.find("root");
-    size_t end = location.find(';', start);
-    root = location.substr(start + 5, end - start - 5);
-    for (size_t i = 0; i < root.size(); i++)
+    for (size_t i = start + 4; i < location.length(); i++)
     {
-        if (root[i] == ' ')
+        if (location[i] == ' ' || location[i] == '\t')
+            continue;
+        if (location[i] == ';' || location[i] == '\n')
         {
-            root.erase(i, 1);
-            i--;
+            if (location[i] == ';')
+                root += location[i];
+            break;
         }
+        root += location[i];
+        location.erase(i--, 1);
     }
-    if (findFile(root) == false)
-        throw std::runtime_error("Root path is not valid.");
-    return root;
+    if (!ifClosed(root))
+        throw std::runtime_error("Root Location directive is not closed.");
+    return root.erase(root.length() - 1, 1);
 }
 
 std::string ConfigParser::getIndex(std::string location)
@@ -42,8 +40,22 @@ std::string ConfigParser::getIndex(std::string location)
         return "";
     std::string index;
     size_t start = location.find("index");
-    size_t end = location.find(';', start);
-    index = location.substr(start + 6, end - start - 6);
+    for (size_t i = start + 5; i < location.length(); i++)
+    {
+        if (location[i] == ' ' || location[i] == '\t')
+            continue;
+        if (location[i] == ';' || location[i] == '\n')
+        {
+            if (location[i] == ';')
+                index += location[i];
+            break;
+        }
+        index += location[i];
+        location.erase(i--, 1);
+    }
+    if (!ifClosed(index))
+        throw std::runtime_error("Index directive is not closed.");
+    index.erase(index.length() - 1, 1);
     return index;
 }
 
@@ -53,132 +65,149 @@ std::string ConfigParser::getCgiPath(std::string location)
     if (cgi_extension == "")
         return "";
     std::string cgi_path = "";
-    size_t start = location.find("root");
-    size_t end = location.find(';', start);
-    cgi_path = location.substr(start + 5, end - start - 5);
-    for (size_t i = 0; i < cgi_path.size(); i++)
+    size_t start = location.find("cgi_path");
+    for (size_t i = start + 8; i < location.length(); i++)
     {
-        if (cgi_path[i] == ' ')
+        if (location[i] == ' ' || location[i] == '\t')
+            continue;
+        if (location[i] == ';' || location[i] == '\n')
         {
-            cgi_path.erase(i, 1);
-            i--;
+            if (location[i] == ';')
+                cgi_path += location[i];
+            break;
         }
+        cgi_path += location[i];
+        location.erase(i--, 1);
     }
-    if (findFile(cgi_path) == false)
-        throw std::runtime_error("Cgi path is not valid.");
+    if (!ifClosed(cgi_path))
+        throw std::runtime_error("Cgi path directive is not closed.");
+    cgi_path.erase(cgi_path.length() - 1, 1);
     return cgi_path;
 }
 
 std::string ConfigParser::getAutoindex(std::string location)
 {
     if (!isInsidLocation(location, "autoindex"))
-        return "";
+        return "on";
     std::string autoindex = "";
     size_t start = location.find("autoindex");
-    size_t end = location.find(';', start);
-    autoindex = location.substr(start + 10, end - start - 10);
-    for (size_t i = 0; i < autoindex.size(); i++)
+    for (size_t i = start + 9; i < location.length(); i++)
     {
-        if (autoindex[i] == ' ')
+        if (location[i] == ' ' || location[i] == '\t')
+            continue;
+        if (location[i] == ';' || location[i] == '\n')
         {
-            autoindex.erase(i, 1);
-            i--;
+            if (location[i] == ';')
+                autoindex += location[i];
+            break;
         }
+        autoindex += location[i];
+        location.erase(i--, 1);
     }
-    if (autoindex != "on" && autoindex != "off")
+    if (!ifClosed(autoindex))
+        throw std::runtime_error("Autoindex directive is not closed.");
+    autoindex.erase(autoindex.length() - 1, 1);
+    if (autoindex != "on" && autoindex != "off" && autoindex != "ON" && autoindex != "OFF")
         throw std::runtime_error("autoindex must be on or off.");
     return autoindex;
 }
 
 std::string ConfigParser::getCgiExtension(std::string location)
 {
+    if (!isInsidLocation(location, "cgi_extension") || !ifCgi(location))
+        return "";
     std::string cgi_extension = "";
-    size_t braket = location.find('(');
-    for (size_t i = 0; i < location.size(); i++)
+    size_t start = location.find("cgi_extension");
+    for (size_t i = start + 13; i < location.length(); i++)
     {
-        if (location[i] == '.' && i < braket)
+        if (location[i] == ' ' || location[i] == '\t')
+            continue;
+        if (location[i] == ';' || location[i] == '\n')
         {
-            cgi_extension = "";
-            while (location[i] != '(' && i < location.size())
-            {
+            if (location[i] == ';')
                 cgi_extension += location[i];
-                i++;
-            }
             break;
         }
+        cgi_extension += location[i];
+        location.erase(i--, 1);
     }
-    return (cgi_extension);
+    if (!ifClosed(cgi_extension))
+        throw std::runtime_error("Cgi extension directive is not closed.");
+    cgi_extension.erase(cgi_extension.length() - 1, 1);
+    return cgi_extension;
 }
 
 
 std::string ConfigParser::getFastcgiPass(std::string location)
 {
-    std::string cgi_extension = getCgiExtension(location);
-    if (cgi_extension == "")
+    if (!ifCgi(location) || !isInsidLocation(location, "fastcgi_pass"))
         return "";
     std::string fastcgi_pass = "";
     size_t start = location.find("fastcgi_pass");
-    size_t end = location.find(';', start);
-    if (start == std::string::npos || end == std::string::npos)
-        throw std::runtime_error("No fastcgi pass found.");
-    fastcgi_pass = location.substr(start + 12, end - start - 12);
-    for (size_t i = 0; i < fastcgi_pass.size(); i++)
+    for (size_t i = start + 12; i < location.length(); i++)
     {
-        if (fastcgi_pass[i] == ' ')
+        if (location[i] == ' ' || location[i] == '\t')
+            continue;
+        if (location[i] == ';' || location[i] == '\n')
         {
-            fastcgi_pass.erase(i, 1);
-            i--;
+            if (location[i] == ';')
+                fastcgi_pass += location[i];
+            break;
         }
+        fastcgi_pass += location[i];
+        location.erase(i--, 1);
     }
-    if (fastcgi_pass == "")
-        throw std::runtime_error("Fastcgi pass is not found.");
+    if (!ifClosed(fastcgi_pass))
+        throw std::runtime_error("Fastcgi pass directive is not closed.");
+    fastcgi_pass.erase(fastcgi_pass.length() - 1, 1);
     return fastcgi_pass;
 }
 
 std::string ConfigParser::getAllowedMethods(std::string location)
 {
-    std::string methods = "";
-    start:
     if (!isInsidLocation(location, "allow"))
-        return methods;
+        return "";
     std::string allowed_methods = "";
     size_t start = location.find("allow");
-    size_t end = location.find(';', start);
-    allowed_methods = location.substr(start + 5, end - start - 5);
-    for (size_t i = 0; i < allowed_methods.size(); i++)
+    for (size_t i = start + 5; i < location.length(); i++)
     {
-        if (allowed_methods[i] == ' ')
+        if (location[i] == ';' || location[i] == '\n')
         {
-            allowed_methods.erase(i, 1);
-            i--;
+            if (location[i] == ';')
+                allowed_methods += location[i];
+            break;
         }
+        allowed_methods += location[i];
+        location.erase(i--, 1);
     }
-    if (allowed_methods != "GET" && allowed_methods != "POST" && allowed_methods != "DELETE")
-        throw std::runtime_error("Allowed methods must be GET, POST or DELETE.");
-    methods += allowed_methods;
-    methods += " ";
-    ereaseContent(location, start, ';');
-    if (isInsidLocation(location, "allow"))
-        goto start;
-    return methods;
+    if (!ifClosed(allowed_methods))
+        throw std::runtime_error("Allowed methods directive is not closed.");
+    allowed_methods.erase(allowed_methods.length() - 1, 1);
+    return allowed_methods;
 }
 
 std::string ConfigParser::getReturnCodeUrl(std::string location)
 {
-    if (!isInsidLocation(location, "return_code_url"))
+    if (!isInsidLocation(location, "return"))
         return "";
     std::string return_code_url = "";
-    size_t start = location.find("return_code_url");
-    size_t end = location.find(';', start);
-    return_code_url = location.substr(start + 16, end - start - 16);
-    for (size_t i = 0; i < return_code_url.size(); i++)
+    size_t start = location.find("return");
+    for (size_t i = start + 6; i < location.length(); i++)
     {
-        if (return_code_url[i] == ' ')
+        if (location[i] == ' ' || location[i] == '\t')
+            continue;
+        if (location[i] == ';' || location[i] == '\n')
         {
-            return_code_url.erase(i, 1);
-            i--;
+            if (location[i] == ';')
+                return_code_url += location[i];
+            break;
         }
+        return_code_url += location[i];
+        location.erase(i--, 1);
     }
+    if (!ifClosed(return_code_url))
+        throw std::runtime_error("Return code url directive is not closed.");
+    return_code_url.erase(return_code_url.length() - 1, 1);
     return return_code_url;
 }
 
@@ -197,7 +226,9 @@ void ConfigParser::feedLocations()
 
     for (size_t i = start2 ; i < end; i++)
     {
-        tmp.root = getRoot(this->content.substr(start2, end));
+        tmp.root = getRootLocation(this->content.substr(start2, end));
+        if (tmp.root == "")
+            tmp.root = getRootServ();
         tmp.index = getIndex(this->content.substr(start2, end));
         tmp.cgi_path = getCgiPath(this->content.substr(start, end));
         tmp.autoindex = getAutoindex(this->content.substr(start2, end));

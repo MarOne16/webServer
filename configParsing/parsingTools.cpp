@@ -112,8 +112,25 @@ bool ifClosed(std::string line)
 {
     for (size_t i = 0; i < line.length(); i++)
     {
-        if(line[i] == ';')
+        if(line[i] == ';' && line[i + 1] == '\0')
             return true;
     }
+    return false;
+}
+
+bool ifCgi(std::string location)
+{
+    std::string locationName = "";
+    size_t start = location.find("location");
+    for (size_t i = start + 8; i < location.length(); i++)
+    {
+        if (location[i] == ' ' || location[i] == '\t')
+            continue;
+        if (location[i] == '(' || location[i] == '\n')
+            break;
+        locationName += location[i];
+    }
+    if (locationName.find(".") != std::string::npos)
+        return true;
     return false;
 }
