@@ -53,7 +53,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                 req = req.substr(pos + 1, req.length());
             }
         }
-        else if(response_items.Headers["Content-Type"].find("multipart/form-data") != -1)
+        else if(response_items.Headers["Content-Type"].find("multipart/form-data") != std::string::npos)
         {
             if(req[req.length() - 1] != '\n')
                 req +='\n';
@@ -67,7 +67,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                 ele = new RequestBody;
                     while(token != this->response_items.bondary)
                     {
-                        if (token.find("Content-Disposition") != -1) 
+                        if (token.find("Content-Disposition") != std::string::npos) 
                                 ele->ContentDisposition = token;
                         else 
                             ele->Content += token;
@@ -107,6 +107,8 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     //add check max size and Extension for Path
 
    std::cout << this->response_items.lenghtbody  << std::endl;
+   if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str()))
+        this->status_response_code = 400;
     if(this->response_items.method ==  "GET" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
     if(this->response_items.method !=  "GET" && this->response_items.lenghtbody == 0)
@@ -151,18 +153,18 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
     std::string url_caracteres ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
     std::string del = " ";
     std::vector<std::string> Methode = split_v(methods, del);
-    int i;
+    unsigned int  i;
     while(line_init >> part)
         line.push_back(part);
     this->response_items.method = line[0];
     this->response_items.http_version = line[2];
-     if(line[1].find("?") != -1 && line[1].find("#") != -1)
+     if(line[1].find("?") != std::string::npos && line[1].find("#") != std::string::npos)
      {
         this->response_items.Path = line[1].substr(0, line[1].find("?"));
         this->response_items.Query_String = line[1].substr(line[1].find('?') + 1 , line[1].find("#") -( line[1].find('?') + 1));
         this->response_items.Fragment_iden = line[1].substr(line[1].find("#") + 1, line[1].length());
      }
-     else if(line[1].find("?") != -1  && line[1].find("#") == -1)
+     else if(line[1].find("?") != std::string::npos  && line[1].find("#") == -std::string::npos)
      {
         this->response_items.Path = line[1].substr(0, line[1].find("?"));
         this->response_items.Query_String = line[1].substr((line[1].find("?") + 1), line[1].length());
@@ -174,7 +176,7 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
           this->response_items.Fragment_iden = "";
           this->response_items.Query_String = "";
      }
-     if(this->response_items.Path.rfind(".") != -1)
+     if(this->response_items.Path.rfind(".") != std::string::npos)
         this->response_items.Extension = this->response_items.Path.substr(this->response_items.Path.rfind(".") + 1);
     else
          this->response_items.Extension  = "";
@@ -196,7 +198,7 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
     i = 0;
     while(this->response_items.Path[i])
     {
-        if(url_caracteres.find(this->response_items.Path[i])  == -1)
+        if(url_caracteres.find(this->response_items.Path[i])  == std::string::npos)
         {
             this->status_response_code = 400;
             break;

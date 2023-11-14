@@ -395,7 +395,7 @@ void Response::build_POST()
     URI += this->response_items.Path;
     std::string index ;
     int pos = 0;
-    int k = 0;
+    unsigned int  k = 0;
     std::stringstream ss;
     
     status = stat(URI.c_str() ,  &buffer);
@@ -470,7 +470,7 @@ void Response::build_POST()
     else
     {
    
-        if(this->response_items.Headers.find("Content-Type")->second.find("multipart/form-data") != -1)
+        if(this->response_items.Headers.find("Content-Type")->second.find("multipart/form-data")  != std::string::npos)
         {
                 std::vector<RequestBody*>::iterator it;
                  std::string namefile;
