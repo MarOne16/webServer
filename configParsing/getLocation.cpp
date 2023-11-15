@@ -34,6 +34,30 @@ std::string ConfigParser::getRootLocation(std::string location)
     return root.erase(root.length() - 1, 1);
 }
 
+std::string ConfigParser::getAlias(std::string location)
+{
+    if (!isInsidLocation(location, "alias"))
+        return "";
+    std::string alias = "";
+    size_t start = location.find("alias");
+    for (size_t i = start + 5; i < location.length(); i++)
+    {
+        if (location[i] == ' ' || location[i] == '\t')
+            continue;
+        if (location[i] == ';' || location[i] == '\n')
+        {
+            if (location[i] == ';')
+                alias += location[i];
+            break;
+        }
+        alias += location[i];
+        location.erase(i--, 1);
+    }
+    if (!ifClosed(alias))
+        throw std::runtime_error("Alias directive is not closed.");
+    return alias.erase(alias.length() - 1, 1);
+}
+
 std::string ConfigParser::getIndex(std::string location)
 {
     if (!isInsidLocation(location, "index"))
@@ -229,6 +253,7 @@ void ConfigParser::feedLocations()
         tmp.root = getRootLocation(this->content.substr(start2, end));
         if (tmp.root == "")
             tmp.root = getRootServ();
+        tmp.alias = getAlias(this->content.substr(start2, end));
         tmp.index = getIndex(this->content.substr(start2, end));
         tmp.cgi_path = getCgiPath(this->content.substr(start, end));
         tmp.autoindex = getAutoindex(this->content.substr(start2, end));
