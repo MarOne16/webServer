@@ -28,6 +28,7 @@
 typedef struct s_location
 {
     std::string root;
+    std::string alias;
     std::string index;
     std::string cgi_path;
     std::string autoindex;
@@ -70,6 +71,7 @@ class ConfigParser
         void readConfigFile();
         void checkBrackets();
         void feedContent();
+        bool ifOutsideLocation(std::string line);
 
         // geters
         int             getPort();
@@ -81,7 +83,8 @@ class ConfigParser
         std::map<std::string, std::string> getErrorPages();
         void feedLocations(); // feed m_locations
         bool isInsidLocation(std::string location ,std::string toFind);
-        std::string getRoot(std::string location); // get root from location
+        std::string getRootLocation(std::string location); // get root from location
+        std::string getAlias(std::string location); // get alias from location
         std::string getIndex(std::string location); // get index from location
         std::string getCgiPath(std::string location); // get cgi_path from location
         std::string getAutoindex(std::string location); // get autoindex from location
@@ -102,3 +105,4 @@ bool notIn(std::string str, std::string s);
 void ereaseContent(std::string &content, size_t pos, char dekimiter);
 bool findFile(std::string path);
 bool ifClosed(std::string line);
+bool ifCgi(std::string location);
