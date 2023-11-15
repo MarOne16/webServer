@@ -1,5 +1,5 @@
 NAME   = webserv
-FLAGS  = -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address
+FLAGS  = -Wall -Wextra -Werror -std=c++98 
 CC     = c++
 FILES  = ./configParsing/getLocation.cpp \
 		./configParsing/configParsing.cpp \
