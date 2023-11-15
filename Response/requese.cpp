@@ -1,10 +1,10 @@
 #include "./webserver.hpp"
-#include "webserver.hpp"
+// #include "webserver.hpp"
 
 
 // GET /path/to/file/index.html HTTP/1.0 \r\n
 
-Requese::Requese(std::string req, server& server_date):req(req),status_response_code(200)
+Requese::Requese(std::string req, server& server_data):req(req),status_response_code(200)
 {
     // this->response_items = new http_items;
     this->response_items.location = new s_location;
@@ -32,13 +32,13 @@ Requese::Requese(std::string req, server& server_date):req(req),status_response_
             // std::cout << token << "\n";
             i++;
         } 
+        //find match location
+        find_location(server_data, this->response_items.Path);
         //parser line-request 
-        parser_init_line(response_items.Req[0], );
+        parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
         // ckeck Headers and parser some special Headers
         Headers_elements();
 
-        //find match location
-        find_location(lc, this->response_items.Path);
         // store body 
         if(response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
         {
@@ -53,13 +53,13 @@ Requese::Requese(std::string req, server& server_date):req(req),status_response_
                 req = req.substr(pos + 1, req.length());
             }
         }
-        else if(response_items.Headers["Content-Type"].find("multipart/form-data") != -1)
+        else if(response_items.Headers["Content-Type"].find("multipart/form-data") != std::string::npos)
         {
             if(req[req.length() - 1] != '\n')
                 req +='\n';
             std::stringstream os(req);
             RequestBody *ele;
-            int i = 0;    
+            // int i = 0;    
             std::cout << "elel->" << this->response_items.bondary << std::endl;
             // exit(0);
             while (std::getline(os, token, '\n'))
@@ -67,7 +67,7 @@ Requese::Requese(std::string req, server& server_date):req(req),status_response_
                 ele = new RequestBody;
                     while(token != this->response_items.bondary)
                     {
-                        if (token.find("Content-Disposition") != -1) 
+                        if (token.find("Content-Disposition") != std::string::npos) 
                                 ele->ContentDisposition = token;
                         else 
                             ele->Content += token;
@@ -107,6 +107,8 @@ Requese::Requese(std::string req, server& server_date):req(req),status_response_
     //add check max size and Extension for Path
 
    std::cout << this->response_items.lenghtbody  << std::endl;
+   if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str()))
+        this->status_response_code = 400;
     if(this->response_items.method ==  "GET" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
     if(this->response_items.method !=  "GET" && this->response_items.lenghtbody == 0)
@@ -149,19 +151,20 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
     std::string part;
     std::vector<std::string> line;
     std::string url_caracteres ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
-    std::vector<std::string> Methode = split_v(method, ' ');
-    int i;
+    std::string del = " ";
+    std::vector<std::string> Methode = split_v(methods, del);
+    unsigned int  i;
     while(line_init >> part)
         line.push_back(part);
     this->response_items.method = line[0];
     this->response_items.http_version = line[2];
-     if(line[1].find("?") != -1 && line[1].find("#") != -1)
+     if(line[1].find("?") != std::string::npos && line[1].find("#") != std::string::npos)
      {
         this->response_items.Path = line[1].substr(0, line[1].find("?"));
         this->response_items.Query_String = line[1].substr(line[1].find('?') + 1 , line[1].find("#") -( line[1].find('?') + 1));
         this->response_items.Fragment_iden = line[1].substr(line[1].find("#") + 1, line[1].length());
      }
-     else if(line[1].find("?") != -1  && line[1].find("#") == -1)
+     else if(line[1].find("?") != std::string::npos  && line[1].find("#") == -std::string::npos)
      {
         this->response_items.Path = line[1].substr(0, line[1].find("?"));
         this->response_items.Query_String = line[1].substr((line[1].find("?") + 1), line[1].length());
@@ -173,14 +176,14 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
           this->response_items.Fragment_iden = "";
           this->response_items.Query_String = "";
      }
-     if(this->response_items.Path.rfind(".") != -1)
+     if(this->response_items.Path.rfind(".") != std::string::npos)
         this->response_items.Extension = this->response_items.Path.substr(this->response_items.Path.rfind(".") + 1);
     else
          this->response_items.Extension  = "";
     if(line.size() != 3)
         this->status_response_code = 400;
     i = 0;
-    while(i < Method0.size())
+    while(i < Methode.size())
     {
         if(Methode[i] == line[0])
             break;
@@ -195,7 +198,7 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
     i = 0;
     while(this->response_items.Path[i])
     {
-        if(url_caracteres.find(this->response_items.Path[i])  == -1)
+        if(url_caracteres.find(this->response_items.Path[i])  == std::string::npos)
         {
             this->status_response_code = 400;
             break;
@@ -373,7 +376,7 @@ int Requese::check_content_type(std::string &value)
         "application/vnd.api+json",
         // Add more as needed
     };
-    int it = 0;
+    unsigned int it = 0;
     token = value;
     pos = token.find(";");
     if(pos != -1)
@@ -408,7 +411,7 @@ int Requese::check_Transfer_Encoding(std::string& value)
             "identity"
         // Add more as needed
     };
-    int it =  0;
+    unsigned  it =  0;
     while(it < transferEncodings->length())
     {
         if(value == "chunked")
@@ -483,7 +486,7 @@ int Requese::check_connection(std::string& value)
         "Sec-WebSocket-Accept"
         // Add more as needed
     };
-    int  it = 0;
+    unsigned int  it = 0;
     while(it <  connectionValues->length())
     {
         if(connectionValues[it] == value)

@@ -103,7 +103,7 @@ private:
 
 public:
     Response(int status, std::vector<std::string> init_line, http_items &response_items);
-    void build_response();
+    std::string  build_response();
     std::string get_Content_type();
     std::string get_Date();
     std::string check_index_file();
@@ -118,6 +118,6 @@ public:
     std::string get_Content_type(std::string extension);
 };
 
-std::list<std::string> split_v(std::string &str, std::string delimiter);
+std::vector<std::string> split_v(std::string &str, std::string delimiter);
 std::string Get_response(server &server_data);
 #endif

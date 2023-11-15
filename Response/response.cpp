@@ -13,7 +13,7 @@ Response::Response(int status, std::vector<std::string> init_line,  http_items& 
     this->Resource_not_found = "<html><body><h1>404 Bad Request</h1><p> URI Not found </p></body></html>";
 } 
 
-void Response::build_response()
+std::string Response::build_response()
 {
     std::cout << this->status << " <<<<"  << std::endl;
     if(this->status == 400)
@@ -51,7 +51,7 @@ void Response::build_response()
         std::cout << "POST METHOD" << std::endl;
         this->build_POST();
     }
-    std::cout << response.str() << std::endl;
+    return  (response.str());
 }
 
 
@@ -108,12 +108,12 @@ std::string Response::get_Date()
 std::string Response::check_index_file()
 {
     DIR *dir = opendir("root/dir/");
-    std::vector<std::string>files = this.http_items.location->index; // change by value depends on location
+    std::vector<std::string>files = split_v(this->response_items.location->index, " "); // change by value depends on location
     if(dir == NULL)
         return "";
     struct dirent* entity;
-    int i = 0;
-    while(i < files->size())
+    unsigned int i = 0;
+    while(i < files.size())
     {
         entity = readdir(dir);
         while(entity != NULL)
@@ -134,14 +134,14 @@ void Response::build_GET()
 
        struct stat buffer;
         int         status;
-        std::string URI = this->response_items.location->root //change by value depends on location
+        std::string URI = this->response_items.location->root;//change by value depends on location
         std::string get_auto_index = this->response_items.location->autoindex; // change by getter 
-        std::string cgi_path = this->response_items.location->cgi_path //change path with valid path from config;
+        std::string cgi_path = this->response_items.location->cgi_path; //change path with valid path from config;
         std::string index;
         std::string autoIndexPage;
 
         URI += this->response_items.Path;
-        status = stat(URI,  &buffer);
+        status = stat(URI.data(),  &buffer);
         if(status != -1)
         {
             if(this->response_items.Extension.empty() == 1)
@@ -155,7 +155,7 @@ void Response::build_GET()
                 } 
                 else
                 {
-                    index  =  this->check_index_file();
+                    index  =  check_index_file();
                     if(index.empty())
                     {
                         DIR *dir = opendir(this->response_items.Path.c_str());
@@ -296,9 +296,9 @@ void Response::build_DELETE()
 {
     struct stat buffer;
     int         status;
-    std::string URI = this->response_items.location->root //change by value depends on location
+    std::string URI = this->response_items.location->root; //change by value depends on location
     std::string get_auto_index = this->response_items.location->autoindex; // change by getter 
-    std::string cgi_path = this->response_items.location->cgi_path //change path with valid path from config;
+    std::string cgi_path = this->response_items.location->cgi_path; //change path with valid path from config;
     std::cout << "DELETE HI "  << std::endl;
     URI += this->response_items.Path;
     status = stat(URI.c_str() ,  &buffer);
@@ -387,16 +387,15 @@ void Response::build_POST()
     int         status;
     std::string upload_enable = this->response_items.location->upload_enable; // replace it by location value
     std::string upload_store_directory = this->response_items.location->upload_store_directory;; // replace it by location value
-    std::string URI = this->response_items.location->root //change by value depends on location
+    std::string URI = this->response_items.location->root; //change by value depends on location
     std::string get_auto_index = this->response_items.location->autoindex; // change by getter 
-    std::string cgi_path = this->response_items.location->cgi_path //change path with valid path from config;
-    std::string namefile;
-    std::ofstream file;
-    time_t current_time;
+    std::string cgi_path = this->response_items.location->cgi_path; //change path with valid path from config;
+   
+  
     URI += this->response_items.Path;
     std::string index ;
     int pos = 0;
-    int k = 0;
+    unsigned int  k = 0;
     std::stringstream ss;
     
     status = stat(URI.c_str() ,  &buffer);
@@ -471,9 +470,12 @@ void Response::build_POST()
     else
     {
    
-        if(this->response_items.Headers.find("Content-Type")->second.find("multipart/form-data") != -1)
+        if(this->response_items.Headers.find("Content-Type")->second.find("multipart/form-data")  != std::string::npos)
         {
                 std::vector<RequestBody*>::iterator it;
+                 std::string namefile;
+                std::ofstream file;
+                time_t current_time;
                 it = this->response_items.ChunkedBody.begin();
                 std::cout << "lenght of ChunkBody" <<  this->response_items.ChunkedBody.size() << std::endl;
                 while(k < this->response_items.ChunkedBody.size())
