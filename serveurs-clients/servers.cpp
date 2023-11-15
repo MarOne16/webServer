@@ -88,9 +88,10 @@ int main(int argc, const char **av)
         char buffer[30000] = {0};
         valread = read( new_socket , buffer, 30000);
         printf("%s\n",buffer );
-        std::string respense = "hello world";
-        std::cout << "end of response" << std::endl;
-        ////////////////////////////////////////////////
+        feedRequest(0, data_conf.m_servers, buffer);
+        std::string respense =  sendResponse(0, data_conf.m_servers);
+        std::cout << respense << std::endl;
+        ///////////////////////////////////////////////
         send(new_socket,respense.c_str(), respense.length(), 0);
         printf("------------------Hello message sent-------------------");
         close(new_socket);

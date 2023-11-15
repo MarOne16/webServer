@@ -51,6 +51,7 @@ std::string Response::build_response()
         std::cout << "POST METHOD" << std::endl;
         this->build_POST();
     }
+    std::cout << "last_response:  " << this->response_items.method  << std::endl;
     return  (response.str());
 }
 
@@ -173,8 +174,8 @@ void Response::build_GET()
                           
                             response << "HTTP/1.1 200 ok\r\n";
                             response << "Content-Length: 0\r\n";
-                            response << "Connection: close\r\n";
-                            response << "Date: " << this->get_Date()<< "\r\n\r\n";
+                            response << "Connection: close\r\n\r\n";
+                            // response << "Date: " << this->get_Date()<< "\r\n\r\n";
                                     autoIndexPage = "<!DOCTYPE html>\n<html lang=\"en\">\n\
                                                     <head>\n\
                                                     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\
@@ -553,8 +554,8 @@ void  Response::not_found()
     response << "HTTP/1.1 404 NOT FOUND\r\n";
     response << "Content-Type: text/html\r\n";
     response << "Content-Length: " << body.length() << "\r\n";
-    response << "Server: " << this->response_items.server << "\r\n";
-    response << "Date: " << this->get_Date() <<  "\r\n\r\n";
+    response << "Server: " << this->response_items.server << "\r\n\r\n";
+    // response << "Date: " << this->get_Date() <<  "\r\n\r\n";
     response << body;
 }
 

@@ -15,6 +15,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     int pos = 0;
     std::string value;
     std::string key;
+    std::cout << "req:" <<  server_data.request_content << std::endl;
     std::map<std::string, s_location> lc;
     try{
         //read Header request 
@@ -29,7 +30,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             token = req.substr(0, pos);
             req = req.substr(pos + 2, req.length());
             response_items.Req.push_back(token);
-            // std::cout << token << "\n";
+            std::cout << token << "\n";
             i++;
         } 
         //find match location
@@ -237,7 +238,7 @@ void Requese::Headers_elements()
         this->trim(key);
         this->trim(value);
         this->response_items.Headers[key] = value;
-        if(key.empty() || value.empty() || check_elemens(key) == 0 || check_more_element(key, value) == 0 )
+        if(key.empty() || value.empty() || check_more_element(key, value) == 0 )
         {
             std::cout << "hna" << std::endl;
             this->status_response_code = 400;
@@ -474,7 +475,7 @@ int Requese::check_host(std::string&value)
 int Requese::check_connection(std::string& value)
 {
     std::string connectionValues[] = {
-        "Keep-Alive",
+        "keep-alive",
         "close",
         "Upgrade",
         "TE, close",
@@ -493,15 +494,16 @@ int Requese::check_connection(std::string& value)
             return 1;
         it++;
     }
-    return 0;
+    std::cout << "here"<< std::endl;
+        return 0;
 }
 
 int Requese::check_more_element(std::string& key, std::string& value)
 {
     if(key == "Host")
         return (this->check_host(value));
-    if(key == "Date")
-        return (this->check_date(value));
+    // if(key == "Date")
+    //     return (this->check_date(value));
     if(key == "Content-Length")
         return (this->is_alpha(value));
     if( key == "Content-Type")

@@ -174,7 +174,7 @@ int main(int ac,const char **av)
                         feedRequest((unsigned int )i, data_conf.m_servers, buf);
                         //TODO send response to client
                         std:: cout << "OK" << std::endl;
-                        respense = "helllo word";
+                        respense = sendResponse(i, data_conf.m_servers);
                         std::cout << "end of response" << std::endl;
                         ////////////////////////////////////////////////
                         send(file[1],respense.c_str(), respense.length(), 0);
