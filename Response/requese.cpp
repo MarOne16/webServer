@@ -15,7 +15,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     int pos = 0;
     std::string value;
     std::string key;
-    std::cout << "req:" <<  server_data.request_content << std::endl;
     std::map<std::string, s_location> lc;
     try{
         //read Header request 
@@ -34,9 +33,10 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             i++;
         } 
         //find match location
-        find_location(server_data, this->response_items.Path);
-        //parser line-request 
         parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
+        find_location(server_data, this->response_items.Path);     
+        parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
+        //parser line-request 
         // ckeck Headers and parser some special Headers
         Headers_elements();
 
@@ -60,9 +60,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                 req +='\n';
             std::stringstream os(req);
             RequestBody *ele;
-            // int i = 0;    
-            std::cout << "elel->" << this->response_items.bondary << std::endl;
-            // exit(0);
             while (std::getline(os, token, '\n'))
             {
                 ele = new RequestBody;
@@ -86,28 +83,13 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                         this->response_items.ChunkedBody.push_back(ele);
                     }
             }
-            std::cout << req <<  std::endl;
+            // std::cout << req <<  std::endl;
     }
     else
     {
         this->response_items.Body =  req;
         this->response_items.lenghtbody +=  this->response_items.Body.length();
     }
-
-
-     std::vector<RequestBody*>::iterator it;
-                it = this->response_items.ChunkedBody.begin();
-                while(it != this->response_items.ChunkedBody.end())
-                {
-                    // if(!(*it)->Content.empty() && !(*it)->ContentDisposition.empty())
-                        std::cout << "Content : " << (*it)->Content << std::endl;
-                        std::cout << "ContentDisposition : " << (*it)->ContentDisposition << std::endl;
-                    it++;
-                }
-    // exit(0);
-    //add check max size and Extension for Path
-
-   std::cout << this->response_items.lenghtbody  << std::endl;
    if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str()))
         this->status_response_code = 400;
     if(this->response_items.method ==  "GET" && this->response_items.lenghtbody != 0 )
@@ -118,8 +100,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         this->status_response_code = 400;
     else if(atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody)
         this->status_response_code = 400;
-    // std::cout << this->response_items.Headers.find("Content-Length")->second << std::endl;
-    // if(this->response_items.lenghtbody != atoi(this->response_items.Headers.find("Content-Length")))
     }catch(std::exception& e)
     {
         std::cout << e.what() << std::endl;
@@ -187,13 +167,16 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
     while(i < Methode.size())
     {
         if(Methode[i] == line[0])
+        {
+            this->status_response_code = 200;
             break;
+        }
+        else
+            this->status_response_code = 405;
         i++;
     }
-    if(i == 3)
-    {
+    if(i == Methode.size())
             this->status_response_code = 405;
-    }
     if(this->response_items.http_version != "HTTP/1.1")
          this->status_response_code = 505;
     i = 0;
@@ -525,7 +508,7 @@ const char *Requese::ErrorSyntax::what() const throw()
 
 std::string Requese::find_location(server& server_data, std::string& PATH)
 {
-    std::cout << PATH   << std::endl;
+    std::cout <<  "path : " << PATH   << std::endl;
     std::string Path = PATH;
     std::map<std::string , s_location> location = server_data.locations;
     int pos = 0;
@@ -554,6 +537,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
    it = location.find(Path);
     if(it != location.end())
     {
+        std::cout << "Location found: " << Path << std::endl;
         this->response_items.location->allowed_methods = it->second.allowed_methods;
         this->response_items.location->root = it->second.root;
         this->response_items.location->index = it->second.index;

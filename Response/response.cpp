@@ -15,7 +15,6 @@ Response::Response(int status, std::vector<std::string> init_line,  http_items& 
 
 std::string Response::build_response()
 {
-    std::cout << this->status << " <<<<"  << std::endl;
     if(this->status == 400)
     {
         response << "HTTP/1.1 400 Bad Request\r\n";
@@ -37,18 +36,21 @@ std::string Response::build_response()
         response << "\r\n"; // Blank line to separate headers and body
         response << this->HTTP_NOT_SUPPORTED;
     }
+    else if(this->status == 405)
+        {
+            std::cout << "HTTP Method not allowed\r\n";
+            exit(1);
+        }
     else if(this->response_items.method == "GET")
     {
         this->build_GET();
     }
     else if(this->response_items.method == "DELETE")
     {
-        std::cout << "DELETE METHOD" << std::endl;
         this->build_DELETE();
     }
     else if(this->response_items.method == "POST")
     {
-        std::cout << "POST METHOD" << std::endl;
         this->build_POST();
     }
     std::cout << "last_response:  " << this->response_items.method  << std::endl;
@@ -103,7 +105,7 @@ std::string Response::get_Date()
    // convert now to string form
    char* dt = ctime(&now);
    str << dt;
-   return str.str();
+   return str.str().substr(0, str.str().size() -  1);
 }
 
 std::string Response::check_index_file()
@@ -141,7 +143,8 @@ void Response::build_GET()
         std::string index;
         std::string autoIndexPage;
 
-        URI += this->response_items.Path;
+        URI += this->response_items.Path.substr(1);
+        std::cout << URI << std::endl;
         status = stat(URI.data(),  &buffer);
         if(status != -1)
         {
@@ -172,10 +175,6 @@ void Response::build_GET()
                         else
                         {
                           
-                            response << "HTTP/1.1 200 ok\r\n";
-                            response << "Content-Length: 0\r\n";
-                            response << "Connection: close\r\n\r\n";
-                            // response << "Date: " << this->get_Date()<< "\r\n\r\n";
                                     autoIndexPage = "<!DOCTYPE html>\n<html lang=\"en\">\n\
                                                     <head>\n\
                                                     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\
@@ -200,6 +199,10 @@ void Response::build_GET()
                                         </div>\n\
                                         </body>\n\
                                         </html>\n";
+                            response << "HTTP/1.1 200 ok\r\n";
+                            response << "Content-length: "<< autoIndexPage.length() << "\r\n";
+                            response << "Connection: close\r\n";
+                            response << "Date: " << this->get_Date()<< "\r\n\r\n";
                             response << autoIndexPage;
                             // add body for index
                         }
@@ -301,7 +304,7 @@ void Response::build_DELETE()
     std::string get_auto_index = this->response_items.location->autoindex; // change by getter 
     std::string cgi_path = this->response_items.location->cgi_path; //change path with valid path from config;
     std::cout << "DELETE HI "  << std::endl;
-    URI += this->response_items.Path;
+    URI += this->response_items.Path.substr(1);
     status = stat(URI.c_str() ,  &buffer);
     if(status != -1)
     {
@@ -393,7 +396,8 @@ void Response::build_POST()
     std::string cgi_path = this->response_items.location->cgi_path; //change path with valid path from config;
    
   
-    URI += this->response_items.Path;
+    URI += this->response_items.Path.substr(1);
+    std::cout << URI << std::endl;
     std::string index ;
     int pos = 0;
     unsigned int  k = 0;
