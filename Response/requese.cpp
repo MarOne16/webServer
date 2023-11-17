@@ -10,6 +10,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     this->response_items.location = new s_location;
     this->response_items.chunked_body = 0;
     this->response_items.lenghtbody = 0;
+    this->response_items.error_pages = server_data.error_pages;
     std::string token;
     int i = 0;
     int pos = 0;
@@ -91,7 +92,15 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         this->response_items.lenghtbody +=  this->response_items.Body.length();
     }
    if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str()))
-        this->status_response_code = 400;
+        this->status_response_code = 413;
+   if(this->response_items.Path.length() > 2048)
+        this->status_response_code = 414;
+    if(this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
+    (this->response_items.Headers.find("Transfer-Encoding"))->second != "chunked")
+        this->status_response_code = 501;
+    if(this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
+        this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end())
+        this->status_response_code = 411;    
     if(this->response_items.method ==  "GET" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
     if(this->response_items.method !=  "GET" && this->response_items.lenghtbody == 0)
@@ -100,6 +109,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         this->status_response_code = 400;
     else if(atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody)
         this->status_response_code = 400;
+    
     }catch(std::exception& e)
     {
         std::cout << e.what() << std::endl;
@@ -512,9 +522,24 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
     std::string Path = PATH;
     std::map<std::string , s_location> location = server_data.locations;
     int pos = 0;
-
-    pos = Path.rfind("/");
    std::map<std::string , s_location>::iterator it;
+    if(!this->response_items.Extension.empty())
+    {
+        it = location.find(this->response_items.Extension);
+        if(it != location.end())
+        {
+            this->response_items.location->allowed_methods = it->second.allowed_methods;
+            this->response_items.location->root = it->second.root;
+            this->response_items.location->index = it->second.index;
+            this->response_items.location->cgi_extension = it->second.cgi_extension;
+            this->response_items.location->return_code_url = it->second.return_code_url;
+            this->response_items.location->upload_store_directory = it->second.upload_store_directory;
+            this->response_items.location->cgi_path = it->second.cgi_path;
+            this->response_items.location->upload_enable = it->second.upload_enable;
+            return Path;
+        }
+    }
+    pos = Path.rfind("/");
     while(pos != -1)
     {
         Path = Path.substr(0, pos);
