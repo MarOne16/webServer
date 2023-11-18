@@ -83,6 +83,7 @@ class ConfigParser
         std::map<std::string, std::string> getErrorPages();
         void feedLocations(); // feed m_locations
         bool isInsidLocation(std::string location ,std::string toFind);
+        std::string getLocationName(std::string location);
         std::string getRootLocation(std::string location); // get root from location
         std::string getAlias(std::string location); // get alias from location
         std::string getIndex(std::string location); // get index from location
@@ -106,3 +107,5 @@ void ereaseContent(std::string &content, size_t pos, char dekimiter);
 bool findFile(std::string path);
 bool ifClosed(std::string line);
 bool ifCgi(std::string location);
+bool notHas(std::string str, std::string s);
+void addElement(std::string &str, std::string element, size_t pos);

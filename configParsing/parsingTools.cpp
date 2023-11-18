@@ -134,3 +134,21 @@ bool ifCgi(std::string location)
         return true;
     return false;
 }
+
+bool notHas(std::string str, std::string s)
+{
+    for (size_t i = 0; i < str.length(); i++)
+    {
+        if (s.find(str[i]) != std::string::npos)
+            return false;
+    }
+    return true;
+}
+
+void addElement(std::string &str, std::string element, size_t pos)
+{
+    if (pos == std::string::npos)
+        return ;
+    std::string::iterator it = str.begin();
+    str.insert(it + pos, element.begin(), element.end());
+}
