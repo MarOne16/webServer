@@ -91,14 +91,14 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         this->response_items.Body =  req;
         this->response_items.lenghtbody +=  this->response_items.Body.length();
     }
-   if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str()))
+   if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str())) // TODO: check size 
         this->status_response_code = 413;
    if(this->response_items.Path.length() > 2048)
         this->status_response_code = 414;
     if(this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
     (this->response_items.Headers.find("Transfer-Encoding"))->second != "chunked")
         this->status_response_code = 501;
-    if(this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
+    if(this->response_items.method ==  "POST" && this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
         this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end())
         this->status_response_code = 411;    
     if(this->response_items.method ==  "GET" && this->response_items.lenghtbody != 0 )
@@ -190,6 +190,7 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
     if(this->response_items.http_version != "HTTP/1.1")
          this->status_response_code = 505;
     i = 0;
+    // notIn()
     while(this->response_items.Path[i])
     {
         if(url_caracteres.find(this->response_items.Path[i])  == std::string::npos)
