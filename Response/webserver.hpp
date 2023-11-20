@@ -24,6 +24,7 @@ struct RequestBody
 {
     std::string ContentDisposition;
     std::string Content;
+    std::string ContentType;
 };
 
 class http_items

@@ -5,6 +5,7 @@
 Response::Response(int status, std::vector<std::string> init_line,  http_items& response_items)
 {
     // this->status = status;
+    
     this->status = status;
     this->response_items = response_items;
     this->init_line = init_line;
@@ -17,6 +18,7 @@ Response::Response(int status, std::vector<std::string> init_line,  http_items& 
 std::string Response::build_response()
 {
     
+    std::cout <<  ">>>>" << this->status  << " << "<< std::endl;
     if(this->status == 400)
     {
         ft_bad_request("400", this->bad_req);
@@ -446,25 +448,30 @@ void Response::build_POST()
                 std::cout << "lenght of ChunkBody" <<  this->response_items.ChunkedBody.size() << std::endl;
                 while(k < this->response_items.ChunkedBody.size())
                 {
-                    if(!(*it)->ContentDisposition.empty())
+                    std::cout << "content-body" << (*it)->Content << " " << (*it)->ContentDisposition << std::endl;
+                    if(!(*it)->ContentType.empty())
                     {
-                        pos = (*it)->ContentDisposition.find("name=");
-                        if(pos != -1)
+                        if(!(*it)->ContentDisposition.empty())
                         {
-                            namefile = (*it)->ContentDisposition.substr(pos + 5);
-                            pos = (*it)->ContentDisposition.find("Content-Disposition=");
-                            namefile += get_Content_type(trim((*it)->ContentDisposition.substr(pos + 21)));
-                            std::cout << "file name :" << namefile << std::endl;
+                            pos = (*it)->ContentDisposition.find("namefile=");
+                            if(pos != -1)
+                            {
+                                namefile = (*it)->ContentDisposition.substr(pos + 10);
+                                pos = (*it)->ContentDisposition.find("Content-Type=");
+                                namefile += get_Content_type(trim((*it)->ContentDisposition.substr(pos + 14)));
+                                std::cout << "file name :" << namefile << std::endl;
+                            }
                         }
+                        else
+                        {
+                            std::cout << "here is not valid content-disposition " << std::endl;
+                            time(&current_time);
+                            ss <<  static_cast<int>(current_time);
+                            namefile += ss.str(); 
+                            namefile  += ".txt";
+                            std::cout <<  namefile  << "not open file make response to handle error";
+
                     }
-                    else
-                    {
-                        std::cout << "here is not valid content-disposition " << std::endl;
-                        time(&current_time);
-                        ss <<  static_cast<int>(current_time);
-                        namefile += ss.str(); 
-                        namefile  += ".txt";
-                        std::cout <<  namefile  << "not open file make response to handle error";
                     }
                     file.open(namefile);
                     namefile.clear();
@@ -481,30 +488,12 @@ void Response::build_POST()
                     it++;
                     k++;
                 }
+                this->other_response("201", "Created", "");
         }
         else
         {
-            time(&current_time);
-            ss <<  static_cast<int>(current_time);
-            namefile += ss.str(); 
-            namefile  += ".txt";
-            file.open(namefile);
-            namefile.clear();
-            if(!file.is_open())
-            {
-                this->not_found();
-                return;
-            } 
-            if(!this->response_items.Body.empty())
-            {
-                file << this->response_items.Body;
-            }
-                file.close();
-
+            this->other_response("202", "Accepted", "");
         }
-        this->other_response("201", "Created", "");
-        // response <<  "HTTP/1.1 202 Accepted" << "\r\n";
-        // response << "Content-Length: 0" <<  "\r\n";
     }
 }
 

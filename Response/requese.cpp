@@ -61,15 +61,31 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                 req +='\n';
             std::stringstream os(req);
             RequestBody *ele;
+            //TODO : change value of boundary when u find it
+            std::cout <<  "||" << this->response_items.bondary  << "||" << std::endl;
             while (std::getline(os, token, '\n'))
             {
                 ele = new RequestBody;
                     while(token != this->response_items.bondary)
                     {
                         if (token.find("Content-Disposition") != std::string::npos) 
+                        {
                                 ele->ContentDisposition = token;
-                        else 
+                                std::cout << "Content-Disposition : " << ele->ContentDisposition << std::endl;
+                                token.clear();
+                        }
+                        if (token.find("Content-Type") != std::string::npos  ) 
+                        {
+                                ele->ContentDisposition = token;
+                                std::cout << "Content-Type : " << ele->ContentType << std::endl;
+                                token.clear();
+                        }
+                        else if(token != this->response_items.bondary)
+                        {
                             ele->Content += token;
+                            std::cout << "Content: " << ele->Content << std::endl;
+                            token.clear();
+                        }
                         if(os.eof())
                             break;
                         std::getline(os, token, '\n');
@@ -84,6 +100,17 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                         this->response_items.ChunkedBody.push_back(ele);
                     }
             }
+            // std::vector<RequestBody *>::iterator it;
+            // it = this->response_items.ChunkedBody.begin();
+            // while(it != this->response_items.ChunkedBody.end())
+            // {
+            //     std::cout << (*it)->Content << std::endl;
+            //     std::cout << (*it)->ContentDisposition << std::endl;
+            //     std::cout << (*it)->ContentType << std::endl;
+            //     it++;
+
+            // }
+            exit(0);
             // std::cout << req <<  std::endl;
     }
     else
@@ -105,10 +132,10 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         this->status_response_code = 400;
     if(this->response_items.method !=  "GET" && this->response_items.lenghtbody == 0)
         this->status_response_code = 400;
-    if(this->response_items.lenghtbody != 0 && this->response_items.Headers.find("Content-Length") == this->response_items.Headers.end())
-        this->status_response_code = 400;
-    else if(atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody)
-        this->status_response_code = 400;
+    // if(this->response_items.lenghtbody != 0 && this->response_items.Headers.find("Content-Length") == this->response_items.Headers.end())
+    //     this->status_response_code = 400;
+    // else if(atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody)
+    //     this->status_response_code = 400;
     
     }catch(std::exception& e)
     {
@@ -379,7 +406,11 @@ int Requese::check_content_type(std::string &value)
         token = token.substr(0, pos);
         value = value.substr(pos + 1);
         if(token == "multipart/form-data")
-            this->response_items.bondary = value.substr(value.find("boundary=") + 9);
+        {
+            this->response_items.bondary = "--";
+            this->response_items.bondary += value.substr(value.find("boundary=") + 9);
+        }
+        return 1;
         // std::cout << "Bondary: " << this->response_items.bondary  << std::endl;
         // exit(0);
 
