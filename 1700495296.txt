@@ -1,0 +1,26 @@
+server {
+       listen 443 ssl;
+
+       server_name localhost
+	ssl_protocols TLSv1.2 TLSv1.3;
+	ssl_certificate /etc/nginx/ssl/inception.crt;
+	ssl_certificate_key /etc/nginx/ssl/inception.key;
+       root /var/www/inception;
+     	 index index.php index.html index.htm;
+	 location / {
+    try_files $uri $uri/ /index.php?$args;
+  }
+	location ~ \.php$ {
+    fastcgi_pass wordpress:9000;
+   #fastcgi_pass unix:/run/php/php7.4-fpm.sock;
+    include fastcgi_params;
+	autoindex on;
+    include snippets/fastcgi-php.conf;
+    fastcgi_buffer_size 128k;
+    fastcgi_buffers 4 128k;
+    fastcgi_intercept_errors on;
+}
+}
+
+/etc/php/7.4/fpm/pool.d
+Key : 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

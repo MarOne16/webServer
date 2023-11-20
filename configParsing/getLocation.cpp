@@ -218,8 +218,6 @@ std::string ConfigParser::getReturnCodeUrl(std::string location)
     size_t start = location.find("return");
     for (size_t i = start + 6; i < location.length(); i++)
     {
-        if (location[i] == ' ' || location[i] == '\t')
-            continue;
         if (location[i] == ';' || location[i] == '\n')
         {
             if (location[i] == ';')

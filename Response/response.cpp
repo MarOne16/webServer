@@ -54,25 +54,42 @@ std::string Response::build_response()
 
 std::string Response::get_Content_type(std::string url)
 {
+
+    std::string contentTypes[23] = {
+        "text/plain",
+        "text/html",
+        "text/css",
+        "text/javascript",
+        "text/xml",
+        "application/json",
+        "application/xml",
+        "application/xhtml+xml",
+        "application/pdf",
+        "application/octet-stream",
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/svg+xml",
+        "audio/mpeg",
+        "audio/wav",
+        "video/mp4",
+        "video/webm",
+        "multipart/form-data",
+        "multipart/byteranges",
+        "application/x-www-form-urlencoded",
+        "application/graphql",
+        "application/vnd.api+json",
+        // Add more as needed
+    };
     std::string extension = url.substr(url.rfind(".") + 1);
- 
-	// if (_request.get_header_value("Content-Type:").size())
-	// 	return _request.get_header_value("Content-Type:");
-	if (extension.compare("html") == 0 || extension.compare("php") == 0)
-		return "text/html; charset=UTF-8";
-	else if (extension.compare("json") == 0)
-		return "application/json";
-	else if (extension.compare("ico") == 0)
-		return "image/x-icon";
-	else if (extension.compare("jpeg") == 0)
-		return "image/jpeg";
-	else if (extension.compare("jpg") == 0)
-		return "image/jpg";
-	else if (extension.compare("txt") == 0)
-		return "text/plain";
-   else if (extension.compare("mp4") == 0)
-        return "video/mp4";
-	else
+unsigned int i = 0;
+while(i < 23)
+{
+    if(contentTypes[i].find(extension) != std::string::npos)
+        return contentTypes[i];
+    i++;
+}
+
 		return "text/html;";
 }
 
@@ -419,12 +436,12 @@ void Response::build_POST()
     else
     {
    
+            std::string namefile;
+            time_t current_time;
+            std::ofstream file;
+            std::vector<RequestBody*>::iterator it;
         if(this->response_items.Headers.find("Content-Type")->second.find("multipart/form-data")  != std::string::npos)
         {
-                std::vector<RequestBody*>::iterator it;
-                 std::string namefile;
-                std::ofstream file;
-                time_t current_time;
                 it = this->response_items.ChunkedBody.begin();
                 std::cout << "lenght of ChunkBody" <<  this->response_items.ChunkedBody.size() << std::endl;
                 while(k < this->response_items.ChunkedBody.size())
@@ -465,7 +482,27 @@ void Response::build_POST()
                     k++;
                 }
         }
-        this->other_response("200", "Accepted", "");
+        else
+        {
+            time(&current_time);
+            ss <<  static_cast<int>(current_time);
+            namefile += ss.str(); 
+            namefile  += ".txt";
+            file.open(namefile);
+            namefile.clear();
+            if(!file.is_open())
+            {
+                this->not_found();
+                return;
+            } 
+            if(!this->response_items.Body.empty())
+            {
+                file << this->response_items.Body;
+            }
+                file.close();
+
+        }
+        this->other_response("201", "Created", "");
         // response <<  "HTTP/1.1 202 Accepted" << "\r\n";
         // response << "Content-Length: 0" <<  "\r\n";
     }
