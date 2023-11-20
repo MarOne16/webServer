@@ -1,15 +1,16 @@
 #include "./webserver.hpp"
-#include "webserver.hpp"
+// #include "webserver.hpp"
 
 
 // GET /path/to/file/index.html HTTP/1.0 \r\n
 
-Requese::Requese(std::string req, server& server_date):req(req),status_response_code(200)
+Requese::Requese(std::string req, server& server_data):req(req),status_response_code(200)
 {
     // this->response_items = new http_items;
     this->response_items.location = new s_location;
     this->response_items.chunked_body = 0;
     this->response_items.lenghtbody = 0;
+    this->response_items.error_pages = server_data.error_pages;
     std::string token;
     int i = 0;
     int pos = 0;
@@ -29,16 +30,17 @@ Requese::Requese(std::string req, server& server_date):req(req),status_response_
             token = req.substr(0, pos);
             req = req.substr(pos + 2, req.length());
             response_items.Req.push_back(token);
-            // std::cout << token << "\n";
+            std::cout << token << "\n";
             i++;
         } 
+        //find match location
+        parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
+        find_location(server_data, this->response_items.Path);     
+        parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
         //parser line-request 
-        parser_init_line(response_items.Req[0], );
         // ckeck Headers and parser some special Headers
         Headers_elements();
 
-        //find match location
-        find_location(lc, this->response_items.Path);
         // store body 
         if(response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
         {
@@ -53,21 +55,18 @@ Requese::Requese(std::string req, server& server_date):req(req),status_response_
                 req = req.substr(pos + 1, req.length());
             }
         }
-        else if(response_items.Headers["Content-Type"].find("multipart/form-data") != -1)
+        else if(response_items.Headers["Content-Type"].find("multipart/form-data") != std::string::npos)
         {
             if(req[req.length() - 1] != '\n')
                 req +='\n';
             std::stringstream os(req);
             RequestBody *ele;
-            int i = 0;    
-            std::cout << "elel->" << this->response_items.bondary << std::endl;
-            // exit(0);
             while (std::getline(os, token, '\n'))
             {
                 ele = new RequestBody;
                     while(token != this->response_items.bondary)
                     {
-                        if (token.find("Content-Disposition") != -1) 
+                        if (token.find("Content-Disposition") != std::string::npos) 
                                 ele->ContentDisposition = token;
                         else 
                             ele->Content += token;
@@ -85,28 +84,23 @@ Requese::Requese(std::string req, server& server_date):req(req),status_response_
                         this->response_items.ChunkedBody.push_back(ele);
                     }
             }
-            std::cout << req <<  std::endl;
+            // std::cout << req <<  std::endl;
     }
     else
     {
         this->response_items.Body =  req;
         this->response_items.lenghtbody +=  this->response_items.Body.length();
     }
-
-
-     std::vector<RequestBody*>::iterator it;
-                it = this->response_items.ChunkedBody.begin();
-                while(it != this->response_items.ChunkedBody.end())
-                {
-                    // if(!(*it)->Content.empty() && !(*it)->ContentDisposition.empty())
-                        std::cout << "Content : " << (*it)->Content << std::endl;
-                        std::cout << "ContentDisposition : " << (*it)->ContentDisposition << std::endl;
-                    it++;
-                }
-    // exit(0);
-    //add check max size and Extension for Path
-
-   std::cout << this->response_items.lenghtbody  << std::endl;
+   if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str())) // TODO: check size 
+        this->status_response_code = 413;
+   if(this->response_items.Path.length() > 2048)
+        this->status_response_code = 414;
+    if(this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
+    (this->response_items.Headers.find("Transfer-Encoding"))->second != "chunked")
+        this->status_response_code = 501;
+    if(this->response_items.method ==  "POST" && this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
+        this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end())
+        this->status_response_code = 411;    
     if(this->response_items.method ==  "GET" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
     if(this->response_items.method !=  "GET" && this->response_items.lenghtbody == 0)
@@ -115,8 +109,7 @@ Requese::Requese(std::string req, server& server_date):req(req),status_response_
         this->status_response_code = 400;
     else if(atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody)
         this->status_response_code = 400;
-    // std::cout << this->response_items.Headers.find("Content-Length")->second << std::endl;
-    // if(this->response_items.lenghtbody != atoi(this->response_items.Headers.find("Content-Length")))
+    
     }catch(std::exception& e)
     {
         std::cout << e.what() << std::endl;
@@ -149,19 +142,20 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
     std::string part;
     std::vector<std::string> line;
     std::string url_caracteres ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
-    std::vector<std::string> Methode = split_v(method, ' ');
-    int i;
+    std::string del = " ";
+    std::vector<std::string> Methode = split_v(methods, del);
+    unsigned int  i;
     while(line_init >> part)
         line.push_back(part);
     this->response_items.method = line[0];
     this->response_items.http_version = line[2];
-     if(line[1].find("?") != -1 && line[1].find("#") != -1)
+     if(line[1].find("?") != std::string::npos && line[1].find("#") != std::string::npos)
      {
         this->response_items.Path = line[1].substr(0, line[1].find("?"));
         this->response_items.Query_String = line[1].substr(line[1].find('?') + 1 , line[1].find("#") -( line[1].find('?') + 1));
         this->response_items.Fragment_iden = line[1].substr(line[1].find("#") + 1, line[1].length());
      }
-     else if(line[1].find("?") != -1  && line[1].find("#") == -1)
+     else if(line[1].find("?") != std::string::npos  && line[1].find("#") == -std::string::npos)
      {
         this->response_items.Path = line[1].substr(0, line[1].find("?"));
         this->response_items.Query_String = line[1].substr((line[1].find("?") + 1), line[1].length());
@@ -173,29 +167,33 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
           this->response_items.Fragment_iden = "";
           this->response_items.Query_String = "";
      }
-     if(this->response_items.Path.rfind(".") != -1)
+     if(this->response_items.Path.rfind(".") != std::string::npos)
         this->response_items.Extension = this->response_items.Path.substr(this->response_items.Path.rfind(".") + 1);
     else
          this->response_items.Extension  = "";
     if(line.size() != 3)
         this->status_response_code = 400;
     i = 0;
-    while(i < Method0.size())
+    while(i < Methode.size())
     {
         if(Methode[i] == line[0])
+        {
+            this->status_response_code = 200;
             break;
+        }
+        else
+            this->status_response_code = 405;
         i++;
     }
-    if(i == 3)
-    {
+    if(i == Methode.size())
             this->status_response_code = 405;
-    }
     if(this->response_items.http_version != "HTTP/1.1")
          this->status_response_code = 505;
     i = 0;
+    // notIn()
     while(this->response_items.Path[i])
     {
-        if(url_caracteres.find(this->response_items.Path[i])  == -1)
+        if(url_caracteres.find(this->response_items.Path[i])  == std::string::npos)
         {
             this->status_response_code = 400;
             break;
@@ -234,7 +232,7 @@ void Requese::Headers_elements()
         this->trim(key);
         this->trim(value);
         this->response_items.Headers[key] = value;
-        if(key.empty() || value.empty() || check_elemens(key) == 0 || check_more_element(key, value) == 0 )
+        if(key.empty() || value.empty() || check_more_element(key, value) == 0 )
         {
             std::cout << "hna" << std::endl;
             this->status_response_code = 400;
@@ -373,7 +371,7 @@ int Requese::check_content_type(std::string &value)
         "application/vnd.api+json",
         // Add more as needed
     };
-    int it = 0;
+    unsigned int it = 0;
     token = value;
     pos = token.find(";");
     if(pos != -1)
@@ -408,7 +406,7 @@ int Requese::check_Transfer_Encoding(std::string& value)
             "identity"
         // Add more as needed
     };
-    int it =  0;
+    unsigned  it =  0;
     while(it < transferEncodings->length())
     {
         if(value == "chunked")
@@ -471,7 +469,7 @@ int Requese::check_host(std::string&value)
 int Requese::check_connection(std::string& value)
 {
     std::string connectionValues[] = {
-        "Keep-Alive",
+        "keep-alive",
         "close",
         "Upgrade",
         "TE, close",
@@ -483,22 +481,23 @@ int Requese::check_connection(std::string& value)
         "Sec-WebSocket-Accept"
         // Add more as needed
     };
-    int  it = 0;
+    unsigned int  it = 0;
     while(it <  connectionValues->length())
     {
         if(connectionValues[it] == value)
             return 1;
         it++;
     }
-    return 0;
+    std::cout << "here"<< std::endl;
+        return 0;
 }
 
 int Requese::check_more_element(std::string& key, std::string& value)
 {
     if(key == "Host")
         return (this->check_host(value));
-    if(key == "Date")
-        return (this->check_date(value));
+    // if(key == "Date")
+    //     return (this->check_date(value));
     if(key == "Content-Length")
         return (this->is_alpha(value));
     if( key == "Content-Type")
@@ -520,13 +519,28 @@ const char *Requese::ErrorSyntax::what() const throw()
 
 std::string Requese::find_location(server& server_data, std::string& PATH)
 {
-    std::cout << PATH   << std::endl;
+    std::cout <<  "path : " << PATH   << std::endl;
     std::string Path = PATH;
     std::map<std::string , s_location> location = server_data.locations;
     int pos = 0;
-
-    pos = Path.rfind("/");
    std::map<std::string , s_location>::iterator it;
+    if(!this->response_items.Extension.empty())
+    {
+        it = location.find(this->response_items.Extension);
+        if(it != location.end())
+        {
+            this->response_items.location->allowed_methods = it->second.allowed_methods;
+            this->response_items.location->root = it->second.root;
+            this->response_items.location->index = it->second.index;
+            this->response_items.location->cgi_extension = it->second.cgi_extension;
+            this->response_items.location->return_code_url = it->second.return_code_url;
+            this->response_items.location->upload_store_directory = it->second.upload_store_directory;
+            this->response_items.location->cgi_path = it->second.cgi_path;
+            this->response_items.location->upload_enable = it->second.upload_enable;
+            return Path;
+        }
+    }
+    pos = Path.rfind("/");
     while(pos != -1)
     {
         Path = Path.substr(0, pos);
@@ -549,6 +563,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
    it = location.find(Path);
     if(it != location.end())
     {
+        std::cout << "Location found: " << Path << std::endl;
         this->response_items.location->allowed_methods = it->second.allowed_methods;
         this->response_items.location->root = it->second.root;
         this->response_items.location->index = it->second.index;

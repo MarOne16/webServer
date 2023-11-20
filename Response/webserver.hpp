@@ -46,6 +46,8 @@ public:
     std::string Extension;
     std::string server;
     s_location *location;
+    std::map<std::string, std::string> error_pages;
+
     // std::string root;
     // std::string index;
     // std::string cgi_path;
@@ -100,13 +102,15 @@ private:
     std::string bad_req;
     std::string HTTP_NOT_SUPPORTED;
     std::string Resource_not_found;
+    std::string forbidden_req;
+    
 
 public:
     Response(int status, std::vector<std::string> init_line, http_items &response_items);
-    void build_response();
+    std::string  build_response();
     std::string get_Content_type();
     std::string get_Date();
-    std::string check_index_file();
+    std::string check_index_file(std::string & url);
     void build_GET();
     void build_POST();
     void build_DELETE();
@@ -116,8 +120,17 @@ public:
     int remove_all_files(const char *dirname);
     std::string trim(std::string original);
     std::string get_Content_type(std::string extension);
+    void return_pages(std::string & pages_return);
+    void ft_success_code(std::string status, std::string message);
+    void ft_redirect(std::string status, std::string message);
+    void ft_bad_request(std::string status, std::string message);
+    void ft_forbidden_request(std::string status, std::string message);
+    void other_response(std::string status, std::string message, std::string desc);
+    void ft_default_pages(std::string status, std::string& message, std::string& path);
+
 };
 
-std::list<std::string> split_v(std::string &str, std::string delimiter);
+
+std::vector<std::string> split_v(std::string &str, std::string delimiter);
 std::string Get_response(server &server_data);
 #endif
