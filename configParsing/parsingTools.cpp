@@ -160,11 +160,13 @@ void checkServer(std::map<unsigned int , server> &m_servers)
     {
         int p = it->second.port;
         std::string s_n = it->second.server_name;
+        if ((++it == m_servers.end()))
+            break;
+        --it;
         std::map<unsigned int , server>::iterator it2 = ++it;
-        std::cout << p << " server name : " << s_n << std::endl;
         while (it2 != m_servers.end())
         {
-            if (it2->second.port == p && it2->second.server_name == s_n)
+            if (it2->second.port == p && (it2->second.server_name == s_n))
                 throw std::runtime_error("Two servers have the same port and same server_name");
             it2++;
         }
