@@ -108,7 +108,8 @@ private:
 public:
     Response(int status, std::vector<std::string> init_line, http_items &response_items);
     std::string  build_response();
-    std::string get_Content_type();
+    // std::string get_Content_type();
+    std::string get_Content_type(std::string url);
     std::string get_Date();
     std::string check_index_file(std::string & url);
     void build_GET();
@@ -119,9 +120,8 @@ public:
     void not_found();
     int remove_all_files(const char *dirname);
     std::string trim(std::string original);
-    std::string get_Content_type(std::string extension);
     void return_pages(std::string & pages_return);
-    void ft_success_code(std::string status, std::string message);
+    void ft_success_code(std::string status, std::string message,  std::string URI);
     void ft_redirect(std::string status, std::string message);
     void ft_bad_request(std::string status, std::string message);
     void ft_forbidden_request(std::string status, std::string message);

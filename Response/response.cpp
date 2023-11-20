@@ -52,9 +52,10 @@ std::string Response::build_response()
 
 
 
-std::string Response::get_Content_type()
+std::string Response::get_Content_type(std::string url)
 {
-    std::string extension = this->response_items.Path.substr(this->response_items.Path.rfind(".") + 1);
+    std::string extension = url.substr(url.rfind(".") + 1);
+ 
 	// if (_request.get_header_value("Content-Type:").size())
 	// 	return _request.get_header_value("Content-Type:");
 	if (extension.compare("html") == 0 || extension.compare("php") == 0)
@@ -67,27 +68,31 @@ std::string Response::get_Content_type()
 		return "image/jpeg";
 	else if (extension.compare("jpg") == 0)
 		return "image/jpg";
-	else
+	else if (extension.compare("txt") == 0)
 		return "text/plain";
+   else if (extension.compare("mp4") == 0)
+        return "video/mp4";
+	else
+		return "text/html;";
 }
 
-std::string Response::get_Content_type(std::string extension)
-{
-	// if (_request.get_header_value("Content-Type:").size())
-	// 	return _request.get_header_value("Content-Type:");
-	if (extension.compare("text/html; charset=UTF-8") == 0 || extension.compare("text/html;") == 0)
-		return ".html";
-	else if (extension.compare("application/json") == 0)
-		return ".json";
-	else if (extension.compare("image/x-icon") == 0)
-		return ".ico";
-	else if (extension.compare("image/jpeg") == 0)
-		return "jpeg";
-	else if (extension.compare("mage/jpg") == 0)
-		return ".jpg";
-	else
-		return ".txt";
-}
+// std::string Response::get_Content_type(std::string extension)
+// {
+// 	// if (_request.get_header_value("Content-Type:").size())
+// 	// 	return _request.get_header_value("Content-Type:");
+// 	if (extension.compare("text/html; charset=UTF-8") == 0 || extension.compare("text/html;") == 0)
+// 		return ".html";
+// 	else if (extension.compare("application/json") == 0)
+// 		return ".json";
+// 	else if (extension.compare("image/x-icon") == 0)
+// 		return ".ico";
+// 	else if (extension.compare("image/jpeg") == 0)
+// 		return "jpeg";
+// 	else if (extension.compare("mage/jpg") == 0)
+// 		return ".jpg";
+// 	else
+// 		return ".txt";
+// }
 
 
 std::string Response::get_Date()
@@ -137,7 +142,7 @@ void Response::build_GET()
         std::string autoIndexPage;
 
         URI += this->response_items.Path.substr(1); // TODO : check if path is beging with /
-         std::cout << "here :" << URI << std::endl;
+         std::cout << "here :" << get_auto_index << std::endl;
         if(!this->response_items.location->return_code_url.empty())
         {
             return_pages(this->response_items.location->return_code_url); // TODO: check if this redirected response work
@@ -157,9 +162,14 @@ void Response::build_GET()
                     {
                         DIR *dir = opendir(this->response_items.Path.c_str());
                         struct dirent* entity;
-                        if(get_auto_index == "off")
+                        std::cout << get_auto_index << std::endl;
+                        if(get_auto_index == "off" || get_auto_index.empty())
                         {
-                           this->ft_forbidden_request("403", this->forbidden_req);
+                        //    this->ft_forbidden_request("403", this->forbidden_req);
+                            
+                             std::cout << "defaultpage " << std::endl;
+                            std::string content_body = read_file("./src/index.html");
+                            this->ft_success_code("200", content_body, URI);
                         }
                         else
                         {
@@ -188,7 +198,7 @@ void Response::build_GET()
                                         </div>\n\
                                         </body>\n\
                                         </html>\n";
-                            this->ft_success_code("200", autoIndexPage);
+                            this->ft_success_code("200", autoIndexPage, URI);
                            
                             // add body for index
                         }
@@ -216,15 +226,15 @@ void Response::build_GET()
                                 else
                                 {
                                     std::string content_body = read_file(URI);
-                                    this->ft_success_code("200", content_body);
+                                    this->ft_success_code("200", content_body, URI);
                                 }
                             }                
                         }
                         else
                         {
                             std::cout << "defaultpage " << std::endl;
-                            std::string content_body = read_file(URI);
-                            this->ft_success_code("200", content_body);
+                            std::string content_body = read_file("./src/index.html");
+                            this->ft_success_code("200", content_body, URI);
                         }
                         } 
                 }
@@ -248,7 +258,7 @@ void Response::build_GET()
                     else
                     {
                         std::string content_body = read_file(URI);
-                        this->ft_success_code("200", content_body);
+                        this->ft_success_code("200", content_body, URI);
                     }
                     
                 }
@@ -584,14 +594,14 @@ void Response::ft_default_pages(std::string status, std::string& message, std::s
         }
 }
 
-void Response::ft_success_code(std::string status , std::string message)
+void Response::ft_success_code(std::string status , std::string message, std::string URI)
 {
     if(this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
         ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));
     response << "HTTP/1.1 "<< status << " ok\r\n";
     response << "Content-length: "<< message.length() << "\r\n";
     response << "Connection: close\r\n";
-    response << "Content-Type: " << "text/html" << "\r\n";
+    response << "Content-Type: " << this->get_Content_type(URI) << "\r\n";
     response << "Host: " << this->response_items.server << "\r\n";
     response << "Date: " << this->get_Date()<< "\r\n\r\n";
     response << message;
@@ -605,7 +615,7 @@ void Response::ft_redirect(std::string status, std::string message)
     response << "Location: " << message << "\r\n";
     response << "Content-Length: 0\r\n";
     response << "Connection: close\r\n";
-    response << "Content-Type: " << this->get_Content_type() << "\r\n";
+    response << "Content-Type: " << "text/html" << "\r\n";
     response << "Host: " << this->response_items.server << "\r\n";
     response << "Date: " << this->get_Date()<< "\r\n\r\n";
 }
@@ -620,6 +630,7 @@ void Response::ft_bad_request(std::string status, std::string message)
     response << "Content-Length: " << message.length() << "\r\n";
     response << "Server: " << this->response_items.server << "\r\n";
     response << "Connection: close\r\n";
+    response << "Content-Type: " << "text/html" << "\r\n";
     response << "Date: " << this->get_Date() <<  "\r\n";
     response << "\r\n"; // Blank line to separate headers and body
     response << message;
@@ -634,6 +645,7 @@ void Response::ft_forbidden_request(std::string status , std::string message)
     response << "Content-Length: "<< message.length() << "\r\n";
     response << "Content-Type: text/html";
     response << "Connection: close\r\n\r\n";
+    response << "Content-Type: " << "text/html" << "\r\n";
     response << message ;
 }
 
