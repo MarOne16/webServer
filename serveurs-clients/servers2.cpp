@@ -162,6 +162,7 @@ int main(int ac,const char **av)
     ConfigParser data_conf(av);//
     data_conf.readConfigFile();//
     data_conf.checkBrackets();///
+    checkServer(data_conf.m_servers);///
     /////////////////////////////
     std::vector<int> port;
     std::vector<int> file;
@@ -284,18 +285,17 @@ int main(int ac,const char **av)
                         puts("this is the server --- \n");
                          std::string port , name_serveur; 
                          geve_port_name(  request ,name_serveur,port);
-                         std::cout<<port<<"------    ----"<< name_serveur<<"-----"<<port<<"---";
-                         std::cout<<std::endl ;
-                         exit(0);
-                        feedRequest(0, data_conf.m_servers, request);
+                         
+                         int serveur_id = getServerId(data_conf.m_servers,   atoi(port.c_str()),  name_serveur);
+                        feedRequest(serveur_id, data_conf.m_servers, request);
                         // //TODO send response to client
                         std:: cout << "OK" << std::endl;
-                        respense = sendResponse(0 , data_conf.m_servers);
+                        respense = sendResponse( serveur_id, data_conf.m_servers);
                         std::cout << 
                      
                        
                         ////////////////////////////////////////////////
-                        send(fds[i].fd,respense.c_str(), respense.length(), 0);
+                        send(fds[i].fd,respense.c_str(), respense.length(), serveur_id);
                         //clode fie if  request finale 
                              close(fds[i].fd);
                         

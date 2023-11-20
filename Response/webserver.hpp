@@ -130,7 +130,7 @@ public:
 
 };
 
-
+int getServerId(std::map<unsigned int, server> &serv, int port, std::string server_name);
 std::vector<std::string> split_v(std::string &str, std::string delimiter);
 std::string Get_response(server &server_data);
 #endif
