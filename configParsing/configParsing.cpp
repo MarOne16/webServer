@@ -20,7 +20,6 @@ ConfigParser::ConfigParser(const char **argv)
 
 ConfigParser::~ConfigParser()
 {
-    // puts("ConfigParser destructor called.");
     // system("leaks a.out");
 }
 
@@ -90,6 +89,7 @@ void ConfigParser::feedServers()
     server_tmp.host = getHost();
     server_tmp.max_body_size = getMaxBodySize();
     server_tmp.error_pages = getErrorPages();
+    server_tmp.default_location = getRootServ();
     feedLocations();
     server_tmp.locations = m_locations;
     m_servers[i++] = server_tmp;
@@ -108,7 +108,6 @@ bool ConfigParser::ifInside(std::string scope, std::string toFind)
         return true;
     return false;
 }
-
 
 bool ConfigParser::isValideScope(std::string scope)
 {
@@ -137,14 +136,13 @@ int ConfigParser::getPort()
     if (!ifInside("server", "listen"))
         throw std::runtime_error("No listen directive found.");
     size_t pos = this->content.find("listen");
-    for (size_t i = pos + 7 ; i < this->content.length(); i++)
+    for (size_t i = pos + 7; i < this->content.length(); i++)
     {
         if (content[i] == ';')
             break;
         port += content[i];
     }
     return toInt(port);
-
 }
 
 std::string ConfigParser::getServerName()
@@ -166,7 +164,7 @@ std::string ConfigParser::getServerName()
     }
     for (size_t i = 0; i < serverName.length(); i++)
     {
-        if(isalnum(serverName[i]) || serverName[i] == '.' || serverName[i] == '-' || serverName[i] == '_')
+        if (isalnum(serverName[i]) || serverName[i] == '.' || serverName[i] == '-' || serverName[i] == '_')
             continue;
         else
             throw std::runtime_error("Server name is not valid.");
@@ -193,7 +191,7 @@ std::string ConfigParser::getHost()
     }
     for (size_t i = 0; i < host.length(); i++)
     {
-        if(isalnum(host[i]) || host[i] == '.' || host[i] == '-' || host[i] == '_')
+        if (isalnum(host[i]) || host[i] == '.' || host[i] == '-' || host[i] == '_')
             continue;
         else
             throw std::runtime_error("Host is not valid.");
@@ -223,10 +221,10 @@ std::string ConfigParser::getMaxBodySize()
     return maxBodySize;
 }
 
-std::map<std::string , std::string> ConfigParser::getErrorPages()
+std::map<std::string, std::string> ConfigParser::getErrorPages()
 {
     std::map<std::string, std::string> errorPages;
-    start:
+start:
     if (!ifInside("server", "error_page"))
         throw std::runtime_error("No error page directive found.");
     size_t pos = this->content.find("error_page");
@@ -260,4 +258,57 @@ std::map<std::string , std::string> ConfigParser::getErrorPages()
 unsigned int ConfigParser::getNumber_ofServers()
 {
     return m_servers.size();
+}
+
+std::string ConfigParser::getRootServ()
+{
+    if (content.find("root") == std::string::npos)
+        return "check default location";
+    if (!ifOutsideLocation(content))
+        return "one of location has root";
+    std::string root = "";
+    size_t pos = content.find("root");
+    for (size_t i = pos + 4; i < content.length(); i++)
+    {
+        if (content[i] == ' ' || content[i] == '\t')
+            continue;
+        if (content[i] == ';' || content[i] == '\n')
+        {
+            if (content[i] == ';')
+                root += content[i];
+            break;
+        }
+        root += content[i];
+    }
+    if (!ifClosed(root))
+        throw std::runtime_error("Root directive is not closed.");
+    return root.erase(root.length() - 1, 1);
+}
+
+bool ConfigParser::ifOutsideLocation(std::string line)
+{
+    size_t first_pos = content.find(line);
+    size_t second_pos = first_pos + line.length();
+    for (size_t i = 0; i < content.length(); i++)
+    {
+        size_t first = 0;
+        size_t second = 0;
+        if (content[i] == '(')
+        {
+            first = i;
+            for (size_t j = i; j < content.length(); j++)
+            {
+                if (content[j] == ')')
+                {
+                    second = j;
+                    break;
+                }
+            }
+            if (first < first_pos && second > second_pos)
+                return false;
+            if (second != 0)
+                i = second;
+        }
+    }
+    return true;
 }

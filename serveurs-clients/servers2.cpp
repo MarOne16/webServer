@@ -6,41 +6,78 @@
 // /*   By: iedderqi <iedderqi@student.42.fr>          +#+  +:+       +#+        */
 // /*                                                +#+#+#+#+#+   +#+           */
 // /*   Created: 2023/10/26 14:23:56 by iedderqi          #+#    #+#             */
-/*   Updated: 2023/11/04 16:27:46 by iedderqi         ###   ########.fr       */
+/*   Updated: 2023/11/04 16:27:46 by iedderqi         ###   ########.fr          */
 // /*                                                                            */
 // /* ************************************************************************** */
 
-#include <sys/socket.h> // For socket functions
-#include <netinet/in.h> // For sock=addr_in
-#include <cstdlib>      // For exit() and EXIT_FAILURE
-#include <iostream>     // For cout
-#include <unistd.h>     // For read
-#include <vector>
-#include <poll.h>
-#include <fcntl.h>
 // 1.1.7.1.3.5.8.3.8
 
-
+#include "../Response/webserver.hpp"
 
 ///multi serveurs whit multi clients 
-//TO   DO 
+//TODO 
 ///service_name     
 ///chankese request
 ///merege requset whit serveur 
 
-int main(int ac, char **av)
+void feedRequest(unsigned int index, std::map<unsigned int , server> &serv, std::string content)
+{
+    std::map<unsigned int , server>::iterator it = serv.begin();
+    while (it != serv.end())
+    {
+        if (it->first == index)
+        {
+            it->second.request_content = content;
+            break;
+        }
+        it++; 
+    }
+    
+}
+std::string  sendResponse(unsigned int index, std::map<unsigned int , server> &serv)
+{
+    std::map<unsigned int , server>::iterator it = serv.begin();
+    while (it != serv.end())
+    {
+        if (it->first == index)
+            return(Get_response(it->second));
+        it++;
+    }
+    return ("");
+}
+void ports(std::vector<int> &port, std::map<unsigned int , server> &data_serv)
+{
+    std::map<unsigned int , server>::iterator itb = data_serv.begin();
+    std::map<unsigned int , server>::iterator ite = data_serv.end();
+    while (itb != ite)
+    {
+        port.push_back((itb->second.port));
+        std::cout << (itb->second.port) << std::endl;
+        itb++;
+    }
+}
+int main(int ac,const char **av)
 {
     // how to serveu run the port serveur
     // create multi serveur
     //  innsilit port
+    (void)ac;
+    try
+    {
+    /////////////////////////////
+    ConfigParser data_conf(av);//
+    data_conf.readConfigFile();//
+    data_conf.checkBrackets();///
+    /////////////////////////////
     std::vector<int> port;
     std::vector<int> file;
+    
     std::vector<struct sockaddr_in> addresses;
     std::vector<socklen_t> addresselent;
     std::vector<int> new_cont;
-    port.push_back(800);
-    port.push_back(9080);
-    for (int i = 0; i < 2; i++)
+    std::string respense;
+    ports(port, data_conf.m_servers);
+    for (unsigned int i = 0; i < data_conf.getNumber_ofServers(); i++)
     {
         struct sockaddr_in adrese;
         socklen_t addrlen = sizeof(adrese);
@@ -49,6 +86,12 @@ int main(int ac, char **av)
         {
             perror("socket:felaid ");
             exit(0);
+            
+        }
+        int opt = 1;
+        if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) == -1)
+        {
+            perror("setsockopt");
         }
         fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);///non-blocking file descriptors 
         adrese.sin_addr.s_addr = INADDR_ANY;
@@ -69,7 +112,7 @@ int main(int ac, char **av)
         addresselent.push_back(addrlen);
     }
     std::vector<struct pollfd> fds;
-    for (int i = 0; i< file.size(); i++) {
+    for (size_t i = 0; i < file.size(); i++) {
         struct pollfd poll;
         poll.fd = file[i];
         poll.events = POLLIN;
@@ -78,7 +121,6 @@ int main(int ac, char **av)
 
     while (true)
     {
-        // int co;
         int ret = poll(fds.data(), fds.size(), -1);
         if (ret == -1)
         {
@@ -86,7 +128,7 @@ int main(int ac, char **av)
             return (0);
         }
 
-        for (int i = 0; i < fds.size(); i++)
+        for (size_t i = 0; i < fds.size(); i++)
         {
             if (fds[i].revents & POLLIN)
             {
@@ -110,15 +152,35 @@ int main(int ac, char **av)
                 else
                 {
                     // client bye bye
-
+                    std::string request;
                     char buf[1024];
                     bzero(buf, 1024);
                     int rec = recv(fds[i].fd, buf, 1024, 0);
+                    request  = buf ;
                     if (rec < 0)
                     {
+                        
                         perror("recv");
                         exit(1);
                     }
+                    if (rec > 0)
+                    {
+                       while(strlen(buf)>0 )
+                    {
+                      
+                        request += buf;
+                        bzero(buf, 1024); 
+                        std::cout<<"yarbi_shal_3lina\n";
+                        rec = recv(fds[i].fd, buf, 1024, 0);
+                        if (rec < 0)
+                    {
+                        
+                        perror("recv");
+                        break;
+                    }
+                        } 
+                    }
+                    
                     if (rec == 0)
                     {
                         fds.erase(fds.begin() + i);
@@ -126,7 +188,20 @@ int main(int ac, char **av)
                     }
                     else
                     {
-                        std::cout << buf;
+                        puts("this is the server");
+                        std::cout << request;
+                        feedRequest((unsigned int )i, data_conf.m_servers, request);
+                        // //TODO send response to client
+                        std:: cout << "OK" << std::endl;
+                        respense = sendResponse(i , data_conf.m_servers);
+                        std::cout << 
+                     
+                       
+                        ////////////////////////////////////////////////
+                        send(fds[i].fd,respense.c_str(), respense.length(), 0);
+                        //clode fie if  request finale 
+                             close(fds[i].fd);
+                        
                     }
                     // messgae wssel
                 }
@@ -134,6 +209,9 @@ int main(int ac, char **av)
             // close(co);
         }
     }
-
-    return (0);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
 }
