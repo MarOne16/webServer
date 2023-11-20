@@ -109,3 +109,4 @@ bool ifClosed(std::string line);
 bool ifCgi(std::string location);
 bool notHas(std::string str, std::string s);
 void addElement(std::string &str, std::string element, size_t pos);
+void checkServer(std::map<unsigned int , server> &m_servers);
