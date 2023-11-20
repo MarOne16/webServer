@@ -152,3 +152,24 @@ void addElement(std::string &str, std::string element, size_t pos)
     std::string::iterator it = str.begin();
     str.insert(it + pos, element.begin(), element.end());
 }
+
+void checkServer(std::map<unsigned int , server> &m_servers)
+{
+    std::map<unsigned int , server>::iterator it = m_servers.begin();
+    while (it != m_servers.end())
+    {
+        int p = it->second.port;
+        std::string s_n = it->second.server_name;
+        if ((++it == m_servers.end()))
+            break;
+        --it;
+        std::map<unsigned int , server>::iterator it2 = ++it;
+        while (it2 != m_servers.end())
+        {
+            if (it2->second.port == p && (it2->second.server_name == s_n))
+                throw std::runtime_error("Two servers have the same port and same server_name");
+            it2++;
+        }
+        it++;
+    }
+}

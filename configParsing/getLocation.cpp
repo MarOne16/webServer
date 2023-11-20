@@ -190,7 +190,7 @@ std::string ConfigParser::getFastcgiPass(std::string location)
 std::string ConfigParser::getAllowedMethods(std::string location)
 {
     if (!isInsidLocation(location, "allow"))
-        return "";
+        return "GET";
     std::string allowed_methods = "";
     size_t start = location.find("allow");
     for (size_t i = start + 5; i < location.length(); i++)
@@ -218,8 +218,6 @@ std::string ConfigParser::getReturnCodeUrl(std::string location)
     size_t start = location.find("return");
     for (size_t i = start + 6; i < location.length(); i++)
     {
-        if (location[i] == ' ' || location[i] == '\t')
-            continue;
         if (location[i] == ';' || location[i] == '\n')
         {
             if (location[i] == ';')
