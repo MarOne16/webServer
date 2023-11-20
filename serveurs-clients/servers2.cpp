@@ -157,6 +157,7 @@ int main(int ac,const char **av)
                     bzero(buf, 1024);
                     int rec = recv(fds[i].fd, buf, 1024, 0);
                     request  = buf ;
+                     bzero(buf, 1024);
                     if (rec < 0)
                     {
                         
@@ -173,14 +174,12 @@ int main(int ac,const char **av)
                         std::cout<<"yarbi_shal_3lina\n";
                         rec = recv(fds[i].fd, buf, 1024, 0);
                         if (rec < 0)
-                    {
-                        
-                        perror("recv");
+                     
                         break;
-                    }
+                    
                         } 
                     }
-                    
+                      
                     if (rec == 0)
                     {
                         fds.erase(fds.begin() + i);
@@ -190,10 +189,11 @@ int main(int ac,const char **av)
                     {
                         puts("this is the server");
                         std::cout << request;
-                        feedRequest((unsigned int )i, data_conf.m_servers, request);
+                        
+                        feedRequest(0, data_conf.m_servers, request);
                         // //TODO send response to client
                         std:: cout << "OK" << std::endl;
-                        respense = sendResponse(i , data_conf.m_servers);
+                        respense = sendResponse(0 , data_conf.m_servers);
                         std::cout << 
                      
                        

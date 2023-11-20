@@ -8,7 +8,7 @@ FILES  = ./configParsing/getLocation.cpp \
 		./Response/requese.cpp \
 		./Response/response.cpp \
 		./Response/tools.cpp \
-		./serveurs-clients/servers.cpp 
+		./serveurs-clients/servers2.cpp 
 
 OBJS   = $(FILES:.cpp=.o)
 HEADER = ./Response/webserver.hpp
