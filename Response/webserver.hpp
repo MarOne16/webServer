@@ -111,6 +111,7 @@ public:
     std::string  build_response();
     // std::string get_Content_type();
     std::string get_Content_type(std::string url);
+    std::string get_type(std::string extension);
     std::string get_Date();
     std::string check_index_file(std::string & url);
     void build_GET();

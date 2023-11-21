@@ -62,36 +62,40 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             std::stringstream os(req);
             RequestBody *ele;
             //TODO : change value of boundary when u find it
-            std::cout <<  "||" << this->response_items.bondary  << "||" << std::endl;
+            // std::cout <<  "||" << this->response_items.bondary  << "||" << std::endl;
             while (std::getline(os, token, '\n'))
             {
                 ele = new RequestBody;
-                        std::cout << "||" << req << "||" << std::endl;
-                    while(token != this->response_items.bondary)
+                        // std::cout << "||" << req << "||" << std::endl;
+                    token = token.substr(0, token.size() - 1);
+                    while(token.compare(this->response_items.bondary) != 0)
                     {
                         // std::cout << "||" << token << "||" << std::endl;
-                        // if (token.find("Content-Disposition") != std::string::npos) 
-                        // {
-                        //         ele->ContentDisposition = token;
-                        //         std::cout << "Content-Disposition : " << ele->ContentDisposition << std::endl;
-                        //         token.clear();
-                        // }
-                        // if (token.find("Content-Type") != std::string::npos  ) 
-                        // {
-                        //         ele->ContentDisposition = token;
-                        //         std::cout << "Content-Type : " << ele->ContentType << std::endl;
-                        //         token.clear();
-                        // }
-                        // else if(token.compare(this->response_items.bondary))
-                        // {
-                        //     ele->Content += token;
-                        //     std::cout << "Content:" << ele->Content  << "|" << std::endl;
-                        //     token.clear();
-                        // }
-                        if(os.eof())
-                            break;
+                        if (token.find("Content-Disposition") != std::string::npos) 
+                        {
+                                ele->ContentDisposition = token;
+                                // std::cout << "Content-Disposition : " << token << std::endl;
+                                token.clear();
+                        }
+                        if (token.find("Content-Type") != std::string::npos  ) 
+                        {
+                                ele->ContentType = token;
+                                // std::cout << "Content-Type : " << token << std::endl;
+                                token.clear();
+                        }
+                        else if(token.compare(this->response_items.bondary))
+                        {
+                            ele->Content += token;
+                            // std::cout << "Content:" << token  << "|" << std::endl;
+                            token.clear();
+                        }
                         std::getline(os, token, '\n');
+                        token = token.substr(0, token.size() - 1);
+                        if(os.eof() || token.compare(this->response_items.bondary + "--") == 0)
+                            break;
                     }
+                    
+                    std::cout << "point to ele" << std::endl;
                     if(!ele->Content.empty() )
                     {
                         if(!ele->ContentDisposition.empty())
@@ -102,17 +106,20 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                         this->response_items.ChunkedBody.push_back(ele);
                     }
             }
-            // std::vector<RequestBody *>::iterator it;
-            // it = this->response_items.ChunkedBody.begin();
-            // while(it != this->response_items.ChunkedBody.end())
-            // {
-            //     std::cout << (*it)->Content << std::endl;
-            //     std::cout << (*it)->ContentDisposition << std::endl;
-            //     std::cout << (*it)->ContentType << std::endl;
-            //     it++;
+            std::vector<RequestBody *>::iterator it;
+            it = this->response_items.ChunkedBody.begin();
+            while(it != this->response_items.ChunkedBody.end())
+            {
+                std::cout << "Content-Disposition : " << (*it)->ContentDisposition << std::endl;
+                 std::cout << "Content:" << (*it)->Content  << "|" << std::endl;
+                 std::cout << "ContentType:" << (*it)->ContentType  << "|" << std::endl;
+                 std::cout <<  "-------------------------------" << std::endl;
+                // std::cout << (*it)->ContentDisposition <<  "----------- "<< std::endl;
+                // std::cout << (*it)->ContentType  << "----------- "<< std::endl;
+                it++;
 
-            // }
-            exit(0);
+            }
+            // exit(0);
             // std::cout << req <<  std::endl;
     }
     else

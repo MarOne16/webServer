@@ -95,23 +95,23 @@ while(i < 23)
 		return "text/html;";
 }
 
-// std::string Response::get_Content_type(std::string extension)
-// {
-// 	// if (_request.get_header_value("Content-Type:").size())
-// 	// 	return _request.get_header_value("Content-Type:");
-// 	if (extension.compare("text/html; charset=UTF-8") == 0 || extension.compare("text/html;") == 0)
-// 		return ".html";
-// 	else if (extension.compare("application/json") == 0)
-// 		return ".json";
-// 	else if (extension.compare("image/x-icon") == 0)
-// 		return ".ico";
-// 	else if (extension.compare("image/jpeg") == 0)
-// 		return "jpeg";
-// 	else if (extension.compare("mage/jpg") == 0)
-// 		return ".jpg";
-// 	else
-// 		return ".txt";
-// }
+std::string Response::get_type(std::string extension)
+{
+	// if (_request.get_header_value("Content-Type:").size())
+	// 	return _request.get_header_value("Content-Type:");
+	if (extension.compare("text/html; charset=UTF-8") == 0 || extension.compare("text/html;") == 0)
+		return ".html";
+	else if (extension.compare("application/json") == 0)
+		return ".json";
+	else if (extension.compare("image/x-icon") == 0)
+		return ".ico";
+	else if (extension.compare("image/jpeg") == 0)
+		return "jpeg";
+	else if (extension.compare("mage/jpg") == 0)
+		return ".jpg";
+	else
+		return ".txt";
+}
 
 
 std::string Response::get_Date()
@@ -448,17 +448,18 @@ void Response::build_POST()
                 std::cout << "lenght of ChunkBody" <<  this->response_items.ChunkedBody.size() << std::endl;
                 while(k < this->response_items.ChunkedBody.size())
                 {
-                    std::cout << "content-body" << (*it)->Content << " " << (*it)->ContentDisposition << std::endl;
+                    // std::cout << "content-body" << (*it)->Content << " " << (*it)->ContentDisposition << std::endl;
                     if(!(*it)->ContentType.empty())
                     {
                         if(!(*it)->ContentDisposition.empty())
                         {
-                            pos = (*it)->ContentDisposition.find("namefile=");
+                            pos = (*it)->ContentDisposition.find("filename=");
                             if(pos != -1)
                             {
                                 namefile = (*it)->ContentDisposition.substr(pos + 10);
-                                pos = (*it)->ContentDisposition.find("Content-Type=");
-                                namefile += get_Content_type(trim((*it)->ContentDisposition.substr(pos + 14)));
+                                namefile = namefile.substr(0, namefile.find("\""));
+                                // pos = (*it)->ContentType.find("Content-Type=");
+                                // namefile += get_type(trim((*it)->ContentType.substr(pos + 14)));
                                 std::cout << "file name :" << namefile << std::endl;
                             }
                         }
@@ -472,12 +473,12 @@ void Response::build_POST()
                             std::cout <<  namefile  << "not open file make response to handle error";
 
                     }
-                    }
                     file.open(namefile);
+                    std::cout << namefile << std::endl;
                     namefile.clear();
                     if(!file.is_open())
                     {
-                       this->not_found();
+                       this->other_response("505", "Version Not Supported", this->HTTP_NOT_SUPPORTED);
                        return;
                     } 
                     if(!(*it)->Content.empty())
@@ -485,6 +486,7 @@ void Response::build_POST()
                         file << (*it)->Content;
                     }
                      file.close();
+                    }
                     it++;
                     k++;
                 }
