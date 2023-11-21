@@ -181,7 +181,7 @@ void Response::build_GET()
                     {
                         DIR *dir = opendir(this->response_items.Path.c_str());
                         struct dirent* entity;
-                        std::cout << get_auto_index << std::endl;
+                        std::cout << "hi:" << get_auto_index << std::endl;
                         if(get_auto_index == "off" || get_auto_index.empty())
                         {
                         //    this->ft_forbidden_request("403", this->forbidden_req);
@@ -456,8 +456,10 @@ void Response::build_POST()
                             pos = (*it)->ContentDisposition.find("filename=");
                             if(pos != -1)
                             {
+                                // std::string prefix = "./src/";
                                 namefile = (*it)->ContentDisposition.substr(pos + 10);
                                 namefile = namefile.substr(0, namefile.find("\""));
+                                // namefile = prefix + namefile;
                                 // pos = (*it)->ContentType.find("Content-Type=");
                                 // namefile += get_type(trim((*it)->ContentType.substr(pos + 14)));
                                 std::cout << "file name :" << namefile << std::endl;
@@ -473,7 +475,7 @@ void Response::build_POST()
                             std::cout <<  namefile  << "not open file make response to handle error";
 
                     }
-                    file.open(namefile);
+                    file.open(this->response_items.location->upload_store_directory + namefile);
                     std::cout << namefile << std::endl;
                     namefile.clear();
                     if(!file.is_open())
