@@ -150,6 +150,16 @@ void  geve_port_name(std::string request ,std::string &name_serveur , std::strin
 
 }
 
+void replaceAll(std::string& str, const std::string& from, const std::string& to) {
+    if(from.empty())
+        return;
+    size_t start_pos = 0;
+    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
+    }
+}
+
 int main(int ac,const char **av)
 {
     // how to serveu run the port serveur
@@ -213,7 +223,7 @@ int main(int ac,const char **av)
         poll.events = POLLIN;
         fds.push_back(poll);
     }
-
+ std::string request;
     while (true)
     {
         int ret = poll(fds.data(), fds.size(), -1);
@@ -227,7 +237,7 @@ int main(int ac,const char **av)
         {
             if (fds[i].revents & POLLIN)
             {
-
+ 
                 if (std::find(file.begin(), file.end(), fds[i].fd) != file.end())
                 {
                     std::cout << "hello new\n"
@@ -247,51 +257,64 @@ int main(int ac,const char **av)
                 else
                 {
                     // client bye bye
-                    std::string request;
+                    
                     char buf[1024];
                     bzero(buf, 1024);
                     int rec = recv(fds[i].fd, buf, 1024, 0);
-                    request  = buf ;
-                     bzero(buf, 1024);
+                   std::cout<<"----1337\n";
+                     
                     if (rec < 0)
                     {
                         
                         perror("recv");
                         exit(1);
                     }
-                    if (rec > 0)
-                    {
-                       while(strlen(buf)>0 )
-                    {
-                      
-                        request += buf;
-                        bzero(buf, 1024); 
-                        std::cout<<"yarbi_shal_3lina\n";
-                        rec = recv(fds[i].fd, buf, 1024, 0);
-                        if (rec < 0)
-                     
-                        break;
+
+                    request += std::string(buf, rec);
+                    // if (rec > 0    )
+                    // {
                     
-                        } 
-                    }
+                    //    while(strlen(buf)>0  )
+                    //    {
+                    //     request += buf;
+                    //     std::cout<<"sdgf\n";
+                    
+                    //     bzero(buf, 1024); 
+                    //     std::cout<<"yarbi_shal_3lina\n";
+                    //     rec = recv(fds[i].fd, buf, 1024, 0);
+                    //     if (rec < 0)
+                    //     {
+                            
+                    //          perror("yarbi_,mat3dbnach ::");
+                    //          exit(0);
+                    //     // exit(0);
+                    //     break;
+                    //     }
+                    
+
+                
+                    //     } 
+                    // }
                       
                     if (rec == 0)
                     {
                         fds.erase(fds.begin() + i);
                         std::cout << "bybye" << std::endl;
                     }
-                    else
+                  if(request.size() >= 13229750)
                     {
                         puts("this is the server --- \n");
                          std::string port , name_serveur; 
                          geve_port_name(  request ,name_serveur,port);
-                         
+                         replaceAll(request, "\r\n", "\\r\n");
+                         std::cout<<request;
+                         exit(0);
                          int serveur_id = getServerId(data_conf.m_servers,   atoi(port.c_str()),  name_serveur);
                         feedRequest(serveur_id, data_conf.m_servers, request);
                         // //TODO send response to client
                         std:: cout << "OK" << std::endl;
                         respense = sendResponse( serveur_id, data_conf.m_servers);
-                        std::cout << 
+                    
                      
                        
                         ////////////////////////////////////////////////
