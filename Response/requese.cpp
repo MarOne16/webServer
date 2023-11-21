@@ -95,7 +95,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                             break;
                     }
                     
-                    std::cout << "point to ele" << std::endl;
+                    // std::cout << "point to ele" << std::endl;
                     if(!ele->Content.empty() )
                     {
                         if(!ele->ContentDisposition.empty())
@@ -106,19 +106,19 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                         this->response_items.ChunkedBody.push_back(ele);
                     }
             }
-            std::vector<RequestBody *>::iterator it;
-            it = this->response_items.ChunkedBody.begin();
-            while(it != this->response_items.ChunkedBody.end())
-            {
-                std::cout << "Content-Disposition : " << (*it)->ContentDisposition << std::endl;
-                 std::cout << "Content:" << (*it)->Content  << "|" << std::endl;
-                 std::cout << "ContentType:" << (*it)->ContentType  << "|" << std::endl;
-                 std::cout <<  "-------------------------------" << std::endl;
-                // std::cout << (*it)->ContentDisposition <<  "----------- "<< std::endl;
-                // std::cout << (*it)->ContentType  << "----------- "<< std::endl;
-                it++;
+            // std::vector<RequestBody *>::iterator it;
+            // it = this->response_items.ChunkedBody.begin();
+            // while(it != this->response_items.ChunkedBody.end())
+            // {
+            //     std::cout << "Content-Disposition : " << (*it)->ContentDisposition << std::endl;
+            //      std::cout << "Content:" << (*it)->Content  << "|" << std::endl;
+            //      std::cout << "ContentType:" << (*it)->ContentType  << "|" << std::endl;
+            //      std::cout <<  "-------------------------------" << std::endl;
+            //     // std::cout << (*it)->ContentDisposition <<  "----------- "<< std::endl;
+            //     // std::cout << (*it)->ContentType  << "----------- "<< std::endl;
+            //     it++;
 
-            }
+            // }
             // exit(0);
             // std::cout << req <<  std::endl;
     }
@@ -577,6 +577,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
             this->response_items.location->upload_store_directory = it->second.upload_store_directory;
             this->response_items.location->cgi_path = it->second.cgi_path;
             this->response_items.location->upload_enable = it->second.upload_enable;
+            this->response_items.location->autoindex = it->second.autoindex;
             return Path;
         }
     }
@@ -595,6 +596,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
             this->response_items.location->upload_store_directory = it->second.upload_store_directory;
             this->response_items.location->cgi_path = it->second.cgi_path;
             this->response_items.location->upload_enable = it->second.upload_enable;
+            this->response_items.location->autoindex =it->second.autoindex;
             return Path;
         }
         pos = Path.rfind("/"); 
@@ -612,7 +614,9 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         this->response_items.location->upload_store_directory = it->second.upload_store_directory;
         this->response_items.location->cgi_path = it->second.cgi_path;
         this->response_items.location->upload_enable = it->second.upload_enable;
+        this->response_items.location->autoindex = it->second.autoindex;
     }
         std::cout << "==========>" << std::endl;
+    // std::cou << "auto_index:" <<  << std::endl;
     return Path;
 }
