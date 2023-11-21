@@ -13,7 +13,7 @@ bool ConfigParser::isInsidLocation(std::string location ,std::string toFind)
 std::string ConfigParser::getRootLocation(std::string location)
 {
     if (!isInsidLocation(location, "root"))
-        return "";
+        return global_root;
     std::string root = "";
     size_t start = location.find("root");
     for (size_t i = start + 4; i < location.length(); i++)
@@ -233,6 +233,30 @@ std::string ConfigParser::getReturnCodeUrl(std::string location)
     return return_code_url;
 }
 
+std::string ConfigParser::getUploadDirectory(std::string location)
+{
+    std::string upload_directory = "";
+    size_t start = location.find("upload_store");
+    if (start == std::string::npos)
+        return global_upload_store;
+    for (size_t i = start + 12; i < location.length(); i++)
+    {
+        if (location[i] == ' ' || location[i] == '\t')
+            continue;
+        if (location[i] == ';' || location[i] == '\n')
+        {
+            if (location[i] == ';')
+                upload_directory += location[i];
+            break;
+        }
+        upload_directory += location[i];
+        location.erase(i--, 1);
+    }
+    if (!ifClosed(upload_directory))
+        throw std::runtime_error("Upload directory directive is not closed.");
+    upload_directory.erase(upload_directory.length() - 1, 1);
+    return upload_directory;
+}
 
 std::string ConfigParser::getLocationName(std::string location)
 {
@@ -269,6 +293,33 @@ std::string ConfigParser::getLocationName(std::string location)
     throw std::runtime_error("Location directive is not valid.");
 }
 
+std::string ConfigParser::getUploadEnable(std::string location)
+{
+    if (!isInsidLocation(location, "upload_enable"))
+        return "off";
+    std::string upload_enable = "";
+    size_t start = location.find("upload_enable");
+    for (size_t i = start + 13; i < location.length(); i++)
+    {
+        if (location[i] == ' ' || location[i] == '\t')
+            continue;
+        if (location[i] == ';' || location[i] == '\n')
+        {
+            if (location[i] == ';')
+                upload_enable += location[i];
+            break;
+        }
+        upload_enable += location[i];
+        location.erase(i--, 1);
+    }
+    if (!ifClosed(upload_enable))
+        throw std::runtime_error("Upload enable directive is not closed.");
+    upload_enable.erase(upload_enable.length() - 1, 1);
+    if (upload_enable != "on" && upload_enable != "off" && upload_enable != "ON" && upload_enable != "OFF")
+        throw std::runtime_error("upload_enable must be on or off.");
+    return upload_enable;
+}
+
 void ConfigParser::feedLocations()
 {
     start:
@@ -284,8 +335,6 @@ void ConfigParser::feedLocations()
     for (size_t i = start2 ; i < end; i++)
     {
         tmp.root = getRootLocation(this->content.substr(start2, end));
-        if (tmp.root == "")
-            tmp.root = getRootServ();
         tmp.alias = getAlias(this->content.substr(start2, end));
         tmp.index = getIndex(this->content.substr(start2, end));
         tmp.cgi_path = getCgiPath(this->content.substr(start, end));
@@ -294,6 +343,8 @@ void ConfigParser::feedLocations()
         tmp.cgi_extension = getCgiExtension(this->content.substr(start, end));
         tmp.return_code_url = getReturnCodeUrl(this->content.substr(start2, end));
         tmp.allowed_methods = getAllowedMethods(this->content.substr(start2, end));
+        tmp.upload_store_directory = getUploadDirectory(this->content.substr(start2, end));
+        tmp.upload_enable = getUploadEnable(this->content.substr(start2, end));
     }
     this->m_locations.insert(std::pair<std::string, location>(locationname, tmp));
     ereaseContent(this->content, start, ')');

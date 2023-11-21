@@ -83,6 +83,7 @@ void ConfigParser::checkBrackets()
 void ConfigParser::feedServers()
 {
     static int i;
+    globalUpload();
     server server_tmp;
     server_tmp.port = getPort();
     server_tmp.server_name = getServerName();
@@ -263,26 +264,29 @@ unsigned int ConfigParser::getNumber_ofServers()
 std::string ConfigParser::getRootServ()
 {
     if (content.find("root") == std::string::npos)
-        return "check default location";
-    if (!ifOutsideLocation(content))
-        return "one of location has root";
-    std::string root = "";
-    size_t pos = content.find("root");
-    for (size_t i = pos + 4; i < content.length(); i++)
+        return (global_root = "DEFAULT_ROOT");//TODO: change to default root
+    if (ifOutsideLocation("root"))
     {
-        if (content[i] == ' ' || content[i] == '\t')
-            continue;
-        if (content[i] == ';' || content[i] == '\n')
+        std::string root = "";
+        size_t pos = content.find("root");
+        for (size_t i = pos + 4; i < content.length(); i++)
         {
-            if (content[i] == ';')
-                root += content[i];
-            break;
+            if (content[i] == ' ' || content[i] == '\t')
+                continue;
+            if (content[i] == ';' || content[i] == '\n')
+            {
+                if (content[i] == ';')
+                    root += content[i];
+                break;
+            }
+            root += content[i];
         }
-        root += content[i];
+        if (!ifClosed(root))
+            throw std::runtime_error("Root directive is not closed.");
+        ereaseContent(content, pos, ';');
+        global_root = root.erase(root.length() - 1, 1);
     }
-    if (!ifClosed(root))
-        throw std::runtime_error("Root directive is not closed.");
-    return root.erase(root.length() - 1, 1);
+    return global_root;
 }
 
 bool ConfigParser::ifOutsideLocation(std::string line)
@@ -311,4 +315,34 @@ bool ConfigParser::ifOutsideLocation(std::string line)
         }
     }
     return true;
+}
+
+void ConfigParser::globalUpload()
+{
+    if (content.find("upload_store_directory") == std::string::npos)
+    {
+        global_upload_store = "DEFAULT_UPLOAD_STORE";
+        return;
+    }
+    if (ifOutsideLocation("upload_store_directory"))
+    {
+        std::string upload = "";
+        size_t pos = content.find("upload_store_directory");
+        for (size_t i = pos + 22; i < content.length(); i++)
+        {
+            if (content[i] == ' ' || content[i] == '\t')
+                continue;
+            if (content[i] == ';' || content[i] == '\n')
+            {
+                if (content[i] == ';')
+                    upload += content[i];
+                break;
+            }
+            upload += content[i];
+        }
+        if (!ifClosed(upload))
+            throw std::runtime_error("upload directive is not closed.");
+        ereaseContent(content, pos, ';');
+        global_upload_store = upload.erase(upload.length() - 1, 1);
+    }
 }

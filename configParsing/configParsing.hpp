@@ -61,6 +61,8 @@ class ConfigParser
         ConfigParser();
 
     public:
+        std::string global_root;
+        std::string global_upload_store;
         std::map<std::string, location> m_locations;
         std::map<unsigned int , server> m_servers;
         std::string content;
@@ -73,6 +75,7 @@ class ConfigParser
         void checkBrackets();
         void feedContent();
         bool ifOutsideLocation(std::string line);
+        void globalUpload();
 
         // geters
         int             getPort();
@@ -94,6 +97,8 @@ class ConfigParser
         std::string getCgiExtension(std::string location); // get cgi_extension from location
         std::string getAllowedMethods(std::string location); // get allowed_methods from location
         std::string getReturnCodeUrl(std::string location); // get return_code_url from location
+        std::string getUploadEnable(std::string location); // get upload_enable from location
+        std::string getUploadDirectory(std::string location);
         void feedServers(); // feed m_servers
         ConfigParser(const char **argv);
         ~ConfigParser();
