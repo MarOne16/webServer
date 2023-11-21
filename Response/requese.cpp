@@ -66,26 +66,28 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             while (std::getline(os, token, '\n'))
             {
                 ele = new RequestBody;
+                        std::cout << "||" << req << "||" << std::endl;
                     while(token != this->response_items.bondary)
                     {
-                        if (token.find("Content-Disposition") != std::string::npos) 
-                        {
-                                ele->ContentDisposition = token;
-                                std::cout << "Content-Disposition : " << ele->ContentDisposition << std::endl;
-                                token.clear();
-                        }
-                        if (token.find("Content-Type") != std::string::npos  ) 
-                        {
-                                ele->ContentDisposition = token;
-                                std::cout << "Content-Type : " << ele->ContentType << std::endl;
-                                token.clear();
-                        }
-                        else if(token != this->response_items.bondary)
-                        {
-                            ele->Content += token;
-                            std::cout << "Content: " << ele->Content << std::endl;
-                            token.clear();
-                        }
+                        // std::cout << "||" << token << "||" << std::endl;
+                        // if (token.find("Content-Disposition") != std::string::npos) 
+                        // {
+                        //         ele->ContentDisposition = token;
+                        //         std::cout << "Content-Disposition : " << ele->ContentDisposition << std::endl;
+                        //         token.clear();
+                        // }
+                        // if (token.find("Content-Type") != std::string::npos  ) 
+                        // {
+                        //         ele->ContentDisposition = token;
+                        //         std::cout << "Content-Type : " << ele->ContentType << std::endl;
+                        //         token.clear();
+                        // }
+                        // else if(token.compare(this->response_items.bondary))
+                        // {
+                        //     ele->Content += token;
+                        //     std::cout << "Content:" << ele->Content  << "|" << std::endl;
+                        //     token.clear();
+                        // }
                         if(os.eof())
                             break;
                         std::getline(os, token, '\n');
