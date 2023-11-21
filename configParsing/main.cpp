@@ -8,6 +8,7 @@ int main(int argc, const char **argv)
         ConfigParser cfp(argv);
         cfp.readConfigFile();
         cfp.checkBrackets();
+        checkServer(cfp.m_servers);
         std::map<unsigned int, server>::iterator it = cfp.m_servers.begin();
         while (it != cfp.m_servers.end())
         {

@@ -190,7 +190,7 @@ std::string ConfigParser::getFastcgiPass(std::string location)
 std::string ConfigParser::getAllowedMethods(std::string location)
 {
     if (!isInsidLocation(location, "allow"))
-        return "";
+        return "GET";
     std::string allowed_methods = "";
     size_t start = location.find("allow");
     for (size_t i = start + 5; i < location.length(); i++)
@@ -233,6 +233,42 @@ std::string ConfigParser::getReturnCodeUrl(std::string location)
     return return_code_url;
 }
 
+
+std::string ConfigParser::getLocationName(std::string location)
+{
+    addElement(location, " ", location.find("("));
+    std::string firstline = location.substr(0, location.find('\n'));
+    std::list<std::string> list = split(firstline, " ");
+    if (list.size() == 2)
+    {
+        std::list<std::string>::iterator it = list.begin();
+        if (*it != "location")
+            throw std::runtime_error("Location directive is not valid.");
+        it++;
+        if (notHas(*it, " )\t\n("))
+            return *it;
+        else
+            throw std::runtime_error("Location directive is not valid.");
+    }
+    if (list.size() == 3)
+    {
+        std::list<std::string>::iterator it = list.begin();
+        if (*it != "location")
+            throw std::runtime_error("Location directive is not valid.");
+        it++;
+        if (notHas(*it, " )\t\n("))
+            return *it;
+        else
+        {
+            it++;
+            if (*it != "(" || *it != "\n" || *it != "\t")
+                throw std::runtime_error("Location directive is not valid.");
+            return *--it;
+        }
+    }
+    throw std::runtime_error("Location directive is not valid.");
+}
+
 void ConfigParser::feedLocations()
 {
     start:
@@ -244,8 +280,7 @@ void ConfigParser::feedLocations()
     size_t end = this->content.find(')', start);
     if (start2 == std::string::npos || end == std::string::npos)
         throw std::runtime_error("No closing bracket found in location directive.");
-    std::string locationname = this->content.substr(start + 9, start2 - start - 10);
-
+    std::string locationname = getLocationName(this->content.substr(start, end));
     for (size_t i = start2 ; i < end; i++)
     {
         tmp.root = getRootLocation(this->content.substr(start2, end));
@@ -262,5 +297,6 @@ void ConfigParser::feedLocations()
     }
     this->m_locations.insert(std::pair<std::string, location>(locationname, tmp));
     ereaseContent(this->content, start, ')');
+    // exit(0);
     goto start;
 }

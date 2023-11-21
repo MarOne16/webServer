@@ -30,7 +30,7 @@ void feedRequest(unsigned int index, std::map<unsigned int , server> &serv, std:
             it->second.request_content = content;
             break;
         }
-        it++;
+        it++; 
     }
     
 }
@@ -45,7 +45,6 @@ std::string  sendResponse(unsigned int index, std::map<unsigned int , server> &s
     }
     return ("");
 }
-
 void ports(std::vector<int> &port, std::map<unsigned int , server> &data_serv)
 {
     std::map<unsigned int , server>::iterator itb = data_serv.begin();
@@ -57,6 +56,100 @@ void ports(std::vector<int> &port, std::map<unsigned int , server> &data_serv)
         itb++;
     }
 }
+int is_Host(std::string host )
+{
+    return(host == "Host");
+
+}
+std::string inforamation(std::string reqeust ,size_t  i )
+ {
+    std::string data ;
+    
+    for(size_t  j = i; j < reqeust.size()  ; j++)
+    {
+ 
+        // std::
+        if(reqeust[j] == '\n' || reqeust[j] =='\r')
+            break;
+
+       data = data + reqeust[j];
+      
+
+    }
+     
+ 
+    return(data);
+
+
+ }
+ int is_digit(char c)
+ {
+    return(c>='0' && c<= '9');
+ }
+void  ignore_espace(std::string &name )
+ {
+    
+    std::string name_serveur;
+ 
+    for( size_t  i = 0 ; i < name.size() ; i++)
+    {
+        if(name[i] ==' ')
+            break;
+       name_serveur +=name[i];
+    }
+    name = name_serveur ;
+  
+
+ }
+void port_name_serveur(  std::string request  , std::string & port,   std::string & name_serveur )
+ {
+    size_t  i;
+     
+    for(  i= 1 ; i <  request.size() ; i++)
+    {
+        if(request[i] == ':'   )
+            break;
+        name_serveur+= request[i];
+    }
+    ignore_espace( name_serveur );
+     while (request [i] == ' ')
+        i++;
+    i++;
+    for(size_t j = i ; j < request.size() ; j++)
+    {
+        if(!is_digit(request[j]))
+            break;
+        port +=request[j];
+    }
+    
+ }
+void  geve_port_name(std::string request ,std::string &name_serveur , std::string &port )
+{
+  
+    for(size_t i =  0 ; i < request.size() ; i++  )
+    {
+        if(request[i] == '\r')
+            i++;
+        if(request[i] == '\n')
+            i++;
+        if(i + 4 < request.size()  && is_Host(request.substr(i, 4)) )
+ 
+
+     
+                port_name_serveur(  inforamation( request, i + 5 )  ,  port,  name_serveur );
+           
+ 
+   
+ 
+
+ 
+
+    }
+  
+    
+
+}
+
 int main(int ac,const char **av)
 {
     // how to serveu run the port serveur
@@ -69,9 +162,11 @@ int main(int ac,const char **av)
     ConfigParser data_conf(av);//
     data_conf.readConfigFile();//
     data_conf.checkBrackets();///
+    checkServer(data_conf.m_servers);///
     /////////////////////////////
     std::vector<int> port;
     std::vector<int> file;
+    
     std::vector<struct sockaddr_in> addresses;
     std::vector<socklen_t> addresselent;
     std::vector<int> new_cont;
@@ -152,16 +247,34 @@ int main(int ac,const char **av)
                 else
                 {
                     // client bye bye
-
+                    std::string request;
                     char buf[1024];
                     bzero(buf, 1024);
                     int rec = recv(fds[i].fd, buf, 1024, 0);
+                    request  = buf ;
+                     bzero(buf, 1024);
                     if (rec < 0)
                     {
                         
                         perror("recv");
                         exit(1);
                     }
+                    if (rec > 0)
+                    {
+                       while(strlen(buf)>0 )
+                    {
+                      
+                        request += buf;
+                        bzero(buf, 1024); 
+                        std::cout<<"yarbi_shal_3lina\n";
+                        rec = recv(fds[i].fd, buf, 1024, 0);
+                        if (rec < 0)
+                     
+                        break;
+                    
+                        } 
+                    }
+                      
                     if (rec == 0)
                     {
                         fds.erase(fds.begin() + i);
@@ -169,16 +282,23 @@ int main(int ac,const char **av)
                     }
                     else
                     {
-                        puts("this is the server");
-                        std::cout << buf;
-                        feedRequest((unsigned int )i, data_conf.m_servers, buf);
-                        //TODO send response to client
+                        puts("this is the server --- \n");
+                         std::string port , name_serveur; 
+                         geve_port_name(  request ,name_serveur,port);
+                         
+                         int serveur_id = getServerId(data_conf.m_servers,   atoi(port.c_str()),  name_serveur);
+                        feedRequest(serveur_id, data_conf.m_servers, request);
+                        // //TODO send response to client
                         std:: cout << "OK" << std::endl;
-                        respense = sendResponse(i, data_conf.m_servers);
-                        std::cout << "end of response" << std::endl;
+                        respense = sendResponse( serveur_id, data_conf.m_servers);
+                        std::cout << 
+                     
+                       
                         ////////////////////////////////////////////////
-                        send(file[1],respense.c_str(), respense.length(), 0);
-                        close(file[1]);
+                        send(fds[i].fd,respense.c_str(), respense.length(), serveur_id);
+                        //clode fie if  request finale 
+                             close(fds[i].fd);
+                        
                     }
                     // messgae wssel
                 }
