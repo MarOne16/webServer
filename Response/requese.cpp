@@ -137,9 +137,9 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     if(this->response_items.method ==  "POST" && this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
         this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end())
         this->status_response_code = 411;    
-    if(this->response_items.method ==  "GET" && this->response_items.lenghtbody != 0 )
+    if(this->response_items.method !=  "POST" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
-    if(this->response_items.method !=  "GET" && this->response_items.lenghtbody == 0)
+    if(this->response_items.method ==  "POST" && this->response_items.lenghtbody == 0)
         this->status_response_code = 400;
     // if(this->response_items.lenghtbody != 0 && this->response_items.Headers.find("Content-Length") == this->response_items.Headers.end())
     //     this->status_response_code = 400;

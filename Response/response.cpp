@@ -37,6 +37,12 @@ std::string Response::build_response()
         this->other_response("505", "Not Implemented", "");
     else if(this->status == 411)
         this->other_response("411", "Length Required", "");
+    else if(!this->response_items.location->return_code_url.empty())
+    {
+        std::cout << "here" << std::endl;
+        std::string url =  (this->response_items.location->root + this->response_items.Path);
+        return_pages(this->response_items.location->return_code_url, url); // TODO: check if this redirected response work
+    }
     else if(this->response_items.method == "GET")
     {
         this->build_GET();
@@ -164,12 +170,7 @@ void Response::build_GET()
         std::cout <<  "url use in method :"  << this->response_items.location->root << "|" << std::endl;
         std::cout <<  "url use in method :"  << URI << "|" << std::endl;
         //  std::cout << "here :" << get_auto_index << std::endl;
-        if(!this->response_items.location->return_code_url.empty())
-        {
-            std::cout << "here" << std::endl;
-            return_pages(this->response_items.location->return_code_url, URI); // TODO: check if this redirected response work
-            return;
-        }
+        
         status = stat(URI.data(),  &buffer);
         if(status != -1)
         {
@@ -273,7 +274,7 @@ void Response::build_GET()
                 //  std::string cgi_path = ""; //change path with valid path from config;
                 if(!cgi_path.empty() && (this->response_items.Extension == "php" || this->response_items.Extension == "py"))
                 {
-                      // this->ft_success_code("200", body resturn by  CGI script );
+                      // this->ft_success_code("200", body resturn by  CGI script ); // TODO: ADD CGI script
                 }
                 else
                 {
@@ -312,6 +313,7 @@ void Response::build_DELETE()
     std::string cgi_path = this->response_items.location->cgi_path; //change path with valid path from config;
     std::cout << "DELETE HI "  << std::endl;
     URI += this->response_items.Path.substr(1);
+    std::cout << "DELETE url : " << URI << std::endl;
     status = stat(URI.c_str() ,  &buffer);
     if(status != -1)
     {
@@ -335,7 +337,7 @@ void Response::build_DELETE()
             else
             {
                 int res = remove_all_files(URI.c_str());
-                if(res == 1)
+                if(res != 0)
                 {
                     this->ft_forbidden_request("403", this->forbidden_req);
                 }
@@ -562,9 +564,9 @@ int Response::remove_all_files(const char *dirname)
     entity = readdir(dir);
     while(entity != NULL)
     {
-        if(access(entity->d_name, W_OK) != 0)
+        if(access(entity->d_name, F_OK | W_OK ) != 0)
             return 1;
-         ;
+        remove(entity->d_name);
         entity = readdir(dir);
     }
     closedir(dir);
