@@ -15,6 +15,7 @@
 #include "../Response/webserver.hpp"
 #include <fstream>
 
+
 /// multi serveurs whit multi clients
 // TODO
 /// service_name
@@ -227,15 +228,18 @@ std::string data(std::map<int, std::string> map_request, int fd)
     return ("");
 }
 
-void request_inserer(std::string buffer, int fd, std::map<int, std::string> &map_request, std::map<int, size_t> &checker)
+void request_inserer(char buffer[1024], int fd, std::map<int, std::string> &map_request, std::map<int, size_t> &checker)
 {
+ 
 
-    if (map_request.find(fd) == map_request.end())
+     if (map_request.find(fd) == map_request.end())
     {
+  
+ 
+       map_request.insert(std::make_pair(fd, ""));
+checker.insert(std::make_pair(fd, 1337));
+  
      
-        map_request.insert(std::pair< int, std::string>(fd, ""));
-        checker.insert(std::pair< int,int>(fd, 1337));
-        
     }
     std::map<int, std::string>::iterator it;
     std::map<int, size_t>::iterator it_checker = checker.begin();
@@ -351,7 +355,9 @@ int main(int ac, const char **av)
                         struct pollfd fl;
                         fl.fd = co;
                         fl.events = POLLIN;
-                        fds.push_back(fl);
+                        std::cout << "test" << std::endl;
+
+                        fds.insert(fds.begin(), fl);
                     }
                     else
                     {
@@ -369,8 +375,8 @@ int main(int ac, const char **av)
                         }
                         if (rec == 0)
                         {
-                            
                             fds.erase(fds.begin() + i);
+                            //    close(fds[i].fd); 
 
                             std::cout << "bybye" << std::endl;
                         }
@@ -379,7 +385,9 @@ int main(int ac, const char **av)
                         // cherk = content_lenght(request) + lenght_heder(request.substr(0, content_lenght(request)));
                         request_inserer(buf, fds[i].fd, map_request, checker);
 
-                        if (flag == 0)
+                       
+
+                         
                             cherk = donner_flags(checker, fds[i].fd);
                         // 13223547%
 
@@ -388,68 +396,30 @@ int main(int ac, const char **av)
                         // std::cout<<cherk;
                         // exit(0);
                         // exit(0);
-
+                                //body --- Gett  //
                         if (request.size() >= cherk)
                         {
 
-                            puts("this is the server --- \n");
+                              
                             std::string port, name_serveur;
                             geve_port_name(request, name_serveur, port);
+                        
 
-                            // std::ofstream outputFile("output.txt"); // create a new output file or overwrite an existing one
-
-                            // if (outputFile.is_open())
-                            // {                          // check if the file was opened successfully
-                            //     outputFile << request; // write data to the file
-                            //     outputFile.close();    // close the file when done
-                            // }
-                            // else
-                            // {
-                            //     std::cerr << "Error opening file\n";
-                            // }
-
-                            // // std::cout << request;
-                            // exit(0);
-
-                            // std::ostream &operator<<(std::ostream &os,
-                            //                     const std::vector<int > &vector)
-                            // {
-                            //     // Printing all the elements
-                            //     // using <<
-                            //     for (auto element : vector)
-                            //     {
-                            //         os << element << " ";
-                            //     }
-                            //     return os;
-                            // }
+                         ///-------data_serveur  Sened ---- 
+                            // std::cout<<request;
+                            //  exit(0);
                             int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur);
                             feedRequest(serveur_id, data_conf.m_servers, request);
-                            // //TODO send response to client
-                            std::cout << "OK" << std::endl;
+                          respense = sendResponse(serveur_id, data_conf.m_servers);
 
-                            respense = sendResponse(serveur_id, data_conf.m_servers);
-
-                            // std::cout << "\n"
-                            //           << respense << "    \n";
-                                //// get != contenrt lenght 
-                            ////////////////////////////////////////////////
+                             
                             send(fds[i].fd, respense.c_str(), respense.length(), serveur_id);
-                  std::map<int ,std::string >::iterator it =map_request.begin();
-                            while (it != map_request.end())
-                            {
-                                std::cout << "Key: " << it->first
-                                     << ", Value: " << it->second << std::endl<<"((_----(----))))))\n";
-                                ++it;
-                            }
-                             close(fds[i].fd); 
-                             std::cout<<map_request.size();
-                             std::cout<<"----------------- \n";
-                            // std::cout<<fds[i].fd;
-
-                            //   fds.erase(fds.begin() + i);
-                            //
-
-                            // clode fie if  request finale
+                            
+                            ////////////////////////////////////////////////
+             
+                            //  close(fds[i].fd); 
+                          
+                         
                         }
                         // messgae wssel
                     }

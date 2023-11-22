@@ -17,6 +17,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     std::string value;
     std::string key;
     std::map<std::string, s_location> lc;
+    std::cout << req << std::endl;
     try{
         //read Header request 
         while(pos != -1)
@@ -30,7 +31,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             token = req.substr(0, pos);
             req = req.substr(pos + 2, req.length());
             response_items.Req.push_back(token);
-            std::cout << token << "\n";
+            // std::cout << token << "\n";
             i++;
         } 
         //find match location
@@ -95,7 +96,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                             break;
                     }
                     
-                    std::cout << "point to ele" << std::endl;
+                    // std::cout << "point to ele" << std::endl;
                     if(!ele->Content.empty() )
                     {
                         if(!ele->ContentDisposition.empty())
@@ -106,19 +107,19 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                         this->response_items.ChunkedBody.push_back(ele);
                     }
             }
-            std::vector<RequestBody *>::iterator it;
-            it = this->response_items.ChunkedBody.begin();
-            while(it != this->response_items.ChunkedBody.end())
-            {
-                std::cout << "Content-Disposition : " << (*it)->ContentDisposition << std::endl;
-                 std::cout << "Content:" << (*it)->Content  << "|" << std::endl;
-                 std::cout << "ContentType:" << (*it)->ContentType  << "|" << std::endl;
-                 std::cout <<  "-------------------------------" << std::endl;
-                // std::cout << (*it)->ContentDisposition <<  "----------- "<< std::endl;
-                // std::cout << (*it)->ContentType  << "----------- "<< std::endl;
-                it++;
+            // std::vector<RequestBody *>::iterator it;
+            // it = this->response_items.ChunkedBody.begin();
+            // while(it != this->response_items.ChunkedBody.end())
+            // {
+            //     std::cout << "Content-Disposition : " << (*it)->ContentDisposition << std::endl;
+            //      std::cout << "Content:" << (*it)->Content  << "|" << std::endl;
+            //      std::cout << "ContentType:" << (*it)->ContentType  << "|" << std::endl;
+            //      std::cout <<  "-------------------------------" << std::endl;
+            //     // std::cout << (*it)->ContentDisposition <<  "----------- "<< std::endl;
+            //     // std::cout << (*it)->ContentType  << "----------- "<< std::endl;
+            //     it++;
 
-            }
+            // }
             // exit(0);
             // std::cout << req <<  std::endl;
     }
@@ -559,7 +560,7 @@ const char *Requese::ErrorSyntax::what() const throw()
 
 std::string Requese::find_location(server& server_data, std::string& PATH)
 {
-    std::cout <<  "path : " << PATH   << std::endl;
+    // std::cout <<  "path : " << PATH   << std::endl;
     std::string Path = PATH;
     std::map<std::string , s_location> location = server_data.locations;
     int pos = 0;
@@ -603,7 +604,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
    it = location.find(Path);
     if(it != location.end())
     {
-        std::cout << "Location found: " << Path << std::endl;
+        // std::cout << "Location found: " << Path << std::endl;
         this->response_items.location->allowed_methods = it->second.allowed_methods;
         this->response_items.location->root = it->second.root;
         this->response_items.location->index = it->second.index;
@@ -613,6 +614,6 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         this->response_items.location->cgi_path = it->second.cgi_path;
         this->response_items.location->upload_enable = it->second.upload_enable;
     }
-        std::cout << "==========>" << std::endl;
+        // std::cout << "==========>" << std::endl;
     return Path;
 }

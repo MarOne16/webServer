@@ -18,7 +18,7 @@ Response::Response(int status, std::vector<std::string> init_line,  http_items& 
 std::string Response::build_response()
 {
     
-    std::cout <<  ">>>>" << this->status  << " << "<< std::endl;
+    // std::cout <<  ">>>>" << this->status  << " << "<< std::endl;
     if(this->status == 400)
     {
         ft_bad_request("400", this->bad_req);
@@ -161,7 +161,7 @@ void Response::build_GET()
         std::string autoIndexPage;
 
         URI += this->response_items.Path.substr(1); // TODO : check if path is beging with /
-         std::cout << "here :" << get_auto_index << std::endl;
+        //  std::cout << "here :" << get_auto_index << std::endl;
         if(!this->response_items.location->return_code_url.empty())
         {
             return_pages(this->response_items.location->return_code_url); // TODO: check if this redirected response work
