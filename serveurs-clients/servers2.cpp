@@ -143,7 +143,7 @@ void replaceAll(std::string &str, const std::string &from, const std::string &to
 
 size_t lenght_heder(std::string request)
 {
-std::cout<<request;
+
     for (size_t i = 0; i < request.size(); i++)
     {
         if (request[i] == '\r' || request[i] == '\n')
@@ -158,20 +158,20 @@ std::cout<<request;
                 i += 14;
                 std::string number;
                 i += 2;
-                std::cout << "YARBI_MAT3DBNACH \n";
+
                 while (is_digit(request[i]))
                 {
 
                     number += request[i];
                     i++;
                 }
-                  std::stringstream stream(number);
-                  size_t output;
- 
-     
-                 stream >> output;
-            
-                return (output );
+
+                std::stringstream stream(number);
+                size_t output;
+
+                stream >> output;
+
+                return (output);
             }
         }
     }
@@ -201,6 +201,60 @@ size_t content_lenght(std::string request)
 
     return (calcule.size());
 }
+
+size_t donner_flags(std::map<int, size_t> checker, int fd)
+{
+    std::map<int, size_t>::iterator it = checker.begin();
+    for (it = checker.begin(); it != checker.end(); it++)
+    {
+        if (it->first == fd)
+        {
+            return (it->second);
+        }
+    }
+    return (0);
+}
+std::string data(std::map<int, std::string> map_request, int fd)
+{
+    std::map<int, std::string>::iterator it = map_request.begin();
+    for (it = map_request.begin(); it != map_request.end(); it++)
+    {
+        if (it->first == fd)
+        {
+            return (it->second);
+        }
+    }
+    return ("");
+}
+
+void request_inserer(std::string buffer, int fd, std::map<int, std::string> &map_request, std::map<int, size_t> &checker)
+{
+
+    if (map_request.find(fd) == map_request.end())
+    {
+     
+        map_request.insert(std::pair< int, std::string>(fd, ""));
+        checker.insert(std::pair< int,int>(fd, 1337));
+        
+    }
+    std::map<int, std::string>::iterator it;
+    std::map<int, size_t>::iterator it_checker = checker.begin();
+    for (it = map_request.begin(); it != map_request.end(); it++)
+    {
+
+        if (it->first == fd && it_checker->first == fd)
+        {
+            it->second += buffer;
+
+            it_checker->second = content_lenght(it->second) + lenght_heder(it->second.substr(0, content_lenght(it->second)));
+            
+
+            return;
+        }
+        it_checker++;
+    }
+}
+
 int main(int ac, const char **av)
 {
     // how to serveu run the port serveur
@@ -222,6 +276,8 @@ int main(int ac, const char **av)
         std::vector<socklen_t> addresselent;
         std::vector<int> new_cont;
         std::string respense;
+        std::map<int, std::string> map_request;
+        std::map<int, size_t> checker;
         ports(port, data_conf.m_servers);
         for (unsigned int i = 0; i < data_conf.getNumber_ofServers(); i++)
         {
@@ -284,8 +340,7 @@ int main(int ac, const char **av)
 
                     if (std::find(file.begin(), file.end(), fds[i].fd) != file.end())
                     {
-                        std::cout << "hello new\n"
-                                  << std::endl;
+
                         int co = accept(fds[i].fd, NULL, NULL);
                         fcntl(co, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
                         if (co < 0)
@@ -312,48 +367,89 @@ int main(int ac, const char **av)
                             perror("recv");
                             exit(1);
                         }
-                        request += std::string(buf, rec);
-
-                        if (flag == 0)
-                            cherk = content_lenght(request) + lenght_heder(request.substr(0, content_lenght(request)));
-                        flag = 1;
- 
-
                         if (rec == 0)
                         {
+                            
                             fds.erase(fds.begin() + i);
+
                             std::cout << "bybye" << std::endl;
                         }
+                        // request += std::string(buf, rec);
+                        // if (flag == 0)
+                        // cherk = content_lenght(request) + lenght_heder(request.substr(0, content_lenght(request)));
+                        request_inserer(buf, fds[i].fd, map_request, checker);
+
+                        if (flag == 0)
+                            cherk = donner_flags(checker, fds[i].fd);
+                        // 13223547%
+
+                        flag = 1;
+                        request = data(map_request, fds[i].fd); // std::cout<<request;
+                        // std::cout<<cherk;
+                        // exit(0);
+                        // exit(0);
+
                         if (request.size() >= cherk)
                         {
+
                             puts("this is the server --- \n");
                             std::string port, name_serveur;
                             geve_port_name(request, name_serveur, port);
-                               
-                            std::ofstream outputFile("output.txt"); // create a new output file or overwrite an existing one
 
-                            if (outputFile.is_open())
-                            {                                    // check if the file was opened successfully
-                                outputFile << request; // write data to the file
-                                outputFile.close();              // close the file when done
-                                 
-                            }
-                            else
-                            {
-                                std::cerr << "Error opening file\n";
-                            }
-                            // std::cout << request;
-                            exit(0);
+                            // std::ofstream outputFile("output.txt"); // create a new output file or overwrite an existing one
+
+                            // if (outputFile.is_open())
+                            // {                          // check if the file was opened successfully
+                            //     outputFile << request; // write data to the file
+                            //     outputFile.close();    // close the file when done
+                            // }
+                            // else
+                            // {
+                            //     std::cerr << "Error opening file\n";
+                            // }
+
+                            // // std::cout << request;
+                            // exit(0);
+
+                            // std::ostream &operator<<(std::ostream &os,
+                            //                     const std::vector<int > &vector)
+                            // {
+                            //     // Printing all the elements
+                            //     // using <<
+                            //     for (auto element : vector)
+                            //     {
+                            //         os << element << " ";
+                            //     }
+                            //     return os;
+                            // }
                             int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur);
                             feedRequest(serveur_id, data_conf.m_servers, request);
                             // //TODO send response to client
                             std::cout << "OK" << std::endl;
+
                             respense = sendResponse(serveur_id, data_conf.m_servers);
 
+                            // std::cout << "\n"
+                            //           << respense << "    \n";
+                                //// get != contenrt lenght 
                             ////////////////////////////////////////////////
                             send(fds[i].fd, respense.c_str(), respense.length(), serveur_id);
+                  std::map<int ,std::string >::iterator it =map_request.begin();
+                            while (it != map_request.end())
+                            {
+                                std::cout << "Key: " << it->first
+                                     << ", Value: " << it->second << std::endl<<"((_----(----))))))\n";
+                                ++it;
+                            }
+                             close(fds[i].fd); 
+                             std::cout<<map_request.size();
+                             std::cout<<"----------------- \n";
+                            // std::cout<<fds[i].fd;
+
+                            //   fds.erase(fds.begin() + i);
+                            //
+
                             // clode fie if  request finale
-                            close(fds[i].fd);
                         }
                         // messgae wssel
                     }
