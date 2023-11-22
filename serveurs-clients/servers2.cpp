@@ -142,7 +142,7 @@ void replaceAll(std::string &str, const std::string &from, const std::string &to
     }
 }
 
-size_t lenght_heder(std::string request)
+size_t length_heder(std::string request)
 {
 
     for (size_t i = 0; i < request.size(); i++)
@@ -228,34 +228,71 @@ std::string data(std::map<int, std::string> map_request, int fd)
     return ("");
 }
 
-void request_inserer(char buffer[1024], int fd, std::map<int, std::string> &map_request, std::map<int, size_t> &checker)
-{
+// void request_inserer(char buffer[1024], int fd, std::map<int, std::string> &map_request, std::map<int, size_t> &checker)
+// {
  
 
-     if (map_request.find(fd) == map_request.end())
-    {
+//      if (map_request.find(fd) == map_request.end())
+//     {
   
  
-       map_request.insert(std::make_pair(fd, ""));
-checker.insert(std::make_pair(fd, 1337));
+//        map_request.insert(std::make_pair(fd, ""));
+// checker.insert(std::make_pair(fd, 1337));
   
      
-    }
-    std::map<int, std::string>::iterator it;
-    std::map<int, size_t>::iterator it_checker = checker.begin();
-    for (it = map_request.begin(); it != map_request.end(); it++)
-    {
-
-        if (it->first == fd && it_checker->first == fd)
-        {
-            it->second += buffer;
-
-            it_checker->second = content_lenght(it->second) + lenght_heder(it->second.substr(0, content_lenght(it->second)));
+//     }
+//     std::map<int, std::string>::iterator it;
+//     std::map<int, size_t>::iterator it_checker = checker.begin();
+//     for (it = map_request.begin(); it != map_request.end(); it++)
+//     {
+//         if (it->first == fd && it_checker->first == fd)
+//         {
+//             std::string co  = it->second;
+//             std::string str = co;
+//             std::string name = co;
+//             str = name + buffer;
+//             // int flage = fd ;
+// std::cout<<fd;
+//             map_request.erase(fd);
             
+//            map_request.insert(std::make_pair(fd, str));
 
-            return;
-        }
-        it_checker++;
+
+//             it_checker->second = content_lenght(name) + length_heder(name.substr(0, content_lenght(name)));
+
+//              str.clear();
+//              name.c_str();
+//              co.c_str();
+//             // exit(0);
+//             return;
+//         }
+//         it_checker++;
+//     }
+// }
+
+void request_inserer(char buffer[1024], int buff_size, int fd, std::map<int, std::string> &map_request, std::map<int, size_t> &checker)
+{
+    if (map_request.find(fd) == map_request.end())
+    {
+        map_request.insert(std::make_pair(fd, ""));
+        checker.insert(std::make_pair(fd, 1337));
+    }
+
+    std::map<int, std::string>::iterator it = map_request.find(fd);
+    std::map<int, size_t>::iterator it_checker = checker.find(fd);
+
+    if (it != map_request.end() && it_checker != checker.end())
+    {
+        std::string name = it->second;
+        std::string str = name + std::string(buffer, buff_size);
+       
+        map_request.erase(fd);
+        map_request.insert(std::make_pair(fd, str));
+ 
+         it_checker->second = content_lenght(name) + length_heder(name.substr(0, content_lenght(name)));
+
+
+        return;
     }
 }
 
@@ -344,20 +381,23 @@ int main(int ac, const char **av)
 
                     if (std::find(file.begin(), file.end(), fds[i].fd) != file.end())
                     {
-
+                           
                         int co = accept(fds[i].fd, NULL, NULL);
                         fcntl(co, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
                         if (co < 0)
-                        {
+                        { 
                             perror("Faild ::  acceot");
-                            continue;
+                          
                         }
-                        struct pollfd fl;
+                       else  
+                      {  struct pollfd fl;
                         fl.fd = co;
                         fl.events = POLLIN;
-                        std::cout << "test" << std::endl;
+                      
 
                         fds.insert(fds.begin(), fl);
+                        }
+                         
                     }
                     else
                     {
@@ -375,15 +415,16 @@ int main(int ac, const char **av)
                         }
                         if (rec == 0)
                         {
+                             map_request.erase(fds[i].fd);
+                             checker.erase(fds[i].fd);
                             fds.erase(fds.begin() + i);
                             //    close(fds[i].fd); 
-
                             std::cout << "bybye" << std::endl;
                         }
                         // request += std::string(buf, rec);
                         // if (flag == 0)
                         // cherk = content_lenght(request) + lenght_heder(request.substr(0, content_lenght(request)));
-                        request_inserer(buf, fds[i].fd, map_request, checker);
+                        request_inserer(buf, rec, fds[i].fd, map_request, checker);
 
                        
 
@@ -404,7 +445,7 @@ int main(int ac, const char **av)
                             std::string port, name_serveur;
                             geve_port_name(request, name_serveur, port);
                         
-
+ 
                          ///-------data_serveur  Sened ---- 
                             // std::cout<<request;
                             //  exit(0);
@@ -414,7 +455,7 @@ int main(int ac, const char **av)
 
                              
                             send(fds[i].fd, respense.c_str(), respense.length(), serveur_id);
-                            
+                             request.clear();
                             ////////////////////////////////////////////////
              
                             //  close(fds[i].fd); 

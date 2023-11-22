@@ -17,7 +17,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     std::string value;
     std::string key;
     std::map<std::string, s_location> lc;
-    std::cout << req << std::endl;
+    // std::cout << req << std::endl;
     try{
         //read Header request 
         while(pos != -1)
