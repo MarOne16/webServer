@@ -161,7 +161,9 @@ void Response::build_GET()
         std::string autoIndexPage;
 
         URI += this->response_items.Path.substr(1); // TODO : check if path is beging with /
-         std::cout << "here :" << get_auto_index << std::endl;
+        std::cout <<  "url use in method :"  << this->response_items.location->root << "|" << std::endl;
+        std::cout <<  "url use in method :"  << URI << "|" << std::endl;
+        //  std::cout << "here :" << get_auto_index << std::endl;
         if(!this->response_items.location->return_code_url.empty())
         {
             return_pages(this->response_items.location->return_code_url); // TODO: check if this redirected response work
@@ -179,15 +181,21 @@ void Response::build_GET()
                     index  =  check_index_file(URI);
                     if(index.empty())
                     {
-                        DIR *dir = opendir(this->response_items.Path.c_str());
+                        DIR *dir = opendir(URI.c_str());
                         struct dirent* entity;
-                        std::cout << "hi:" << get_auto_index << std::endl;
+                        // std::cout << "hi:" << get_auto_index << std::endl;
                         if(get_auto_index == "off" || get_auto_index.empty())
                         {
                         //    this->ft_forbidden_request("403", this->forbidden_req);
-                            
+                                
                              std::cout << "defaultpage " << std::endl;
-                            std::string content_body = read_file("./src/index.html");
+                            URI += "index.html";
+                             if(access(URI.c_str(), W_OK) != 0)
+                            {
+                                this->ft_forbidden_request("403", this->forbidden_req);
+                                return;
+                            }
+                            std::string content_body = read_file(URI.c_str());
                             this->ft_success_code("200", content_body, URI);
                         }
                         else
@@ -199,7 +207,8 @@ void Response::build_GET()
                                                     <title>AUTO INDEX</title>\n\
                                                     </head>\n\
                                                     <body>\n\
-                                                    <div style=\"margin-left: 5%; margin-top:10%;\">\n\
+                                                    <h1 style=\"margin-top:10px\">index of</h1>\n";
+                                    autoIndexPage = "<div style=\"margin-left:5px\">\n\
                                                     <hr>\n";
                             entity = readdir(dir);
                             while(entity != NULL)
@@ -207,7 +216,7 @@ void Response::build_GET()
                                 std::string filename = entity->d_name;
                                 if(entity->d_type == DT_DIR)
                                     filename += '/';
-                                autoIndexPage.append("<p><a href='" + filename +"' /> " + filename + " </p>");
+                                autoIndexPage.append("<p style=\"margin:0%\"><a href='" + filename +"' /> " + filename + " </p>");
                                 autoIndexPage.append("<br>");
                                 entity = readdir(dir);
                             }   
@@ -371,7 +380,7 @@ void Response::build_POST()
    
   
     URI += this->response_items.Path.substr(1);
-    std::cout << URI << std::endl;
+   
     std::string index ;
     int pos = 0;
     unsigned int  k = 0;
@@ -445,7 +454,7 @@ void Response::build_POST()
         if(this->response_items.Headers.find("Content-Type")->second.find("multipart/form-data")  != std::string::npos)
         {
                 it = this->response_items.ChunkedBody.begin();
-                std::cout << "lenght of ChunkBody" <<  this->response_items.ChunkedBody.size() << std::endl;
+                // std::cout << "lenght of ChunkBody" <<  this->response_items.ChunkedBody.size() << std::endl;
                 while(k < this->response_items.ChunkedBody.size())
                 {
                     // std::cout << "content-body" << (*it)->Content << " " << (*it)->ContentDisposition << std::endl;
@@ -467,12 +476,12 @@ void Response::build_POST()
                         }
                         else
                         {
-                            std::cout << "here is not valid content-disposition " << std::endl;
+                            // std::cout << "here is not valid content-disposition " << std::endl;
                             time(&current_time);
                             ss <<  static_cast<int>(current_time);
                             namefile += ss.str(); 
                             namefile  += ".txt";
-                            std::cout <<  namefile  << "not open file make response to handle error";
+                            // std::cout <<  namefile  << "not open file make response to handle error";
 
                     }
                     file.open(this->response_items.location->upload_store_directory + namefile);
@@ -529,7 +538,7 @@ std::string Response::read_file(const std::string& filename)
 
 void  Response::not_found()
 {
-    std::string status = "200";
+    std::string status = "404";
     if(this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
         ft_default_pages(status,  this->Resource_not_found, ((this->response_items.error_pages.find(status))->second));
     response << "HTTP/1.1 404 NOT FOUND\r\n";
@@ -673,9 +682,8 @@ void Response::ft_forbidden_request(std::string status , std::string message)
     response << "HTTP/1.1 " << status << " Forbiden\r\n";
     response << "Location: " << message << "/\r\n";
     response << "Content-Length: "<< message.length() << "\r\n";
-    response << "Content-Type: text/html";
-    response << "Connection: close\r\n\r\n";
     response << "Content-Type: " << "text/html" << "\r\n";
+    response << "Connection: close\r\n\r\n";
     response << message ;
 }
 
