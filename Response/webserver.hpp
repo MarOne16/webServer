@@ -122,7 +122,7 @@ public:
     void not_found();
     int remove_all_files(const char *dirname);
     std::string trim(std::string original);
-    void return_pages(std::string & pages_return);
+    void return_pages(std::string& pages_return, std::string& url);
     void ft_success_code(std::string status, std::string message,  std::string URI);
     void ft_redirect(std::string status, std::string message);
     void ft_bad_request(std::string status, std::string message);

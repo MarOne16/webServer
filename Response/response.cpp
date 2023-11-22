@@ -166,7 +166,8 @@ void Response::build_GET()
         //  std::cout << "here :" << get_auto_index << std::endl;
         if(!this->response_items.location->return_code_url.empty())
         {
-            return_pages(this->response_items.location->return_code_url); // TODO: check if this redirected response work
+            std::cout << "here" << std::endl;
+            return_pages(this->response_items.location->return_code_url, URI); // TODO: check if this redirected response work
             return;
         }
         status = stat(URI.data(),  &buffer);
@@ -590,7 +591,7 @@ std::string Response::trim(std::string original)
 }
 
 
-void Response::return_pages(std::string& pages_return)
+void Response::return_pages(std::string& pages_return, std::string& url)
 {
     std::vector<std::string> pages = split_v(pages_return, " ");
     // std::vector<std::string>::iterator it;
@@ -598,19 +599,20 @@ void Response::return_pages(std::string& pages_return)
     {
         std::cout << "hi " << std::endl;
         case 200 :
-            // this->ft_success_code("200", pages[1]);
+            this->ft_success_code(pages[0], pages[1], url);
             break;
         case 301 :
-            // this->ft_redirect(pages[0], pages[1]);
+            this->ft_redirect(pages[0], pages[1]);
             break;
         case 400 :
-            // this->ft_bad_request(pages[0], pages[1]);
+            this->ft_bad_request(pages[0], pages[1]);
             break;
         case 404 :
+        std::cout  << "Not Found" << std::endl;
            this->not_found();
             break;
         case 403 :
-            // this->ft_forbidden_request(pages[0], pages[1]);
+            this->ft_forbidden_request(pages[0], pages[1]);
         case 500 :
             std::cout << "error" << std::endl;  
             break;
@@ -664,8 +666,8 @@ void Response::ft_bad_request(std::string status, std::string message)
 {
     if(this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
         ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));
-    response << "HTTP/1.1 " << status <<  " Bad Request\r\n";
-    response << "Content-Type: text/html\r\n";
+    std::cout << "OK" << std::endl;
+    response << "HTTP/1.1 " <<  status <<  " Bad Request\r\n";
     response << "Content-Length: " << message.length() << "\r\n";
     response << "Server: " << this->response_items.server << "\r\n";
     response << "Connection: close\r\n";

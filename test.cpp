@@ -4,6 +4,7 @@
 std::string get_Content_type(std::string url)
 {
 
+
     std::string contentTypes[23] = {
         "text/plain",
         "text/html",

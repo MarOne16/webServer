@@ -179,7 +179,9 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
     std::vector<std::string> line;
     std::string url_caracteres ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
     std::string del = " ";
+    std::string str = "POST GET DELETE";
     std::vector<std::string> Methode = split_v(methods, del);
+   std::vector<std::string> defaultMethods = split_v(str, " ");
     unsigned int  i;
     while(line_init >> part)
         line.push_back(part);
@@ -221,7 +223,7 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
             this->status_response_code = 405;
         i++;
     }
-    if(i == Methode.size())
+    if(i == Methode.size() || std::find(defaultMethods.begin(), defaultMethods.end(), line[0]) == defaultMethods.end())
             this->status_response_code = 405;
     if(this->response_items.http_version != "HTTP/1.1")
          this->status_response_code = 505;
@@ -261,7 +263,7 @@ void Requese::Headers_elements()
         value = trim((*it).substr(pos + 1));
         if((*it).substr(pos + 1, 1).c_str()[0]  != 32)
         {
-                std::cout << ":::::" << (*it).substr(pos + 1, 1).c_str()[0] << std::endl;
+                // std::cout << ":::::" << (*it).substr(pos + 1, 1).c_str()[0] << std::endl;
             this->status_response_code = 400;
             // break;
         }

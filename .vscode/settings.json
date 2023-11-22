@@ -68,16 +68,7 @@
         "typeinfo": "cpp",
         "unordered_map": "cpp",
         "utility": "cpp",
-        "vector": "cpp",
-        "*.tcc": "cpp",
-        "clocale": "cpp",
-        "compare": "cpp",
-        "concepts": "cpp",
-        "memory_resource": "cpp",
-        "numeric": "cpp",
-        "random": "cpp",
-        "numbers": "cpp",
-        "filesystem": "cpp"
+        "vector": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
