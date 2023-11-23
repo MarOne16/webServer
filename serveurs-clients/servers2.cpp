@@ -21,7 +21,7 @@
 /// service_name
 /// chankese request
 /// merege requset whit serveur
-
+ 
 void feedRequest(unsigned int index, std::map<unsigned int, server> &serv, std::string content)
 {
     std::map<unsigned int, server>::iterator it = serv.begin();
@@ -272,8 +272,9 @@ std::string data(std::map<int, std::string> map_request, int fd)
 
 void request_inserer(char buffer[1024], int buff_size, int fd, std::map<int, std::string> &map_request, std::map<int, size_t> &checker)
 {
+         
     if (map_request.find(fd) == map_request.end())
-    {
+    { 
         map_request.insert(std::make_pair(fd, ""));
         checker.insert(std::make_pair(fd, 1337));
     }
@@ -286,12 +287,17 @@ void request_inserer(char buffer[1024], int buff_size, int fd, std::map<int, std
         std::string name = it->second;
         std::string str = name + std::string(buffer, buff_size);
        
+                             
+ 
         map_request.erase(fd);
         map_request.insert(std::make_pair(fd, str));
+  
+
+         it_checker->second = content_lenght(str) + length_heder(str.substr(0, content_lenght(str)));
  
-         it_checker->second = content_lenght(name) + length_heder(name.substr(0, content_lenght(name)));
 
-
+          
+          
         return;
     }
 }
@@ -361,12 +367,14 @@ int main(int ac, const char **av)
             poll.events = POLLIN;
             fds.push_back(poll);
         }
+        
         std::string request;
         int flag = 0;
+        std::vector<int>client ;
         size_t cherk;
         while (true)
         {
-            int ret = poll(fds.data(), fds.size(), -1);
+            int ret = poll(fds.data(), fds.size(), 0);
             if (ret == -1)
             {
                 perror("POOLLL failed :");
@@ -379,34 +387,40 @@ int main(int ac, const char **av)
                 if (fds[i].revents & POLLIN)
                 {
 
+                    // if(std::find(client.begin(), file.end(), fds[i].fd) != file.end())
+                    // {
+
+                    // }
+//std::cout<<fds[i].fd << "{}{}{}\n";
+ 
                     if (std::find(file.begin(), file.end(), fds[i].fd) != file.end())
                     {
-                           
+                         
                         int co = accept(fds[i].fd, NULL, NULL);
                         fcntl(co, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+                       
                         if (co < 0)
                         { 
-                            perror("Faild ::  acceot");
-                          
+                            perror("Faild ::  acceot");  
                         }
                        else  
                       {  struct pollfd fl;
                         fl.fd = co;
                         fl.events = POLLIN;
-                      
-
-                        fds.insert(fds.begin(), fl);
+                        client.push_back(co);
+                        fds.push_back( fl);
+                         
                         }
                          
                     }
-                    else
+                    else   if(!client.empty()  ||  std::find(client.begin(), client.end(), fds[i].fd) != client.end())
                     {
                         // client bye bye
 
                         char buf[1024];
                         bzero(buf, 1024);
                         int rec = recv(fds[i].fd, buf, 1024, 0);
-
+                             
                         if (rec < 0)
                         {
 
@@ -415,10 +429,11 @@ int main(int ac, const char **av)
                         }
                         if (rec == 0)
                         {
-                             map_request.erase(fds[i].fd);
-                             checker.erase(fds[i].fd);
+                            close(fds[i].fd); 
+                            map_request.erase(fds[i].fd);
+                            checker.erase(fds[i].fd);
                             fds.erase(fds.begin() + i);
-                            //    close(fds[i].fd); 
+                            client.erase(std::find(client.begin(),client.end(), fds[i].fd));
                             std::cout << "bybye" << std::endl;
                         }
                         // request += std::string(buf, rec);
@@ -428,9 +443,10 @@ int main(int ac, const char **av)
 
                        
 
-                         
+                        
                             cherk = donner_flags(checker, fds[i].fd);
                         // 13223547%
+                     
 
                         flag = 1;
                         request = data(map_request, fds[i].fd); // std::cout<<request;
@@ -438,24 +454,33 @@ int main(int ac, const char **av)
                         // exit(0);
                         // exit(0);
                                 //body --- Gett  //
-                        if (request.size() >= cherk)
+                        if (request.size() >= cherk )
                         {
 
                               
                             std::string port, name_serveur;
                             geve_port_name(request, name_serveur, port);
                         
- 
+                
                          ///-------data_serveur  Sened ---- 
-                            // std::cout<<request;
+                            std::cerr << request << std::endl;
                             //  exit(0);
                             int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur);
                             feedRequest(serveur_id, data_conf.m_servers, request);
                           respense = sendResponse(serveur_id, data_conf.m_servers);
 
-                             
+                                 
                             send(fds[i].fd, respense.c_str(), respense.length(), serveur_id);
                              request.clear();
+                            
+
+                          
+                               close(fds[i].fd); 
+                            map_request.erase(fds[i].fd);
+                             checker.erase(fds[i].fd);
+                             client.erase(std::find(client.begin(),client.end(), fds[i].fd));
+                            
+                            fds.erase(fds.begin() + i);
                             ////////////////////////////////////////////////
              
                             //  close(fds[i].fd); 
