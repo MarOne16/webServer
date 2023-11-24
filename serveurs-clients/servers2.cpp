@@ -11,19 +11,18 @@
 // /* ************************************************************************** */
 
 // 1.1.7.1.3.5.8.3.8
-//posst 
-//send 
-//chenck 
+// posst
+// send
+// chenck
 #include "../Response/webserver.hpp"
 #include <fstream>
-
 
 /// multi serveurs whit multi clients
 // TODO
 /// service_name
 /// chankese request
 /// merege requset whit serveur
- 
+
 void feedRequest(unsigned int index, std::map<unsigned int, server> &serv, std::string content)
 {
     std::map<unsigned int, server>::iterator it = serv.begin();
@@ -48,7 +47,7 @@ std::string sendResponse(unsigned int index, std::map<unsigned int, server> &ser
     }
     return ("");
 }
-///port----
+/// port----
 void ports(std::vector<int> &port, std::map<unsigned int, server> &data_serv)
 {
     std::map<unsigned int, server>::iterator itb = data_serv.begin();
@@ -233,16 +232,13 @@ std::string data(std::map<int, std::string> map_request, int fd)
 
 // void request_inserer(char buffer[1024], int fd, std::map<int, std::string> &map_request, std::map<int, size_t> &checker)
 // {
- 
 
 //      if (map_request.find(fd) == map_request.end())
 //     {
-  
- 
+
 //        map_request.insert(std::make_pair(fd, ""));
 // checker.insert(std::make_pair(fd, 1337));
-  
-     
+
 //     }
 //     std::map<int, std::string>::iterator it;
 //     std::map<int, size_t>::iterator it_checker = checker.begin();
@@ -257,9 +253,8 @@ std::string data(std::map<int, std::string> map_request, int fd)
 //             // int flage = fd ;
 // std::cout <<fd;
 //             map_request.erase(fd);
-            
-//            map_request.insert(std::make_pair(fd, str));
 
+//            map_request.insert(std::make_pair(fd, str));
 
 //             it_checker->second = content_lenght(name) + length_heder(name.substr(0, content_lenght(name)));
 
@@ -275,9 +270,9 @@ std::string data(std::map<int, std::string> map_request, int fd)
 
 void request_inserer(char buffer[1024], int buff_size, int fd, std::map<int, std::string> &map_request, std::map<int, size_t> &checker)
 {
-        int j = 0;  
+    int j = 0;
     if (map_request.find(fd) == map_request.end())
-    { 
+    {
         map_request.insert(std::make_pair(fd, ""));
         checker.insert(std::make_pair(fd, 0));
         j = 1;
@@ -288,31 +283,30 @@ void request_inserer(char buffer[1024], int buff_size, int fd, std::map<int, std
 
     if (it != map_request.end() && it_checker != checker.end())
     {
-        std::string first_request =  std::string(buffer, buff_size);
+        std::string first_request = std::string(buffer, buff_size);
         int lenght = it_checker->second;
-        //coment_string () {}{ }{}{ }
-        // std::string name = it->second;
-        // std::string str = name + std::string(buffer, buff_size);
-       
-                             
- 
+        // coment_string () {}{ }{}{ }
+        //  std::string name = it->second;
+        //  std::string str = name + std::string(buffer, buff_size);
+
         // map_request.erase(fd);
         // map_request.insert(std::make_pair(fd, str));
-        std::string request  =  std::string(buffer, buff_size); ;
-        it->second +=  request;
-  
-        if(j == 1)
+        std::string request = std::string(buffer, buff_size);
+        ;
+        it->second += request;
+
+        if (j == 1)
         {
 
-         it_checker->second = content_lenght(first_request) + length_heder(first_request.substr(0, content_lenght(first_request)));
+            it_checker->second = content_lenght(first_request) + length_heder(first_request.substr(0, content_lenght(first_request)));
         }
- 
-        else 
+
+        else
             it_checker->second = lenght;
 
-          first_request.clear();
-           request.clear();
-          
+        first_request.clear();
+        request.clear();
+
         return;
     }
 }
@@ -356,6 +350,10 @@ int main(int ac, const char **av)
             {
                 perror("setsockopt");
             }
+            if (setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(int)) == -1)
+            {
+                perror("setsockopt");
+            }
             fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC); /// non-blocking file descriptors
             adrese.sin_addr.s_addr = INADDR_ANY;
             adrese.sin_family = AF_INET;
@@ -382,12 +380,12 @@ int main(int ac, const char **av)
             poll.events = POLLIN;
             fds.push_back(poll);
         }
-        
+
         std::string request;
-        
-        std::vector<int>client ;
-         
-                        char buf[1024];
+
+        std::vector<int> client;
+
+        char buf[1024];
         size_t cherk;
         while (true)
         {
@@ -408,35 +406,34 @@ int main(int ac, const char **av)
                     // {
 
                     // }
-//std::cout<<fds[i].fd << "{}{}{}\n";
- 
+                    // std::cout<<fds[i].fd << "{}{}{}\n";
+
                     if (std::find(file.begin(), file.end(), fds[i].fd) != file.end())
                     {
-                          std::cout<<"serveur  \n";
+                        std::cout << "serveur  \n";
                         int co = accept(fds[i].fd, NULL, NULL);
                         fcntl(co, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-                       
+
                         if (co < 0)
-                        { 
-                            perror("Faild ::  acceot");  
+                        {
+                            perror("Faild ::  acceot");
                         }
-                       else  
-                      {  struct pollfd fl;
-                        fl.fd = co;
-                        fl.events = POLLIN;
-                        client.push_back(co);
-                        fds.push_back( fl);
-                         
+                        else
+                        {
+                            struct pollfd fl;
+                            fl.fd = co;
+                            fl.events = POLLIN;
+                            client.push_back(co);
+                            fds.push_back(fl);
                         }
-                         
                     }
-                    else   if(!client.empty()  ||  std::find(client.begin(), client.end(), fds[i].fd) != client.end())
+                    else if (!client.empty() || std::find(client.begin(), client.end(), fds[i].fd) != client.end())
                     {
                         // client bye bye
-                         
+
                         bzero(buf, 1024);
                         int rec = recv(fds[i].fd, buf, 1024, 0);
-                             
+
                         if (rec < 0)
                         {
 
@@ -445,91 +442,122 @@ int main(int ac, const char **av)
                         }
                         if (rec == 0)
                         {
-                            close(fds[i].fd); 
+                            close(fds[i].fd);
                             map_request.erase(fds[i].fd);
                             checker.erase(fds[i].fd);
                             fds.erase(fds.begin() + i);
-                            client.erase(std::find(client.begin(),client.end(), fds[i].fd));
-                            std::cout  << "bybye" << std::endl;
+                            client.erase(std::find(client.begin(), client.end(), fds[i].fd));
+                            std::cout << "bybye" << std::endl;
                         }
                         // request += std::string(buf, rec);
                         // if (flag == 0)
                         // cherk = content_lenght(request) + lenght_heder(request.substr(0, content_lenght(request)));
                         // if(  std::string(buf, rec).size() <= 0)
                         //     exit(0);
-                       
+
                         request_inserer(buf, rec, fds[i].fd, map_request, checker);
 
-                        
-                        request = data(map_request, fds[i].fd); 
+                        request = data(map_request, fds[i].fd);
                         // std::cout <<request;
                         cherk = donner_flags(checker, fds[i].fd);
-                     
- 
-                      
+
                         //         std::cout<<cherk<<std::endl;
                         //         std::cout<<request<<std::endl;
                         //   exit(0);
                         // 13223547%
-                     
 
-                        //na9s 
+                        // na9s
 
-
-
-
-
-                        
                         // std::cout <<cherk;
                         // exit(0);
                         // exit(0);
-                                //body --- Gett  //
-                        if (request.size() >= cherk )
+                        // body --- Gett  //
+                        if (request.size() >= cherk)
                         {
-  bzero(buf, 1024);
-                                 std::cout<<"request  \n";
+                            std::cout << "done" << std::endl;
+                            std::cerr << request << std::endl;
+                            exit(1);
+                            bzero(buf, 1024);
+                            std::cout << "request  \n";
                             std::string port, name_serveur;
                             geve_port_name(request, name_serveur, port);
-                           
-                     
-                         ///-------data_serveur  Sened ---- 
-                          
+
+                            ///-------data_serveur  Sened ----
+
                             //  exit(0);
                             int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur);
                             feedRequest(serveur_id, data_conf.m_servers, request);
-                          respense = sendResponse(serveur_id, data_conf.m_servers);
-                        
-                                std::string requ ; 
-                                int j = 1;
- 
-                            while( respense.size()   >= 0 &&respense.size() != requ.size())
-                            {
+                            respense = sendResponse(serveur_id, data_conf.m_servers);
+                           
+                            //   std::cout<<respense;
+                            //   exit(0);
+                            // send(fds[i].fd,   respense.c_str(),    respense.length(), 0);
+                            // exit(0);
+                            // std::cout<< respense;
+                            //             std::cerr<<respense;
+                            // exit(0);
+                            size_t p;
+                            int j = 1;
+                            size_t si = 0;
+                            std::string re = respense.substr(0, 1000);
+                            ;
+                            re.clear();
+                            size_t lenght;
 
-                                    requ  = respense.substr(1024 * j,1024);
-                           send(fds[i].fd, requ.c_str(), requ.length(), serveur_id);
-                           j++;
+                            lenght = re.size();
+                            while (respense.size() >= 0 && si != respense.size())
+                            {
+                                std::string requ;
+                                //  174080
+                                requ = respense.substr(si, 1000);
+                                // if(requ.size() >= 1000)
+                                // {
+                                //     std::cout<<requ.size()<<"(8888)\n";
+                                //     break;
+                                // }
+                                // if(si == 59392 )
+                                // {
+                                //     std::cout<<requ<<"\n" ;
+
+                                // }
+                                // if(requ.size() >= 1024)
+                                //     break;
+
+                                si += requ.size();
+                                //         std::cout<<"--------------------------\n";
+                                //          std::cout<< si<<"---{}{{}{}}} \n";
+                                //         std::cout<<lenght<<" ----- lennght \n";
+                                //       std::cout<<respense.size()<<"\n";
+                                //    std::cout<<"-------------------------------------\n"<<requ.size();
+                                //     std::cout<<"-======\n";
+
+                                p = send(fds[i].fd, requ.c_str(), requ.length(), 0);
+
+                                // if(   p  <= 0 )
+                                // {
+                                //             std::cout<<"hellooo ---iiiiiiii\n";
+                                // }
+                                //    send(fds[i].fd,requ.c_str(), requ.length(), serveur_id);
+                                // std::cout<<p<<" ---\n" ;
+                                p = 1;
+                                j++;
+                                requ.clear();
                             }
 
-
                             // std::cout <<
-                           
 
-                             request.clear();
-                            
+                            request.clear();
 
-                          
-                               close(fds[i].fd); 
+                            close(fds[i].fd);
                             map_request.erase(fds[i].fd);
-                             checker.erase(fds[i].fd);
-                             
-                             client.erase(std::find(client.begin(),client.end(), fds[i].fd));
-                            
+                            checker.erase(fds[i].fd);
+
+                            client.erase(std::find(client.begin(), client.end(), fds[i].fd));
+
                             fds.erase(fds.begin() + i);
                             ////////////////////////////////////////////////
-             
-                            //  close(fds[i].fd); 
-                          
-                         
+
+                            //  close(fds[i].fd);
                         }
                         // messgae wssel
                     }
