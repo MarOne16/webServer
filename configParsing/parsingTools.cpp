@@ -190,11 +190,11 @@ std::string getDefault(std::string path)
     if (path == "upload_store_directory")
     {
         std::string current_path = getcwd(NULL, 0);
-        current_path += "/default_pages/upload.html";
+        current_path += "/default_pages";
         if (findFile(current_path))
             return current_path;
         else
-            throw std::runtime_error("Default upload.html file not found.");
+            throw std::runtime_error("Default upload dir not found.");
     }
     return "get_default_error";
 }

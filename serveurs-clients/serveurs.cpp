@@ -93,7 +93,7 @@ int main(int ac, char **av)
 
                 if (std::find(file.begin(), file.end(), fds[i].fd) != file.end())
                 {
-                    std::cout << "hello new\n"
+                    std::cout  << "hello new\n"
                               << std::endl;
                     int co = accept(fds[i].fd, NULL, NULL);
                     fcntl(co, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
@@ -122,11 +122,11 @@ int main(int ac, char **av)
                     if (rec == 0)
                     {
                         fds.erase(fds.begin() + i);
-                        std::cout << "bybye" << std::endl;
+                        std::cout  << "bybye" << std::endl;
                     }
                     else
                     {
-                        std::cout << buf;
+                        std::cout  << buf;
                     }
                     // messgae wssel
                 }

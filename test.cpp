@@ -1,6 +1,35 @@
 #include <iostream>
 #include <string>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <exception>
+#include <vector>
+#include <map>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <ctime>
+#include <dirent.h>
+#include <fstream>
+#include <unistd.h>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 
+<<<<<<< HEAD
+int remove_all_files(const char *dirname)
+{
+    struct dirent* entity;
+     DIR *dir = opendir(dirname);
+     std::string filename = dirname;
+    
+    if(dir == NULL)
+        return -1;
+    entity = readdir(dir);
+    while(entity != NULL)
+=======
 std::string get_Content_type(std::string url)
 {
 
@@ -48,25 +77,38 @@ std::string get_Content_type(std::string url)
 // 		return "text/plain";
 //    else if (extension.compare("mp4") == 0)
 //         return "video/mp4";
-std::cout << extension << std::endl;
+// std::cout  << extension << std::endl;
 unsigned int i = 0;
 while(i < 23)
 {
-        std::cout << "gere" << std::endl;
+        std::cout  << "gere" << std::endl;
     if(contentTypes[i].find(extension) != std::string::npos)
+>>>>>>> 40e0c7843912740d2053bb67bbb52c425823b4c7
     {
-        return contentTypes[i];
+        
+        
+        if(entity->d_name[0] != '.')
+        {
+            filename += entity->d_name;
+            std::cout << filename <<"|" << std::endl;
+            if(access(filename.c_str(), F_OK | W_OK) == -1)
+            {
+                return 1;
+            }
+            remove(filename.c_str());
+
+        }
+        entity = readdir(dir);
     }
-    i++;
-}
-exit(0);
-    // if(contentTypes.find(exetension) != contentTypes.end())
-    //     returnn *(contentTypes.find(exetension));
-	// else
-		return "text/html;";
-}
+    closedir(dir);
+    return 0;
+    }
 
 int main()
 {
-    std::cout << "type:" << get_Content_type("img.mp4") << std::endl;
+<<<<<<< HEAD
+    std::cout << "type: |" << remove_all_files("./src/test/") << std::endl;
+=======
+    std::cout  << "type:" << get_Content_type("img.mp4") << std::endl;
+>>>>>>> 40e0c7843912740d2053bb67bbb52c425823b4c7
 }

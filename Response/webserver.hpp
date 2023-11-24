@@ -127,7 +127,7 @@ public:
     void ft_redirect(std::string status, std::string message);
     void ft_bad_request(std::string status, std::string message);
     void ft_forbidden_request(std::string status, std::string message);
-    void other_response(std::string status, std::string message, std::string desc);
+    void other_response(std::string status, std::string desc);
     void ft_default_pages(std::string status, std::string& message, std::string& path);
 
 };
