@@ -499,16 +499,16 @@ int main(int ac, const char **av)
                             feedRequest(serveur_id, data_conf.m_servers, request);
                           respense = sendResponse(serveur_id, data_conf.m_servers);
                         
-                                std::string requ ; 
-                                int j = 1;
+                                // std::string requ ; 
+                                // int j = 1;
  
-                            while( respense.size()   >= 0 &&respense.size() != requ.size())
-                            {
+                            // while( respense.size()   >= 0 &&respense.size() != requ.size())
+                            // {
 
-                                    requ  = respense.substr(1024 * j,1024);
-                           send(fds[i].fd, requ.c_str(), requ.length(), serveur_id);
-                           j++;
-                            }
+                            //         requ  = respense.substr(1024 * j,1024);
+                           send(fds[i].fd,  respense.c_str(),  respense.length(), serveur_id);
+                        //    j++;
+                        //     }
 
 
                             // std::cout <<

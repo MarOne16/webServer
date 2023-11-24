@@ -96,11 +96,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                             break;
                     }
                     
-<<<<<<< HEAD
                     // std::cout << "point to ele" << std::endl;
-=======
-                    // std::cout  << "point to ele" << std::endl;
->>>>>>> iedderqi
                     if(!ele->Content.empty() )
                     {
                         if(!ele->ContentDisposition.empty())
@@ -115,21 +111,12 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             // it = this->response_items.ChunkedBody.begin();
             // while(it != this->response_items.ChunkedBody.end())
             // {
-<<<<<<< HEAD
             //     std::cout << "Content-Disposition : " << (*it)->ContentDisposition << std::endl;
             //      std::cout << "Content:" << (*it)->Content  << "|" << std::endl;
             //      std::cout << "ContentType:" << (*it)->ContentType  << "|" << std::endl;
             //      std::cout <<  "-------------------------------" << std::endl;
             //     // std::cout << (*it)->ContentDisposition <<  "----------- "<< std::endl;
             //     // std::cout << (*it)->ContentType  << "----------- "<< std::endl;
-=======
-            //     std::cout  << "Content-Disposition : " << (*it)->ContentDisposition << std::endl;
-            //      std::cout  << "Content:" << (*it)->Content  << "|" << std::endl;
-            //      std::cout  << "ContentType:" << (*it)->ContentType  << "|" << std::endl;
-            //      std::cout  <<  "-------------------------------" << std::endl;
-            //     // std::cout  << (*it)->ContentDisposition <<  "----------- "<< std::endl;
-            //     // std::cout  << (*it)->ContentType  << "----------- "<< std::endl;
->>>>>>> iedderqi
             //     it++;
 
             // }
@@ -277,11 +264,7 @@ void Requese::Headers_elements()
         value = trim((*it).substr(pos + 1));
         if((*it).substr(pos + 1, 1).c_str()[0]  != 32)
         {
-<<<<<<< HEAD
                 // std::cout << ":::::" << (*it).substr(pos + 1, 1).c_str()[0] << std::endl;
-=======
-                // std::cout  << ":::::" << (*it).substr(pos + 1, 1).c_str()[0] << std::endl;
->>>>>>> iedderqi
             this->status_response_code = 400;
             // break;
         }
@@ -548,11 +531,7 @@ int Requese::check_connection(std::string& value)
             return 1;
         it++;
     }
-<<<<<<< HEAD
     // std::cout << "here"<< std::endl;
-=======
-    // std::cout  << "here"<< std::endl;
->>>>>>> iedderqi
         return 0;
 }
 
@@ -640,11 +619,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         this->response_items.location->upload_enable = it->second.upload_enable;
         this->response_items.location->autoindex = it->second.autoindex;
     }
-<<<<<<< HEAD
         std::cout << "==========>" << std::endl;
     // std::cou << "auto_index:" <<  << std::endl;
-=======
-        // std::cout  << "==========>" << std::endl;
->>>>>>> iedderqi
     return Path;
 }
