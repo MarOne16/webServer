@@ -24,6 +24,7 @@
 #include <cstring>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 typedef struct s_location
 {
@@ -116,3 +117,4 @@ bool ifCgi(std::string location);
 bool notHas(std::string str, std::string s);
 void addElement(std::string &str, std::string element, size_t pos);
 void checkServer(std::map<unsigned int , server> &m_servers);
+std::string getDefault(std::string path);

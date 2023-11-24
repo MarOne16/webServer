@@ -16,7 +16,7 @@ int main(int argc, const char **argv)
             std::cout << "host: " << it->second.host << std::endl;
             std::cout << "port: " << it->second.port << std::endl;
             std::cout << "max_body_size: " << it->second.max_body_size << std::endl;
-            std::cout << "Default path: " << it->second.default_location << std::endl;
+            std::cout << "root: " << cfp.global_root << std::endl;
             std::cout << "error_pages: " << std::endl;
             std::map<std::string, std::string>::iterator it2 = it->second.error_pages.begin();
             while (it2 != it->second.error_pages.end())
