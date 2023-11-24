@@ -17,6 +17,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     std::string value;
     std::string key;
     std::map<std::string, s_location> lc;
+    // std::cout  << req << std::endl;
     try{
         //read Header request 
         while(pos != -1)
@@ -30,7 +31,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             token = req.substr(0, pos);
             req = req.substr(pos + 2, req.length());
             response_items.Req.push_back(token);
-            std::cout << token << "\n";
+            // std::cout  << token << "\n";
             i++;
         } 
         //find match location
@@ -45,7 +46,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         if(response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
         {
             pos = req.find("&");
-            // std::cout << 
+            // std::cout  << 
                 this->response_items.lenghtbody += req.length();
             while(pos != -1 && !req.empty())
             {
@@ -62,31 +63,31 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             std::stringstream os(req);
             RequestBody *ele;
             //TODO : change value of boundary when u find it
-            // std::cout <<  "||" << this->response_items.bondary  << "||" << std::endl;
+            // std::cout  <<  "||" << this->response_items.bondary  << "||" << std::endl;
             while (std::getline(os, token, '\n'))
             {
                 ele = new RequestBody;
-                        // std::cout << "||" << req << "||" << std::endl;
+                        // std::cout  << "||" << req << "||" << std::endl;
                     token = token.substr(0, token.size() - 1);
                     while(token.compare(this->response_items.bondary) != 0)
                     {
-                        // std::cout << "||" << token << "||" << std::endl;
+                        // std::cout  << "||" << token << "||" << std::endl;
                         if (token.find("Content-Disposition") != std::string::npos) 
                         {
                                 ele->ContentDisposition = token;
-                                // std::cout << "Content-Disposition : " << token << std::endl;
+                                // std::cout  << "Content-Disposition : " << token << std::endl;
                                 token.clear();
                         }
                         if (token.find("Content-Type") != std::string::npos  ) 
                         {
                                 ele->ContentType = token;
-                                // std::cout << "Content-Type : " << token << std::endl;
+                                // std::cout  << "Content-Type : " << token << std::endl;
                                 token.clear();
                         }
                         else if(token.compare(this->response_items.bondary))
                         {
                             ele->Content += token;
-                            // std::cout << "Content:" << token  << "|" << std::endl;
+                            // std::cout  << "Content:" << token  << "|" << std::endl;
                             token.clear();
                         }
                         std::getline(os, token, '\n');
@@ -95,7 +96,11 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                             break;
                     }
                     
+<<<<<<< HEAD
                     // std::cout << "point to ele" << std::endl;
+=======
+                    // std::cout  << "point to ele" << std::endl;
+>>>>>>> iedderqi
                     if(!ele->Content.empty() )
                     {
                         if(!ele->ContentDisposition.empty())
@@ -110,25 +115,34 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             // it = this->response_items.ChunkedBody.begin();
             // while(it != this->response_items.ChunkedBody.end())
             // {
+<<<<<<< HEAD
             //     std::cout << "Content-Disposition : " << (*it)->ContentDisposition << std::endl;
             //      std::cout << "Content:" << (*it)->Content  << "|" << std::endl;
             //      std::cout << "ContentType:" << (*it)->ContentType  << "|" << std::endl;
             //      std::cout <<  "-------------------------------" << std::endl;
             //     // std::cout << (*it)->ContentDisposition <<  "----------- "<< std::endl;
             //     // std::cout << (*it)->ContentType  << "----------- "<< std::endl;
+=======
+            //     std::cout  << "Content-Disposition : " << (*it)->ContentDisposition << std::endl;
+            //      std::cout  << "Content:" << (*it)->Content  << "|" << std::endl;
+            //      std::cout  << "ContentType:" << (*it)->ContentType  << "|" << std::endl;
+            //      std::cout  <<  "-------------------------------" << std::endl;
+            //     // std::cout  << (*it)->ContentDisposition <<  "----------- "<< std::endl;
+            //     // std::cout  << (*it)->ContentType  << "----------- "<< std::endl;
+>>>>>>> iedderqi
             //     it++;
 
             // }
             // exit(0);
-            // std::cout << req <<  std::endl;
+            // std::cout  << req <<  std::endl;
     }
     else
     {
         this->response_items.Body =  req;
         this->response_items.lenghtbody +=  this->response_items.Body.length();
     }
-   if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str())) // TODO: check size 
-        this->status_response_code = 413;
+//    if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str())) // TODO: check size 
+//         this->status_response_code = 413;
    if(this->response_items.Path.length() > 2048)
         this->status_response_code = 414;
     if(this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
@@ -148,7 +162,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     
     }catch(std::exception& e)
     {
-        std::cout << e.what() << std::endl;
+        std::cout  << e.what() << std::endl;
     }
 }
 
@@ -263,7 +277,11 @@ void Requese::Headers_elements()
         value = trim((*it).substr(pos + 1));
         if((*it).substr(pos + 1, 1).c_str()[0]  != 32)
         {
+<<<<<<< HEAD
                 // std::cout << ":::::" << (*it).substr(pos + 1, 1).c_str()[0] << std::endl;
+=======
+                // std::cout  << ":::::" << (*it).substr(pos + 1, 1).c_str()[0] << std::endl;
+>>>>>>> iedderqi
             this->status_response_code = 400;
             // break;
         }
@@ -272,7 +290,7 @@ void Requese::Headers_elements()
         this->response_items.Headers[key] = value;
         if(key.empty() || value.empty() || check_more_element(key, value) == 0 )
         {
-            std::cout << "hna" << std::endl;
+            // std::cout  << "hna" << std::endl;
             this->status_response_code = 400;
             return ;
         }
@@ -422,7 +440,7 @@ int Requese::check_content_type(std::string &value)
             this->response_items.bondary += value.substr(value.find("boundary=") + 9);
         }
         return 1;
-        // std::cout << "Bondary: " << this->response_items.bondary  << std::endl;
+        // std::cout  << "Bondary: " << this->response_items.bondary  << std::endl;
         // exit(0);
 
     }
@@ -530,7 +548,11 @@ int Requese::check_connection(std::string& value)
             return 1;
         it++;
     }
+<<<<<<< HEAD
     // std::cout << "here"<< std::endl;
+=======
+    // std::cout  << "here"<< std::endl;
+>>>>>>> iedderqi
         return 0;
 }
 
@@ -544,7 +566,7 @@ int Requese::check_more_element(std::string& key, std::string& value)
         return (this->is_alpha(value));
     if( key == "Content-Type")
     {
-        std::cout << "hta " << std::endl;
+        // std::cout  << "hta " << std::endl;
         return check_content_type(value);
     }
     if(key == "Transfer-Encoding")
@@ -561,7 +583,7 @@ const char *Requese::ErrorSyntax::what() const throw()
 
 std::string Requese::find_location(server& server_data, std::string& PATH)
 {
-    std::cout <<  "path : " << PATH   << std::endl;
+    // std::cout  <<  "path : " << PATH   << std::endl;
     std::string Path = PATH;
     std::map<std::string , s_location> location = server_data.locations;
     int pos = 0;
@@ -607,7 +629,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
    it = location.find(Path);
     if(it != location.end())
     {
-        std::cout << "Location found: " << Path << std::endl;
+        // std::cout  << "Location found: " << Path << std::endl;
         this->response_items.location->allowed_methods = it->second.allowed_methods;
         this->response_items.location->root = it->second.root;
         this->response_items.location->index = it->second.index;
@@ -618,7 +640,11 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         this->response_items.location->upload_enable = it->second.upload_enable;
         this->response_items.location->autoindex = it->second.autoindex;
     }
+<<<<<<< HEAD
         std::cout << "==========>" << std::endl;
     // std::cou << "auto_index:" <<  << std::endl;
+=======
+        // std::cout  << "==========>" << std::endl;
+>>>>>>> iedderqi
     return Path;
 }
