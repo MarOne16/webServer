@@ -18,7 +18,7 @@ Response::Response(int status, std::vector<std::string> init_line,  http_items& 
 std::string Response::build_response()
 {
     
-    std::cout <<  ">>>>" << this->status  << " << "<< std::endl;
+    // std::cout  <<  ">>>>" << this->status  << " << "<< std::endl;
     if(this->status == 400)
     {
         ft_bad_request("400", this->bad_req);
@@ -28,7 +28,7 @@ std::string Response::build_response()
     else if(this->status == 405)
         {
             this->other_response("405", "Method not allowed", "<html><head><title>405 Method Not Allowed</title></head><body><h1>405 Method Not Allowed</h1><p>The requested method is not allowed for this resource.</p></bod></html>");
-            // std::cout << "HTTP Method not allowed\r\n";
+            // std::cout  << "HTTP Method not allowed\r\n";
             // exit(1);
         }
     else if(this->status == 413)
@@ -138,7 +138,7 @@ std::string Response::check_index_file(std::string & url)
         entity = readdir(dir);
         while(entity != NULL)
         {
-            // std::cout << entity->d_name << std::endl;
+            // std::cout  << entity->d_name << std::endl;
             if(entity->d_name == files[i])
                 return files[i];
             entity = readdir(dir);
@@ -161,9 +161,13 @@ void Response::build_GET()
         std::string autoIndexPage;
 
         URI += this->response_items.Path.substr(1); // TODO : check if path is beging with /
+<<<<<<< HEAD
         std::cout <<  "url use in method :"  << this->response_items.location->root << "|" << std::endl;
         std::cout <<  "url use in method :"  << URI << "|" << std::endl;
         //  std::cout << "here :" << get_auto_index << std::endl;
+=======
+        //  std::cout  << "here :" << get_auto_index << std::endl;
+>>>>>>> iedderqi
         if(!this->response_items.location->return_code_url.empty())
         {
             std::cout << "here" << std::endl;
@@ -184,6 +188,7 @@ void Response::build_GET()
                     {
                         DIR *dir = opendir(URI.c_str());
                         struct dirent* entity;
+<<<<<<< HEAD
                         // std::cout << "hi:" << get_auto_index << std::endl;
                         if(get_auto_index == "off" || get_auto_index.empty())
                         {
@@ -197,6 +202,15 @@ void Response::build_GET()
                                 return;
                             }
                             std::string content_body = read_file(URI.c_str());
+=======
+                        // std::cout  << get_auto_index << std::endl;
+                        if(get_auto_index == "off" || get_auto_index.empty())
+                        {
+                        //    this->ft_forbidden_request("403", this->forbidden_req);
+                            
+                            //  std::cout  << "defaultpage " << std::endl;
+                            std::string content_body = read_file("./src/index.html");
+>>>>>>> iedderqi
                             this->ft_success_code("200", content_body, URI);
                         }
                         else
@@ -261,7 +275,7 @@ void Response::build_GET()
                         }
                         else
                         {
-                            std::cout << "defaultpage " << std::endl;
+                            // std::cout  << "defaultpage " << std::endl;
                             std::string content_body = read_file("./src/index.html");
                             this->ft_success_code("200", content_body, URI);
                         }
@@ -310,7 +324,7 @@ void Response::build_DELETE()
     std::string URI = this->response_items.location->root; //change by value depends on location
     std::string get_auto_index = this->response_items.location->autoindex; // change by getter 
     std::string cgi_path = this->response_items.location->cgi_path; //change path with valid path from config;
-    std::cout << "DELETE HI "  << std::endl;
+    // std::cout  << "DELETE HI "  << std::endl;
     URI += this->response_items.Path.substr(1);
     status = stat(URI.c_str() ,  &buffer);
     if(status != -1)
@@ -359,7 +373,7 @@ void Response::build_DELETE()
         }
         else
         {
-            std::cout << "still case with CGI" << std::endl;
+            std::cout  << "still case with CGI" << std::endl;
         }
        }
     }
@@ -381,7 +395,11 @@ void Response::build_POST()
    
   
     URI += this->response_items.Path.substr(1);
+<<<<<<< HEAD
    
+=======
+    // std::cout  << URI << std::endl;
+>>>>>>> iedderqi
     std::string index ;
     int pos = 0;
     unsigned int  k = 0;
@@ -390,14 +408,14 @@ void Response::build_POST()
     status = stat(URI.c_str() ,  &buffer);
     if(upload_enable == "off")
     {
-        std::cout << "status: " << buffer.st_mode << std::endl;
+        // std::cout  << "status: " << buffer.st_mode << std::endl;
         if(status != -1)
         {
             if(!this->response_items.Extension.empty())
             {
                 if(!cgi_path.empty())
                 {
-                        std::cout << "Returtn Code Depend on cgi ";
+                        std::cout  << "Returtn Code Depend on cgi ";
                 }
                 else
                 {
@@ -431,14 +449,14 @@ void Response::build_POST()
                         else
                         {
                             URI += index;
-                            std::cout << "Returtn Code Depend on cgi";
+                            std::cout  << "Returtn Code Depend on cgi";
                         }
 
                     }
 
                 }
             }
-                // std::cout << "supported upload mode: " << this->response_items.Extension << std::endl;
+                // std::cout  << "supported upload mode: " << this->response_items.Extension << std::endl;
         }
         else
         {
@@ -455,10 +473,14 @@ void Response::build_POST()
         if(this->response_items.Headers.find("Content-Type")->second.find("multipart/form-data")  != std::string::npos)
         {
                 it = this->response_items.ChunkedBody.begin();
+<<<<<<< HEAD
                 // std::cout << "lenght of ChunkBody" <<  this->response_items.ChunkedBody.size() << std::endl;
+=======
+                // std::cout  << "lenght of ChunkBody" <<  this->response_items.ChunkedBody.size() << std::endl;
+>>>>>>> iedderqi
                 while(k < this->response_items.ChunkedBody.size())
                 {
-                    // std::cout << "content-body" << (*it)->Content << " " << (*it)->ContentDisposition << std::endl;
+                    // std::cout  << "content-body" << (*it)->Content << " " << (*it)->ContentDisposition << std::endl;
                     if(!(*it)->ContentType.empty())
                     {
                         if(!(*it)->ContentDisposition.empty())
@@ -472,21 +494,33 @@ void Response::build_POST()
                                 // namefile = prefix + namefile;
                                 // pos = (*it)->ContentType.find("Content-Type=");
                                 // namefile += get_type(trim((*it)->ContentType.substr(pos + 14)));
-                                std::cout << "file name :" << namefile << std::endl;
+                                std::cout  << "file name :" << namefile << std::endl;
                             }
                         }
                         else
                         {
+<<<<<<< HEAD
                             // std::cout << "here is not valid content-disposition " << std::endl;
+=======
+                            std::cout  << "here is not valid content-disposition " << std::endl;
+>>>>>>> iedderqi
                             time(&current_time);
                             ss <<  static_cast<int>(current_time);
                             namefile += ss.str(); 
                             namefile  += ".txt";
+<<<<<<< HEAD
                             // std::cout <<  namefile  << "not open file make response to handle error";
 
                     }
                     file.open(this->response_items.location->upload_store_directory + namefile);
                     std::cout << namefile << std::endl;
+=======
+                            std::cout  <<  namefile  << "not open file make response to handle error";
+
+                    }
+                    file.open(namefile);
+                    std::cout  << namefile << std::endl;
+>>>>>>> iedderqi
                     namefile.clear();
                     if(!file.is_open())
                     {
@@ -597,7 +631,7 @@ void Response::return_pages(std::string& pages_return, std::string& url)
     // std::vector<std::string>::iterator it;
     switch (atoi(pages[0].c_str()))
     {
-        std::cout << "hi " << std::endl;
+        std::cout  << "hi " << std::endl;
         case 200 :
             this->ft_success_code(pages[0], pages[1], url);
             break;
@@ -614,7 +648,7 @@ void Response::return_pages(std::string& pages_return, std::string& url)
         case 403 :
             this->ft_forbidden_request(pages[0], pages[1]);
         case 500 :
-            std::cout << "error" << std::endl;  
+            std::cout  << "error" << std::endl;  
             break;
         default :
            this->not_found();

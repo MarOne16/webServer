@@ -48,11 +48,11 @@ std::string get_Content_type(std::string url)
 // 		return "text/plain";
 //    else if (extension.compare("mp4") == 0)
 //         return "video/mp4";
-std::cout << extension << std::endl;
+// std::cout  << extension << std::endl;
 unsigned int i = 0;
 while(i < 23)
 {
-        std::cout << "gere" << std::endl;
+        std::cout  << "gere" << std::endl;
     if(contentTypes[i].find(extension) != std::string::npos)
     {
         return contentTypes[i];
@@ -68,5 +68,5 @@ exit(0);
 
 int main()
 {
-    std::cout << "type:" << get_Content_type("img.mp4") << std::endl;
+    std::cout  << "type:" << get_Content_type("img.mp4") << std::endl;
 }
