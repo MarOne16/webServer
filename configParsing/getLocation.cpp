@@ -214,7 +214,7 @@ std::string ConfigParser::getReturnCodeUrl(std::string location)
 {
     if (!isInsidLocation(location, "return"))
         return "";
-    std::string return_code_url = "";
+    std::string return_code_url  = "";
     size_t start = location.find("return");
     for (size_t i = start + 6; i < location.length(); i++)
     {
