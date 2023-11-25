@@ -267,7 +267,21 @@ std::string data(std::map<int, std::string> map_request, int fd)
 //         it_checker++;
 //     }
 // }
+int index_fds(std::vector<struct pollfd> fds, int fd)
+{
+    int i = 0;
+    std::vector<struct pollfd>::iterator it;
 
+    for (it = fds.begin(); it != fds.end(); it++)
+    {
+
+        if (it->fd == fd)
+            return (i);
+
+        i++;
+    }
+    return (-1);
+}
 void request_inserer(char buffer[1024], int buff_size, int fd, std::map<int, std::string> &map_request, std::map<int, size_t> &checker)
 {
     int j = 0;
@@ -442,11 +456,19 @@ int main(int ac, const char **av)
                         }
                         if (rec == 0)
                         {
-                            close(fds[i].fd);
+
+
+
+
                             map_request.erase(fds[i].fd);
                             checker.erase(fds[i].fd);
-                            fds.erase(fds.begin() + i);
+
                             client.erase(std::find(client.begin(), client.end(), fds[i].fd));
+                                
+                            close(fds[i].fd);
+                            // std::cout<< index_fds(fds, fds[i].fd) <<" \n";
+                            fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
+                            
                             std::cout << "bybye" << std::endl;
                         }
                         // request += std::string(buf, rec);
@@ -474,11 +496,16 @@ int main(int ac, const char **av)
                         // body --- Gett  //
                         if (request.size() >= cherk)
                         {
-                            std::cout << "done" << std::endl;
+                            // std::cout << "done" << std::endl;
                             // std::cerr << request << std::endl;
-                            // exit(0);
+                            // exit(1);
                             bzero(buf, 1024);
-                            std::cout << "request  \n";
+                           
+
+                            // std::cerr<<request;
+                            // exit(0);
+
+                         
                             std::string port, name_serveur;
                             geve_port_name(request, name_serveur, port);
 
@@ -489,7 +516,7 @@ int main(int ac, const char **av)
                             feedRequest(serveur_id, data_conf.m_servers, request);
                             
                             respense = sendResponse(serveur_id, data_conf.m_servers);
-                           
+
                             //   std::cout<<respense;
                             //   exit(0);
                             // send(fds[i].fd,   respense.c_str(),    respense.length(), 0);
@@ -549,13 +576,15 @@ int main(int ac, const char **av)
 
                             request.clear();
 
-                            close(fds[i].fd);
                             map_request.erase(fds[i].fd);
                             checker.erase(fds[i].fd);
 
                             client.erase(std::find(client.begin(), client.end(), fds[i].fd));
+                                
+                            close(fds[i].fd);
+                            // std::cout<< index_fds(fds, fds[i].fd) <<" \n";
+                            fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
 
-                            fds.erase(fds.begin() + i);
                             ////////////////////////////////////////////////
 
                             //  close(fds[i].fd);
