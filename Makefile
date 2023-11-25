@@ -5,6 +5,7 @@ CC     = c++
 FILES  = ./configParsing/getLocation.cpp \
 		./configParsing/configParsing.cpp \
 		./configParsing/parsingTools.cpp \
+		./configParsing/hashMapParsing.cpp \
 		./Response/mainResponse.cpp \
 		./Response/requese.cpp \
 		./Response/response.cpp \

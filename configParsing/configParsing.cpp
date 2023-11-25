@@ -2,6 +2,7 @@
 
 ConfigParser::ConfigParser(const char **argv)
 {
+    setConfKeys();
     if (argv[1])
     {
         std::ifstream file(argv[1]);

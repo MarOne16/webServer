@@ -7,7 +7,6 @@ int main(int argc, const char **argv)
     {
         (void) argc;
         ConfigParser cfp(argv);
-        cfp.setConfKeys();
         cfp.readConfigFile();
         cfp.checkBrackets();
         checkServer(cfp.m_servers);
