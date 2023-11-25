@@ -462,7 +462,7 @@ int main(int ac, const char **av)
                             close(fds[i].fd);
                             map_request.erase(fds[i].fd);
                             checker.erase(fds[i].fd);
-                            fds.erase(fds.begin() + i);
+                            fds.erase(fds.begin() + index_fds( fds  , fds[i].fd));
                             client.erase(std::find(client.begin(), client.end(), fds[i].fd));
                             std::cout << "bybye" << std::endl;
                         }
