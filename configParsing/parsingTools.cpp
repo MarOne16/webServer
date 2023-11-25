@@ -173,3 +173,28 @@ void checkServer(std::map<unsigned int , server> &m_servers)
         it++;
     }
 }
+
+std::string getDefault(std::string path)
+{
+    if (path == "root")
+    {
+        std::string current_path = getcwd(NULL, 0);
+        current_path += "/default_pages/root.html";
+        if (findFile(current_path))
+            return current_path;
+        else
+        {
+            throw std::runtime_error("Default root.html file not found.");
+        }
+    }
+    if (path == "upload_store_directory")
+    {
+        std::string current_path = getcwd(NULL, 0);
+        current_path += "/default_pages";
+        if (findFile(current_path))
+            return current_path;
+        else
+            throw std::runtime_error("Default upload dir not found.");
+    }
+    return "get_default_error";
+}

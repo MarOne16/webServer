@@ -203,7 +203,7 @@ std::string ConfigParser::getHost()
 std::string ConfigParser::getMaxBodySize()
 {
     if (!ifInside("server", "max_body_size"))
-        throw std::runtime_error("No max body size directive found.");
+        return "1000000";
     size_t pos = this->content.find("max_body_size");
     std::string maxBodySize = "";
     for (size_t i = pos + 13; i < this->content.length(); i++)
@@ -217,8 +217,10 @@ std::string ConfigParser::getMaxBodySize()
         if (maxBodySize[i] == ' ' || maxBodySize[i] == '\t' || maxBodySize[i] == '\n')
             maxBodySize.erase(i--, 1);
     }
-    if (notIn(maxBodySize, "0123456789 mM"))
-        throw std::runtime_error("Max body size is not valid.");
+    if (notIn(maxBodySize, "0123456789 "))
+        throw std::runtime_error("Max body size is not valid excepted only numbers.\nKeeping mind 1 = 1 byte.");
+    if (maxBodySize.length() > 10)
+        throw std::runtime_error("Max body size too big.");
     return maxBodySize;
 }
 
@@ -263,8 +265,8 @@ unsigned int ConfigParser::getNumber_ofServers()
 
 std::string ConfigParser::getRootServ()
 {
-    if (content.find("root") == std::string::npos)
-        return (global_root = "DEFAULT_ROOT");//TODO: change to default root
+    if (content.find("root") == std::string::npos || !ifOutsideLocation("root"))
+        return (global_root = getDefault("root"));
     if (ifOutsideLocation("root"))
     {
         std::string root = "";
@@ -321,7 +323,7 @@ void ConfigParser::globalUpload()
 {
     if (content.find("upload_store_directory") == std::string::npos)
     {
-        global_upload_store = "DEFAULT_UPLOAD_STORE";
+        global_upload_store = getDefault("upload_store_directory");
         return;
     }
     if (ifOutsideLocation("upload_store_directory"))

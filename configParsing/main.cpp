@@ -27,19 +27,6 @@ int main(int argc, const char **argv)
             std::map<std::string, location>::iterator it3 = it->second.locations.begin();
             while (it3 != it->second.locations.end())
             {
-<<<<<<< HEAD
-                std::cout << "locations: " << it3->first << std::endl;
-                std::cout << YELLOW"root: " << it3->second.root << std::endl;
-                std::cout << "index: " << it3->second.index << std::endl;
-                std::cout << "cgi_path: " << it3->second.cgi_path << std::endl;
-                std::cout << "autoindex: " << it3->second.autoindex << std::endl;
-                std::cout << "cgi_extension: " << it3->second.cgi_extension << std::endl;
-                std::cout << "fastcgi_pass: " << it3->second.fastcgi_pass << std::endl;
-                std::cout << "allowed_methods: " << it3->second.allowed_methods << std::endl;
-                std::cout << "return_code_url: " << it3->second.return_code_url << std::endl;
-                std::cout << "upload_store_directory: " << it3->second.upload_store_directory << std::endl;
-                std::cout << "upload enable: " << it3->second.upload_enable << RESET<< std::endl;
-=======
                 std::cout  << "locations: " << it3->first << std::endl;
                 std::cout  << YELLOW"root: " << it3->second.root << std::endl;
                 std::cout  << "index: " << it3->second.index << std::endl;
@@ -50,7 +37,6 @@ int main(int argc, const char **argv)
                 std::cout  << "allowed_methods: " << it3->second.allowed_methods << std::endl;
                 std::cout  << "return_code_url: " << it3->second.return_code_url << std::endl;
                 std::cout  << "upload_store_directory: " << it3->second.upload_store_directory << RESET<< std::endl;
->>>>>>> iedderqi
                 it3++;
             }
             it++;
