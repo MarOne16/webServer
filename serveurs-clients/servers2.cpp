@@ -502,7 +502,8 @@ int main(int ac, const char **av)
                             bzero(buf, 1024);
                            
 
-
+                            // std::cerr<<request;
+                            // exit(0);
 
                          
                             std::string port, name_serveur;
