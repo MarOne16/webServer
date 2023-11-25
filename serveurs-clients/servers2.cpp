@@ -267,7 +267,24 @@ std::string data(std::map<int, std::string> map_request, int fd)
 //         it_checker++;
 //     }
 // }
+int index_fds( std::vector<struct pollfd> fds  , int fd)
+{
+    int i = 0;
+    std::vector<struct pollfd>::iterator it  ;
 
+    
+    for(it =fds.begin() ; it != fds.end() ; it++ )
+    {
+        
+        if(it->fd == fd )
+            return( i );
+        
+        i++;
+
+    }
+    return(-1);
+    
+}
 void request_inserer(char buffer[1024], int buff_size, int fd, std::map<int, std::string> &map_request, std::map<int, size_t> &checker)
 {
     int j = 0;
@@ -474,9 +491,9 @@ int main(int ac, const char **av)
                         // body --- Gett  //
                         if (request.size() >= cherk)
                         {
-                            std::cout << "done" << std::endl;
-                            std::cerr << request << std::endl;
-                            exit(1);
+                            // std::cout << "done" << std::endl;
+                            // std::cerr << request << std::endl;
+                            // exit(1);
                             bzero(buf, 1024);
                             std::cout << "request  \n";
                             std::string port, name_serveur;
@@ -547,14 +564,15 @@ int main(int ac, const char **av)
                             // std::cout <<
 
                             request.clear();
-
-                            close(fds[i].fd);
+ 
                             map_request.erase(fds[i].fd);
                             checker.erase(fds[i].fd);
 
                             client.erase(std::find(client.begin(), client.end(), fds[i].fd));
-
-                            fds.erase(fds.begin() + i);
+                      
+                                    
+                            close(fds[i].fd);
+                            fds.erase(fds.begin() + index_fds( fds  , fds[i].fd));
                             ////////////////////////////////////////////////
 
                             //  close(fds[i].fd);
