@@ -475,8 +475,8 @@ int main(int ac, const char **av)
                         if (request.size() >= cherk)
                         {
                             std::cout << "done" << std::endl;
-                            std::cerr << request << std::endl;
-                            exit(1);
+                            // std::cerr << request << std::endl;
+                            // exit(0);
                             bzero(buf, 1024);
                             std::cout << "request  \n";
                             std::string port, name_serveur;
@@ -487,6 +487,7 @@ int main(int ac, const char **av)
                             //  exit(0);
                             int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur);
                             feedRequest(serveur_id, data_conf.m_servers, request);
+                            
                             respense = sendResponse(serveur_id, data_conf.m_servers);
                            
                             //   std::cout<<respense;

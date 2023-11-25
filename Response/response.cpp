@@ -95,10 +95,11 @@ std::string Response::get_Content_type(std::string url)
     return "text/html;";
 }
 
+
 std::string Response::get_type(std::string extension)
 {
-    // if (_request.get_header_value("Content-Type:").size())
-    // 	return _request.get_header_value("Content-Type:");
+    extension = trim(extension);
+    std::cout << "extension: " << extension << std::endl;
     if (extension.compare("text/html; charset=UTF-8") == 0 || extension.compare("text/html;") == 0)
         return ".html";
     else if (extension.compare("application/json") == 0)
@@ -107,8 +108,10 @@ std::string Response::get_type(std::string extension)
         return ".ico";
     else if (extension.compare("image/jpeg") == 0)
         return "jpeg";
-    else if (extension.compare("mage/jpg") == 0)
+    else if (extension.compare("image/jpg") == 0)
         return ".jpg";
+    else if (extension.compare("video/mp4") == 0)
+        return ".mp4";
     else
         return ".txt";
 }
@@ -157,8 +160,8 @@ void Response::build_GET()
     std::string cgi_path = this->response_items.location->cgi_path;        // change path with valid path from config;
     std::string index;
     std::string autoIndexPage;
-
     URI += this->response_items.Path.substr(1); // TODO : check if path is beging with /
+                std::cout << "uri: " << URI << std::endl;
     status = stat(URI.data(), &buffer);
     if (status != -1)
     {
@@ -183,10 +186,10 @@ void Response::build_GET()
                         }
                         std::string content_body = read_file(URI.c_str());
                         this->ft_success_code("200", content_body, URI);
+
                     }
                     else
                     {
-
                         autoIndexPage = "<!DOCTYPE html>\n<html lang=\"en\">\n\
                                                     <head>\n\
                                                     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\
@@ -332,6 +335,7 @@ void Response::build_DELETE()
 void Response::build_POST()
 {
 
+       
     struct stat buffer;
     int status;
     std::string upload_enable = this->response_items.location->upload_enable; // replace it by location value
@@ -387,7 +391,8 @@ void Response::build_POST()
     }
     else
     {
-
+           
+          std::cout << "url : " << this->response_items.location->upload_store_directory << std::endl; 
         std::string namefile;
         time_t current_time;
         std::ofstream file;
@@ -406,6 +411,7 @@ void Response::build_POST()
                         {
                             namefile = (*it)->ContentDisposition.substr(pos + 10);
                             namefile = namefile.substr(0, namefile.find("\""));
+                            namefile = namefile.substr(0, namefile.rfind("."));
                         }
                     }
                     else
@@ -415,6 +421,9 @@ void Response::build_POST()
                         namefile += ss.str();
                         namefile += ".txt";
                     }
+                    std::cout << trim((*it)->ContentType.substr((*it)->ContentType.find(":") + 1)) << std::endl;
+                    namefile += this->get_type(trim((*it)->ContentType.substr((*it)->ContentType.find(":") + 1) ));
+                    std::cout << namefile << std::endl;
                     file.open(this->response_items.location->upload_store_directory + namefile);
                     namefile.clear();
                     if (!file.is_open())
@@ -423,7 +432,12 @@ void Response::build_POST()
                         return;
                     }
                     if (!(*it)->Content.empty())
+                    {
+                        std::ofstream file1;
+                        file1.open("./text.txt");
                         file << (*it)->Content;
+                        file1 << (*it)->Content;
+                    }
                     file.close();
                 }
                 it++;
