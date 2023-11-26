@@ -346,7 +346,6 @@ void Response::build_POST()
     std::string cgi_path = this->response_items.location->cgi_path;        // change path with valid path from config;
 
     URI += this->response_items.Path.substr(1);
-
     std::string index;
     int pos = 0;
     unsigned int k = 0;

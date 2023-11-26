@@ -368,7 +368,11 @@ void ConfigParser::globalUpload()
         }
         if (!ifClosed(upload))
             throw std::runtime_error("upload directive is not closed.");
+        if (!findFile(upload.erase(upload.length() - 1, 1)))
+            throw std::runtime_error("upload_store_directory is not valid.");
         ereaseContent(content, pos, ';');
-        global_upload_store = upload.erase(upload.length() - 1, 1);
+        if (upload.find_last_of('/') != upload.length() - 1)
+            upload += '/';
+        global_upload_store = upload;
     }
 }
