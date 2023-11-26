@@ -21,6 +21,7 @@ ConfigParser::ConfigParser(const char **argv)
 
 ConfigParser::~ConfigParser()
 {
+    closedir(dir);
     // system("leaks a.out");
 }
 
