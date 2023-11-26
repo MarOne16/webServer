@@ -392,7 +392,7 @@ void Response::build_POST()
     else
     {
            
-          std::cout << "url : " << this->response_items.location->upload_store_directory << std::endl; 
+        //   std::cout << "url : " << this->response_items.location->upload_store_directory << std::endl; 
         std::string namefile;
         time_t current_time;
         std::ofstream file;
@@ -411,7 +411,7 @@ void Response::build_POST()
                         {
                             namefile = (*it)->ContentDisposition.substr(pos + 10);
                             namefile = namefile.substr(0, namefile.find("\""));
-                            namefile = namefile.substr(0, namefile.rfind("."));
+                            // namefile = namefile.substr(0, namefile.rfind("."));
                         }
                     }
                     else
@@ -421,10 +421,10 @@ void Response::build_POST()
                         namefile += ss.str();
                         namefile += ".txt";
                     }
-                    std::cout << trim((*it)->ContentType.substr((*it)->ContentType.find(":") + 1)) << std::endl;
-                    namefile += this->get_type(trim((*it)->ContentType.substr((*it)->ContentType.find(":") + 1) ));
-                    std::cout << namefile << std::endl;
-                    file.open(this->response_items.location->upload_store_directory + namefile);
+                    // std::cout << trim((*it)->ContentType.substr((*it)->ContentType.find(":") + 1)) << std::endl;
+                    // namefile += this->get_type(trim((*it)->ContentType.substr((*it)->ContentType.find(":") + 1) ));
+                    // std::cout << namefile << std::endl;
+                    file.open(this->response_items.location->upload_store_directory + namefile, std::ios::out | std::ios::binary);
                     namefile.clear();
                     if (!file.is_open())
                     {
@@ -433,11 +433,21 @@ void Response::build_POST()
                     }
                     if (!(*it)->Content.empty())
                     {
-                        std::ofstream file1;
-                        file1.open("./text.txt");
-                        file << (*it)->Content;
-                        file1 << (*it)->Content;
-                    }
+                        const size_t BUFFER_SIZE = 3000;
+                        size_t totalBytesWritten = 0;
+                        while (totalBytesWritten < (*it)->Content.size()) {
+                            size_t bytesToWrite = std::min(BUFFER_SIZE, (*it)->Content.size() - totalBytesWritten);
+                            file.write((*it)->Content.data() + totalBytesWritten, bytesToWrite);
+
+                            // Check if there was an error during the write operation
+                            if (!file) {
+                                std::cerr << "Error writing to the output file." << std::endl;
+                                break;
+                            }
+
+                            totalBytesWritten += bytesToWrite;
+                        }
+                   }
                     file.close();
                 }
                 it++;

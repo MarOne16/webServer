@@ -6,4 +6,5 @@
 #include <unistd.h>     // For read
 #include <poll.h>
 #include <fcntl.h>
+#include <fstream>
 #include "../configParsing/configParsing.hpp"
