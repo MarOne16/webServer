@@ -31,7 +31,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             token = req.substr(0, pos);
             req = req.substr(pos + 2, req.length());
             response_items.Req.push_back(token);
-            std::cout  << token << "\n";
+            // std::cout  << token << "\n";
             i++;
         } 
         //find match location
@@ -63,6 +63,8 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             std::stringstream os(req);
             RequestBody *ele;
             //TODO : change value of boundary when u find it
+            std::ofstream file;
+            
             while (std::getline(os, token, '\n'))
             {
                 ele = new RequestBody;
@@ -83,26 +85,27 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                         }
                         if (token.find("Content-Type") != std::string::npos  ) 
                         {
-
+                                
                                 ele->ContentType = token;
+                                std::getline(os, token, '\n');
+                                
                                 // std::cout  << "Content-Type : " << token << std::endl;
                                 token.clear();
                         }
                         else
                         {
-                            
+
+                             
                             ele->Content.append(token);
                             if(!ele->Content.empty())
                                 ele->Content.append("\n");
                             token.clear();
                         }
                         std::getline(os, token, '\n');
-                        // if(token[token.size() - 2] == '\n')
-                        //     token = token.substr(0, token.size() - 1);
                         if(os.eof() ||  token.find(this->response_items.bondary) != std::string::npos)
                             break;
                     }
-                    
+                    file.close();
                     // std::cout << "point to ele" << std::endl;
                     if(!ele->Content.empty() )
                     {
@@ -111,8 +114,8 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                             this->response_items.lenghtbody +=  ele->ContentDisposition.length();
                         }
                         this->response_items.lenghtbody +=  ele->Content.length();
-                        // ele->Content[ele->Content.size() - 1] = '\0'; 
-                         std::cerr << ele->Content << std::endl;
+                        ele->Content.pop_back();
+                        //  std::cerr << ele->Content << std::endl;
                         this->response_items.ChunkedBody.push_back(ele);
                        
                     }
@@ -615,7 +618,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         this->response_items.location->upload_enable = it->second.upload_enable;
         this->response_items.location->autoindex = it->second.autoindex;
     }
-        std::cout << "==========>" << std::endl;
+        // std::cout << "==========>" << std::endl;
     // std::cou << "auto_index:" <<  << std::endl;
     return Path;
 }
