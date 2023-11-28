@@ -259,6 +259,9 @@ void Response::build_GET()
             if (!cgi_path.empty() && (this->response_items.Extension == "php" || this->response_items.Extension == "py"))
             {
                 // this->ft_success_code("200", body resturn by  CGI script ); // TODO: ADD CGI script
+                //TODO add cgi_bin function
+                // this->response_items.location.
+
             }
             else
             {
