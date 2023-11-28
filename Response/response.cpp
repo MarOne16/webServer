@@ -1,14 +1,19 @@
 #include "./webserver.hpp"
 
+void cgi_funct(http_items &response_items)
+{
+    std::cout << response_items.method << std::endl;
+    std::cout << response_items.Extension << std::endl;
+    std::cout << response_items.location->autoindex << std::endl;
+
+}
+
+
 Response::Response(int status, std::vector<std::string> init_line, http_items &response_items)
 {
     this->status = status;
     this->response_items = response_items;
     this->init_line = init_line;
-    // this->forbidden_req = "<html><head><title>403 Forbidden</title></head><body><h1>403 Forbidden</h1><p>Access to this resource is forbidden.</p></body></html>";
-    // this->bad_req = "<html><head><title>400 bad request</title></head><body><h1>400 Bad Request</h1><p>Your request could not be understood by the server.</p></body></html>";
-    // this->HTTP_NOT_SUPPORTED = "<html><head><title>500 Internal Server Error</title></head><body><h1>500 Bad Request</h1><p>Your request could not be understood by the server.</p></body></html>";
-    // this->Resource_not_found = "<html><body><head><title>404 Not Found</title></head><h1>404 Not Found</h1><p> Sorry, the page you're looking for doesn't exist. </p></body></html>";
 }
 
 std::string Response::build_response()
@@ -21,8 +26,6 @@ std::string Response::build_response()
         this->other_response("405", "Method not allowed");
     else if (this->status == 413)
         this->other_response("413", "Request-URI Too Long");
-    else if (this->status == 505)
-        this->other_response("505", "Not Implemented");
     else if (this->status == 411)
         this->other_response("411", "Length Required");
     else if (!this->response_items.location->return_code_url.empty())
@@ -67,7 +70,6 @@ std::string Response::get_Content_type(std::string url)
         "application/x-www-form-urlencoded",
         "application/graphql",
         "application/vnd.api+json",
-        // Add more as needed
     };
     std::string extension = url.substr(url.rfind(".") + 1);
     unsigned int i = 0;
@@ -102,39 +104,8 @@ std::string Response::get_type(std::string extension)
         return ".txt";
 }
 
-std::string Response::get_Date()
-{
-    time_t now = time(0);
-    std::stringstream str;
 
-    // convert now to string form
-    char *dt = ctime(&now);
-    str << dt;
-    return str.str().substr(0, str.str().size() - 1);
-}
 
-std::string Response::check_index_file(std::string &url)
-{
-    DIR *dir = opendir(url.c_str());
-    std::vector<std::string> files = split_v(this->response_items.location->index, " "); // change by value depends on location
-    if (dir == NULL)
-        return "";
-    struct dirent *entity;
-    unsigned int i = 0;
-    while (i < files.size())
-    {
-        entity = readdir(dir);
-        while (entity != NULL)
-        {
-            if (entity->d_name == files[i])
-                return files[i];
-            entity = readdir(dir);
-        }
-        i++;
-    }
-    closedir(dir);
-    return "";
-}
 
 void Response::build_GET()
 {
@@ -456,68 +427,10 @@ std::string Response::read_file(const std::string &filename)
     return ss.str();
 }
 
-// void Response::not_found()
-// {
-//     std::string status = "404";
-//     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
-//         ft_default_pages(status, this->Resource_not_found, ((this->response_items.error_pages.find(status))->second));
-//     response << "HTTP/1.1 404 NOT FOUND\r\n";
-//     response << "Content-Type: text/html\r\n";
-//     response << "Content-Length: " << this->Resource_not_found.length() << "\r\n";
-//     response << "Host: " << this->response_items.server << "\r\n";
-//     response << "Set-Cookie: yummy_cookie=choco\r\n";
-//     response << "Date: " << this->get_Date() << "\r\n\r\n";
-//     response << this->Resource_not_found;
-// }
 
-int Response::remove_all_files(const char *dirname)
-{
-    struct dirent *entity;
-    DIR *dir = opendir(dirname);
-    std::string filename;
-    ;
 
-    if (dir == NULL)
-        return -1;
-    entity = readdir(dir);
-    while (entity != NULL)
-    {
 
-        filename = dirname;
-        if (entity->d_name[0] != '.')
-        {
-            filename += entity->d_name;
-            if (access(filename.c_str(), F_OK | W_OK) == -1)
-            {
-                return 1;
-            }
-            remove(filename.c_str());
-        }
-        entity = readdir(dir);
-        filename.clear();
-    }
-    closedir(dir);
-    return 0;
-}
 
-std::string Response::trim(std::string original)
-{
-    unsigned int begin_index = 0;
-    unsigned int i = 0;
-    if (original.size() == 0)
-        return "";
-    while (isblank(original[i]) != 0 && i <= original.size())
-    {
-        begin_index++;
-        i++;
-    }
-    i = original.size() - 1;
-    while (isblank(original[i]) != 0 && i != 0)
-        i--;
-    if (begin_index == original.size())
-        return "";
-    return original.substr(begin_index, i + 1);
-}
 
 void Response::return_pages(std::string &pages_return, std::string &url)
 {
@@ -589,53 +502,6 @@ void Response::ft_redirect(std::string status, std::string message)
     response << "Date: " << this->get_Date() << "\r\n\r\n";
 }
 
-// void Response::ft_bad_request(std::string status, std::string message)
-// {
-//     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
-//         ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));
-//     std::cout << "OK" << std::endl;
-//     response << "HTTP/1.1 " << status << " Bad Request\r\n";
-//     response << "Content-Length: " << message.length() << "\r\n";
-//     response << "Server: " << this->response_items.server << "\r\n";
-//     response << "Connection: close\r\n";
-//     response << "Content-Type: "
-//              << "text/html"
-//              << "\r\n";
-//     response << "Date: " << this->get_Date() << "\r\n";
-//     response << "\r\n"; // Blank line to separate headers and body
-//     response << message;
-// }
-
-// void Response::ft_forbidden_request(std::string status, std::string message)
-// {
-//     std::string body;
-//     body = "<!DOCTYPE html>\n<html lang=\"en\">\n\
-//                                                     <head>\n\
-//                                                     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
-//     body.append("<title>" + status + " </title>\n");
-//     body += "</head>\n\
-//                                                     <body>\n\
-//                                                     <div style=\"display:flex; align-items:center; justify-content:center;  flex-direction:column;\">\n\
-//                                                     <h1 style=\"margin-top:1px\"></h1>\n";
-//     body.append("<div style=\"display:flex; align-items:center; justify-content:center; \"> <h1 style=\"margin-top:0px\"> " + status + "</h1> </div>\n");
-//     body += "\
-//                                         <hr style=\"width:100%; color:blue;\">\n\
-//                                         <p style=\"margin-top:0px\"> webserver 1337 http/1.1</p>\n\
-//                                         </div>\n\
-//                                         </body>\n\
-//                                         </html>\n";
-//     // response << body ;
-//     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
-//         ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));
-//     response << "HTTP/1.1 " << status << " Forbiden\r\n";
-//     response << "Location: " << message << "/\r\n";
-//     response << "Content-Length: " << body.length() << "\r\n";
-//     response << "Content-Type: "
-//              << "text/html"
-//              << "\r\n";
-//     response << "Connection: close\r\n\r\n";
-//     response << body;
-// }
 
 void Response::other_response(std::string status, std::string desc)
 {
@@ -643,12 +509,12 @@ void Response::other_response(std::string status, std::string desc)
     body = "<!DOCTYPE html>\n<html lang=\"en\">\n\
                                                     <head>\n\
                                                     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
-    body.append("<title>" + status + desc + " </title>\n");
+    body.append("<title>" + status + " " +  desc + " </title>\n");
     body += "</head>\n\
                                                     <body>\n\
                                                     <div style=\"display:flex; align-items:center; justify-content:center;  flex-direction:column;\">\n\
                                                     <h1 style=\"margin-top:1px\"></h1>\n";
-    body.append("<div style=\"display:flex; align-items:center; justify-content:center; \"> <h1 style=\"margin-top:0px\"> " + status + desc + "</h1> </div>\n");
+    body.append("<div style=\"display:flex; align-items:center; justify-content:center; \"> <h1 style=\"margin-top:0px\"> " + status + "  " + desc + "</h1> </div>\n");
     body += "\
                                         <hr style=\"width:100%; color:blue;\">\n\
                                         <p style=\"margin-top:0px\"> webserver 1337 http/1.1</p>\n\

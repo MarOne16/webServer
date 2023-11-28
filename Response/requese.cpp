@@ -127,8 +127,8 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         this->response_items.lenghtbody +=  this->response_items.Body.length();
     }
     
-//    if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str())) // TODO: check size 
-//         this->status_response_code = 413;
+   if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str())) // TODO: check size 
+        this->status_response_code = 413;
    if(this->response_items.Path.length() > 2048)
         this->status_response_code = 414;
     if(this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
@@ -141,8 +141,8 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         this->status_response_code = 400;
     if(this->response_items.method ==  "POST" && this->response_items.lenghtbody == 0)
         this->status_response_code = 400;
-    // if(this->response_items.lenghtbody != 0 && this->response_items.Headers.find("Content-Length") == this->response_items.Headers.end())
-    //     this->status_response_code = 400;
+    if(this->response_items.Headers.find("Transfer-Encoding")->second != "chunked" && this->response_items.lenghtbody != 0 && this->response_items.Headers.find("Content-Length") == this->response_items.Headers.end() )
+        this->status_response_code = 400;
     // else if(atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody)
     //     this->status_response_code = 400;
     
@@ -562,6 +562,8 @@ const char *Requese::ErrorSyntax::what() const throw()
 std::string Requese::find_location(server& server_data, std::string& PATH)
 {
     // std::cout  <<  "path : " << PATH   << std::endl;
+    this->response_items.port = server_data.port;
+    this->response_items.server_name = server_data.server_name;
     std::string Path = PATH;
     std::map<std::string , s_location> location = server_data.locations;
     int pos = 0;
@@ -603,6 +605,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         }
         pos = Path.rfind("/"); 
     }
+    std::cout  <<  "path:" << Path << std::endl;
     Path = "/";
    it = location.find(Path);
     if(it != location.end())
@@ -618,7 +621,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         this->response_items.location->upload_enable = it->second.upload_enable;
         this->response_items.location->autoindex = it->second.autoindex;
     }
-        // std::cout << "==========>" << std::endl;
-    // std::cou << "auto_index:" <<  << std::endl;
+        std::cout << "==========>" << std::endl;
+    std::cout << "auto_index:"  << std::endl;
     return Path;
 }
