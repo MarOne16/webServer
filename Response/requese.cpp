@@ -1,12 +1,7 @@
 #include "./webserver.hpp"
-// #include "webserver.hpp"
-
-
-// GET /path/to/file/index.html HTTP/1.0 \r\n
 
 Requese::Requese(std::string req, server& server_data):req(req),status_response_code(200)
 {
-    // this->response_items = new http_items;
     this->response_items.location = new s_location;
     this->response_items.chunked_body = 0;
     this->response_items.lenghtbody = 0;
@@ -17,9 +12,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     std::string value;
     std::string key;
     std::map<std::string, s_location> lc;
-    // std::cout  << req << std::endl;
     try{
-        //read Header request 
         while(pos != -1)
         {
             pos = req.find("\r\n");
@@ -31,7 +24,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             token = req.substr(0, pos);
             req = req.substr(pos + 2, req.length());
             response_items.Req.push_back(token);
-            // std::cout  << token << "\n";
             i++;
         } 
         //find match location
@@ -62,17 +54,12 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                 req +='\n';
             std::stringstream os(req);
             RequestBody *ele;
-            //TODO : change value of boundary when u find it
             std::ofstream file;
             
             while (std::getline(os, token, '\n'))
             {
                 ele = new RequestBody;
-             
-                        // std::cout  << "||" << req << "||" << std::endl;
-                    token = token.substr(0, token.size() - 1);
-                    // std::cout  <<  "|" << token[token.size() - 1]  << "|";
-                    // exit(0);
+                    token = token.substr(0, token.size() - 1);;
                     int i =0;
                     while(token.compare(this->response_items.bondary) != 0)
                     {
@@ -80,7 +67,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                         if (token.find("Content-Disposition") != std::string::npos) 
                         {
                                 ele->ContentDisposition = token;
-                                // std::cout  << "Content-Disposition : " << token << std::endl;
                                 token.clear();
                         }
                         if (token.find("Content-Type") != std::string::npos  ) 
@@ -88,8 +74,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                                 
                                 ele->ContentType = token;
                                 std::getline(os, token, '\n');
-                                
-                                // std::cout  << "Content-Type : " << token << std::endl;
                                 token.clear();
                         }
                         else
@@ -106,7 +90,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                             break;
                     }
                     file.close();
-                    // std::cout << "point to ele" << std::endl;
                     if(!ele->Content.empty() )
                     {
                         if(!ele->ContentDisposition.empty())
@@ -115,7 +98,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                         }
                         this->response_items.lenghtbody +=  ele->Content.length();
                         ele->Content.pop_back();
-                        //  std::cerr << ele->Content << std::endl;
                         this->response_items.ChunkedBody.push_back(ele);
                        
                     }
@@ -228,7 +210,6 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
     if(this->response_items.http_version != "HTTP/1.1")
          this->status_response_code = 505;
     i = 0;
-    // notIn()
     while(this->response_items.Path[i])
     {
         if(url_caracteres.find(this->response_items.Path[i])  == std::string::npos)
@@ -262,17 +243,12 @@ void Requese::Headers_elements()
         key = trim((*it).substr(0 , pos));
         value = trim((*it).substr(pos + 1));
         if((*it).substr(pos + 1, 1).c_str()[0]  != 32)
-        {
-                // std::cout << ":::::" << (*it).substr(pos + 1, 1).c_str()[0] << std::endl;
             this->status_response_code = 400;
-            // break;
-        }
         this->trim(key);
         this->trim(value);
         this->response_items.Headers[key] = value;
         if(key.empty() || value.empty() || check_more_element(key, value) == 0 )
         {
-            // std::cout  << "hna" << std::endl;
             this->status_response_code = 400;
             return ;
         }
@@ -288,7 +264,6 @@ void Requese::Headers_elements()
 
 int  Requese::check_elemens(std::string& key)
 {
-    //  # Add your custom headers if needed
     std::string http_request_headers[] = {
         "Accept",
         "Accept-Charset",
@@ -347,38 +322,6 @@ int Requese::is_alpha(std::string value)
     return 1;
 }
 
-int Requese::check_date(std::string& value)
-{
-    int  date[5];
-    int max_days_in_month[12]= {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    int i = 0;
-    int pos = 0;
-    while(value.size())
-    {
-        pos = value.find("-");
-        if(pos != -1)
-        {
-            date[i] = atoi(value.substr(0, value.find("-")).data());
-            if(date[i] <= 0 || (i == 1 && date[i] > 12) || (i == 2 && date[i] > max_days_in_month[date[i - 1] ]))
-                return 0;
-            value = value.substr(value.find("-") + 1 , value.size());
-        }
-        else
-        {
-            date[i]=atoi(value.data());
-            if(date[i] <= 0 || (i == 1 && date[i] > 12) || (i == 2 && date[i] > max_days_in_month[date[i - 1] ]))
-                return 0;
-            value = "";
-        }
-        i++;
-    }
-    if(i != 3)
-    {
-        return 0;
-    }
-    return 1;
-}
-
 int Requese::check_content_type(std::string &value)
 {
     int pos = -1;
@@ -422,9 +365,6 @@ int Requese::check_content_type(std::string &value)
             this->response_items.bondary += value.substr(value.find("boundary=") + 9);
         }
         return 1;
-        // std::cout  << "Bondary: " << this->response_items.bondary  << std::endl;
-        // exit(0);
-
     }
     while(it <  contentTypes->length())
     {
@@ -530,7 +470,6 @@ int Requese::check_connection(std::string& value)
             return 1;
         it++;
     }
-    // std::cout << "here"<< std::endl;
         return 0;
 }
 
@@ -538,15 +477,10 @@ int Requese::check_more_element(std::string& key, std::string& value)
 {
     if(key == "Host")
         return (this->check_host(value));
-    // if(key == "Date")
-    //     return (this->check_date(value));
     if(key == "Content-Length")
         return (this->is_alpha(value));
     if( key == "Content-Type")
-    {
-        // std::cout  << "hta " << std::endl;
         return check_content_type(value);
-    }
     if(key == "Transfer-Encoding")
         return check_Transfer_Encoding(value);
     if(key == "Connection")
@@ -561,7 +495,6 @@ const char *Requese::ErrorSyntax::what() const throw()
 
 std::string Requese::find_location(server& server_data, std::string& PATH)
 {
-    // std::cout  <<  "path : " << PATH   << std::endl;
     this->response_items.port = server_data.port;
     this->response_items.server_name = server_data.server_name;
     std::string Path = PATH;
@@ -610,7 +543,6 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
    it = location.find(Path);
     if(it != location.end())
     {
-        // std::cout  << "Location found: " << Path << std::endl;
         this->response_items.location->allowed_methods = it->second.allowed_methods;
         this->response_items.location->root = it->second.root;
         this->response_items.location->index = it->second.index;
@@ -621,7 +553,5 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         this->response_items.location->upload_enable = it->second.upload_enable;
         this->response_items.location->autoindex = it->second.autoindex;
     }
-        std::cout << "==========>" << std::endl;
-    std::cout << "auto_index:"  << std::endl;
     return Path;
 }
