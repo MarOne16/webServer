@@ -499,25 +499,32 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
     this->response_items.server_name = server_data.server_name;
     std::string Path = PATH;
     std::map<std::string , s_location> location = server_data.locations;
-    int pos = 0;
    std::map<std::string , s_location>::iterator it;
+    int pos = 0;
     if(!this->response_items.Extension.empty())
     {
-        it = location.find(this->response_items.Extension);
-        if(it != location.end())
+        it = location.begin();
+        while(it != location.end())
         {
-            this->response_items.location->allowed_methods = it->second.allowed_methods;
-            this->response_items.location->root = it->second.root;
-            this->response_items.location->index = it->second.index;
-            this->response_items.location->cgi_extension = it->second.cgi_extension;
-            this->response_items.location->return_code_url = it->second.return_code_url;
-            this->response_items.location->upload_store_directory = it->second.upload_store_directory;
-            this->response_items.location->cgi_path = it->second.cgi_path;
-            this->response_items.location->upload_enable = it->second.upload_enable;
-            this->response_items.location->autoindex = it->second.autoindex;
-            return Path;
+            std::cout << " location find " << it->first << std::endl;
+            if(it->first.find(this->response_items.Extension) != std::string::npos)
+            {
+                std::cout << "inside extension" << std::endl;
+                this->response_items.location->allowed_methods = it->second.allowed_methods;
+                this->response_items.location->root = it->second.root;
+                this->response_items.location->index = it->second.index;
+                this->response_items.location->cgi_extension = it->second.cgi_extension;
+                this->response_items.location->return_code_url = it->second.return_code_url;
+                this->response_items.location->upload_store_directory = it->second.upload_store_directory;
+                this->response_items.location->cgi_path = it->second.cgi_path;
+                this->response_items.location->upload_enable = it->second.upload_enable;
+                this->response_items.location->autoindex = it->second.autoindex;
+                return Path;
+            }
+            it++;
         }
     }
+     std::cout << "outside extension" << std::endl;
     pos = Path.rfind("/");
     while(pos != -1)
     {
@@ -553,5 +560,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         this->response_items.location->upload_enable = it->second.upload_enable;
         this->response_items.location->autoindex = it->second.autoindex;
     }
+    else
+        this->status_response_code = 404;
     return Path;
 }

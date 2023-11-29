@@ -485,11 +485,10 @@ int main(int ac, const char **av)
                             ///-------data_serveur  Sened ----
 
                             //  exit(0);
-                            std::cerr << "request : " << request << std::endl;
+                            // std::cerr << "request : " << request << std::endl;
                             int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur);
                             feedRequest(serveur_id, data_conf.m_servers, request);
                             respense = sendResponse(serveur_id, data_conf.m_servers);
-                           
                             //   std::cout<<respense;
                             //   exit(0);
                             // send(fds[i].fd,   respense.c_str(),    respense.length(), 0);
@@ -501,7 +500,6 @@ int main(int ac, const char **av)
                             int j = 1;
                             size_t si = 0;
                             std::string re = respense.substr(0, 1000);
-                            ;
                             re.clear();
                             size_t lenght;
 
