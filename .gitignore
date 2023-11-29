@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 *.o
 *.tldr
 test.cpp
@@ -6,3 +7,6 @@ webserver
 .vscode
 a.out
 *.txt
+=======
+ 
+>>>>>>> origin/issam
