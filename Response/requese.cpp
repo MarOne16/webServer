@@ -506,10 +506,10 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         it = location.begin();
         while(it != location.end())
         {
-            std::cout << " location find " << it->first << std::endl;
+            // std::cout << " location find " << it->first << std::endl;
             if(it->first.find(this->response_items.Extension) != std::string::npos)
             {
-                std::cout << "inside extension" << std::endl;
+                // std::cout << "inside extension" << std::endl;
                 this->response_items.location->allowed_methods = it->second.allowed_methods;
                 this->response_items.location->root = it->second.root;
                 this->response_items.location->index = it->second.index;
