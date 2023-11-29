@@ -123,10 +123,10 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         this->status_response_code = 400;
     if(this->response_items.method ==  "POST" && this->response_items.lenghtbody == 0)
         this->status_response_code = 400;
-    if(this->response_items.Headers.find("Transfer-Encoding")->second != "chunked" && this->response_items.lenghtbody != 0 && this->response_items.Headers.find("Content-Length") == this->response_items.Headers.end() )
+    if(this->response_items.Headers.find("Transfer-Encoding")->second != "chunked" && this->response_items.lenghtbody != 0  )
         this->status_response_code = 400;
-    // else if(atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody)
-    //     this->status_response_code = 400;
+    else if(atoi((this->response_items.Headers.find("Content-Length")->second).data()) != (int)req.length())
+        this->status_response_code = 400;
     
     }catch(std::exception& e)
     {

@@ -387,7 +387,7 @@ void Response::build_POST()
                     namefile.clear();
                     if (!file.is_open())
                     {
-                        this->other_response("505", " Version Not Supported");
+                        this->other_response("500", "Internal Server Error");
                         return;
                     }
                     if (!(*it)->Content.empty())
@@ -412,7 +412,21 @@ void Response::build_POST()
             this->other_response("201", "Created");
         }
         else
+        {
+            time(&current_time);
+            ss << static_cast<int>(current_time);
+            namefile += ss.str();
+            namefile += ".";
+            namefile += this->response_items.Headers.find("Content-Type")->second.substr(this->response_items.Headers.find("Content-Type")->second.rfind("/") + 1);
+            file.open(this->response_items.location->upload_store_directory + namefile, std::ios::out | std::ios::binary);
+            namefile.clear();
+            if (!file.is_open())
+            {
+                this->other_response("500", "Internal Server Error");
+                return;
+            }
             this->other_response("202", "Accepted");
+        }
     }
 }
 
