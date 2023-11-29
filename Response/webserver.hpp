@@ -37,6 +37,8 @@ public:
     std::string Query_String;
     std::string Fragment_iden;
     std::string http_version;
+    std::string port;
+    std::string server_name;
     std::map<std::string, std::string> Headers;
     std::vector<std::string> Req;
     int lenghtbody;
@@ -59,6 +61,7 @@ public:
     // std::string upload_store_directory;
     // std::string upload_enable;
 };
+
 
 class Requese
 {
@@ -122,12 +125,12 @@ public:
     void not_found();
     int remove_all_files(const char *dirname);
     std::string trim(std::string original);
-    void return_pages(std::string & pages_return);
+    void return_pages(std::string& pages_return, std::string& url);
     void ft_success_code(std::string status, std::string message,  std::string URI);
     void ft_redirect(std::string status, std::string message);
     void ft_bad_request(std::string status, std::string message);
     void ft_forbidden_request(std::string status, std::string message);
-    void other_response(std::string status, std::string message, std::string desc);
+    void other_response(std::string status, std::string desc);
     void ft_default_pages(std::string status, std::string& message, std::string& path);
 
 };

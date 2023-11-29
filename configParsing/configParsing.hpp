@@ -24,6 +24,7 @@
 #include <cstring>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 typedef struct s_location
 {
@@ -61,6 +62,8 @@ class ConfigParser
         ConfigParser();
 
     public:
+        std::string global_root;
+        std::string global_upload_store;
         std::map<std::string, location> m_locations;
         std::map<unsigned int , server> m_servers;
         std::string content;
@@ -73,6 +76,7 @@ class ConfigParser
         void checkBrackets();
         void feedContent();
         bool ifOutsideLocation(std::string line);
+        void globalUpload();
 
         // geters
         int             getPort();
@@ -94,6 +98,8 @@ class ConfigParser
         std::string getCgiExtension(std::string location); // get cgi_extension from location
         std::string getAllowedMethods(std::string location); // get allowed_methods from location
         std::string getReturnCodeUrl(std::string location); // get return_code_url from location
+        std::string getUploadEnable(std::string location); // get upload_enable from location
+        std::string getUploadDirectory(std::string location);
         void feedServers(); // feed m_servers
         ConfigParser(const char **argv);
         ~ConfigParser();
@@ -111,3 +117,4 @@ bool ifCgi(std::string location);
 bool notHas(std::string str, std::string s);
 void addElement(std::string &str, std::string element, size_t pos);
 void checkServer(std::map<unsigned int , server> &m_servers);
+std::string getDefault(std::string path);
