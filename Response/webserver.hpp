@@ -21,8 +21,6 @@
 #include "../serveurs-clients/servers.hpp"
 #include "../cgi_bin/cgi.hpp"
 
-// char **ENV_SERVER;
-
 struct RequestBody
 {
     std::string ContentDisposition;
@@ -40,7 +38,7 @@ public:
     std::string Query_String;
     std::string Fragment_iden;
     std::string http_version;
-    int  port;
+    int port;
     std::string server_name;
     std::map<std::string, std::string> Headers;
     std::vector<std::string> Req;

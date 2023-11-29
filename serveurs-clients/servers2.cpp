@@ -568,7 +568,7 @@ int main(int ac, const char **av)
                             if (stop == 1)
                             {
                                 bzero(buf, 1024);
-                                std::cerr << request;
+                                // std::cerr << request;
                                 std::string port, name_serveur;
                                 geve_port_name(request, name_serveur, port);
                                 int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur);
@@ -589,9 +589,8 @@ int main(int ac, const char **av)
                                 flags.erase(fds[i].fd);
                                 chunked.erase(fds[i].fd);
                                 client.erase(std::find(client.begin(), client.end(), fds[i].fd));
-                                std::cout<<fds[i].fd;
-                                fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
                                 close(fds[i].fd);
+                                fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
                             }
                         }
                     }

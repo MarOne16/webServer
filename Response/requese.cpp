@@ -528,11 +528,10 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
     pos = Path.rfind("/");
     while(pos != -1)
     {
-        Path = Path.substr(pos);
+        Path = Path.substr(0, pos);
         it = location.find(Path);
         if(it != location.end())
         {
-            std::cout << "path:" << Path << std::endl;
             this->response_items.location->allowed_methods = it->second.allowed_methods;
             this->response_items.location->root = it->second.root;
             this->response_items.location->index = it->second.index;

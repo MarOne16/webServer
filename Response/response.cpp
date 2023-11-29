@@ -111,7 +111,6 @@ std::string Response::get_type(std::string extension)
 void Response::build_GET()
 {
 
-    
     struct stat buffer;
     int status;
     std::string URI = this->response_items.location->root;                 // change by value depends on location
@@ -119,7 +118,6 @@ void Response::build_GET()
     std::string cgi_path = this->response_items.location->cgi_path;        // change path with valid path from config;
     std::string index;
     std::string autoIndexPage;
-    std::cout << "cgi" << this->response_items.location->cgi_path  << std::endl;
     URI += this->response_items.Path.substr(1); // TODO : check if path is beging with /
                 std::cout << "uri: " << URI << std::endl;
     status = stat(URI.data(), &buffer);
@@ -141,7 +139,6 @@ void Response::build_GET()
                         URI += "index.html";
                         if (access(URI.c_str(), F_OK | W_OK) != 0)
                         {
-                            std::cout << "here" << std::endl;
                             this->other_response("403", " Forbidden");
                             return;
                         }
@@ -190,7 +187,6 @@ void Response::build_GET()
                             this->other_response("204", " NO Content");
                         else
                         {
-                            std::cout << "here" << std::endl;
                             if (this->get_permission(URI) == -1)
                                 this->other_response("404", " No Permission");
                             else if (this->get_permission(URI) == -2)
