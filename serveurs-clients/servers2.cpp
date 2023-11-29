@@ -565,33 +565,7 @@ int main(int ac, const char **av)
                             request_inserer(buf, rec, fds[i].fd, map_request, checker, stop, flags, chunked);
                             request = data(map_request, fds[i].fd);
 
-                         
-                            std::string port, name_serveur;
-                            geve_port_name(request, name_serveur, port);
-
-                            ///-------data_serveur  Sened ----
-
-                            //  exit(0);
-                            // std::cerr << "request : " << request << std::endl;
-                            int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur);
-                            feedRequest(serveur_id, data_conf.m_servers, request);
-                            respense = sendResponse(serveur_id, data_conf.m_servers);
-                            //   std::cout<<respense;
-                            //   exit(0);
-                            // send(fds[i].fd,   respense.c_str(),    respense.length(), 0);
-                            // exit(0);
-                            // std::cout<< respense;
-                            //             std::cerr<<respense;
-                            // exit(0);
-                            // size_t p;
-                            // int j = 1;
-                            size_t si = 0;
-                            std::string re = respense.substr(0, 1000);
-                            re.clear();
-                            size_t lenght;
-
-                            lenght = re.size();
-                            while (respense.size() >= 0 && si != respense.size())
+                            if (stop == 1)
                             {
                                 bzero(buf, 1024);
                                 std::cerr << request;
