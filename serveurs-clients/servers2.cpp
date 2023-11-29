@@ -594,7 +594,7 @@ int main(int ac, const char **av)
                             while (respense.size() >= 0 && si != respense.size())
                             {
                                 bzero(buf, 1024);
-                                // std::cerr << request;
+                                std::cerr << request;
                                 std::string port, name_serveur;
                                 geve_port_name(request, name_serveur, port);
                                 int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur);
