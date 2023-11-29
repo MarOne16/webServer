@@ -6,12 +6,14 @@ FILES  = ./configParsing/getLocation.cpp \
 		./configParsing/configParsing.cpp \
 		./configParsing/parsingTools.cpp \
 		./configParsing/hashMapParsing.cpp \
+		./cgi_bin/cgi.cpp \
 		./Response/mainResponse.cpp \
 		./Response/requese.cpp \
 		./Response/response.cpp \
 		./Response/tools.cpp \
 		./serveurs-clients/serverTools.cpp \
-		./serveurs-clients/servers2.cpp 
+		./serveurs-clients/severfinal.cpp 
+
 
 OBJS   = $(FILES:.cpp=.o)
 HEADER = ./Response/webserver.hpp

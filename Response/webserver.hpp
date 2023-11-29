@@ -19,6 +19,9 @@
 #include <sstream>
 #include <string>
 #include "../serveurs-clients/servers.hpp"
+#include "../cgi_bin/cgi.hpp"
+
+// char **ENV_SERVER;
 
 struct RequestBody
 {
@@ -37,6 +40,8 @@ public:
     std::string Query_String;
     std::string Fragment_iden;
     std::string http_version;
+    int  port;
+    std::string server_name;
     std::map<std::string, std::string> Headers;
     std::vector<std::string> Req;
     int lenghtbody;
@@ -59,6 +64,7 @@ public:
     // std::string upload_store_directory;
     // std::string upload_enable;
 };
+
 
 class Requese
 {

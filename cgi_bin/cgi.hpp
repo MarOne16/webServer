@@ -1,11 +1,12 @@
 #pragma once
+
 #include "../Response/webserver.hpp"
 
-char **_ENV_SERVER;
-
+class http_items;
 
 typedef struct envirmoment
 {
+    std::string  SERVER_SOFTWARE;
     std::string  REQUEST_METHOD;
     std::string  QUERY_STRING;
     std::string  CONTENT_TYPE;
@@ -19,29 +20,20 @@ typedef struct envirmoment
     std::string  SERVER_ADDR;
     std::string  SERVER_PORT;
     std::string  SERVER_NAME;
-    static const size_t NUM_ELEMENTS = 13;
+    static const size_t NUM_ELEMENTS = 14;
 } envirmoment;
 
 typedef struct cgi_data
 {
     envirmoment env_server;
     std::string body;
-    std::string path;
-    std::string method;
-    std::string query;
-    std::string content_type;
-    std::string content_length;
-    std::string script_filename;
-    std::string script_name;
-    std::string request_uri;
-    std::string document_root;
-    std::string document_uri;
-    std::string server_protocol;
-    std::string server_addr;
 }   cgi_data;
 
-cgi_data GET_CGI_DATA(std::string &request);
-envirmoment GET_ENV_SERVER(std::string &request);
-void ADD_TO_ENV_SERVER(envirmoment &env_server, char **env);
-void FREE_ENV_SERVER(envirmoment &env_server);
-std::string FINAL_RESPONSE();
+cgi_data GET_CGI_DATA(http_items &response_items);
+envirmoment GET_SETENV_SERVER(http_items &response_items);
+void ADD_TOENV_SERVER(envirmoment &env_server);
+void FREEENV_SERVER(envirmoment &env_server);
+std::string FINAL_RESPONSE(http_items &response_items);
+void debud_cgi_data(cgi_data &cgi);
+
+#include "../Response/webserver.hpp"
