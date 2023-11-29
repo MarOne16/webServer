@@ -225,6 +225,7 @@ void Response::build_GET()
             if (cgi_path != " " && this->response_items.Extension != "html")
             {
                             std::cout << "CGI needed " << std::endl;
+                            // this->other_response("204", " NO Content"); CGI response
             }
             else
             {
