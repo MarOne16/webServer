@@ -25,15 +25,18 @@ typedef struct envirmoment
 
 typedef struct cgi_data
 {
+    http_items  &response_tools;
     envirmoment env_server;
     std::string body;
 }   cgi_data;
 
+std::string EXEC_CGI(cgi_data &cgi, char **extra_env);
 cgi_data GET_CGI_DATA(http_items &response_items);
 envirmoment GET_SETENV_SERVER(http_items &response_items);
-void ADD_TOENV_SERVER(envirmoment &env_server);
+char **GET_EXTRA_ENV(envirmoment &env_server);
 void FREEENV_SERVER(envirmoment &env_server);
 std::string FINAL_RESPONSE(http_items &response_items);
-void debud_cgi_data(cgi_data &cgi);
+void debud_cgi_data(cgi_data &cgi , char **extra_env);
+std::string CONVERT_TO_WEB(std::string &response);
 
 #include "../Response/webserver.hpp"

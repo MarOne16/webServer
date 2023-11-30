@@ -311,6 +311,8 @@ std::string ConfigParser::getRootServ()
             throw std::runtime_error("Root directive is not closed.");
         ereaseContent(content, pos, ';');
         global_root = root.erase(root.length() - 1, 1);
+        if (global_root.find_last_of('/') != global_root.length() - 1)
+            global_root += '/';
     }
     return global_root;
 }

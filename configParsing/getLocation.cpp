@@ -106,6 +106,8 @@ std::string ConfigParser::getCgiPath(std::string location)
     if (!ifClosed(cgi_path))
         throw std::runtime_error("Cgi path directive is not closed.");
     cgi_path.erase(cgi_path.length() - 1, 1);
+    if (findFile(cgi_path) == false)
+        throw std::runtime_error("Cgi path is not valid.");
     return cgi_path;
 }
 

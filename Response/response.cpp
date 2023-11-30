@@ -214,9 +214,11 @@ void Response::build_GET()
         }
         else
         {
+            std::cout << "extension: " << this->response_items.Extension << std::endl;
             if (!cgi_path.empty() && (this->response_items.Extension == "php" || this->response_items.Extension == "py"))
             {
                 // this->ft_success_code("200", body resturn by  CGI script ); // TODO: ADD CGI script
+                cgi_data  cgi = GET_CGI_DATA(this->response_items);
             }
             else
             {
@@ -314,7 +316,7 @@ void Response::build_POST()
             if (!this->response_items.Extension.empty())
             {
                 if (!cgi_path.empty())
-                    std::cout << "Returtn Code Depend on cgi ";
+                    cgi_data cgi = GET_CGI_DATA(this->response_items);
                 else
                     this->other_response("403", " Forbidden");
             }
