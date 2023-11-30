@@ -19,6 +19,7 @@
 #include <sstream>
 #include <string>
 #include "../serveurs-clients/servers.hpp"
+#include "../cgi/cgi.hpp"
 
 struct RequestBody
 {

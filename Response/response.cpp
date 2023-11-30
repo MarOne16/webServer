@@ -184,7 +184,7 @@ void Response::build_GET()
                     if (status != -1)
                     {
                         this->response_items.Extension = URI.substr(URI.rfind('.'));
-                        if (cgi_path != " " && this->response_items.Extension != "html")
+                        if (cgi_path != " " && (this->response_items.Extension == "php" || this->response_items.Extension == "py") )
                         {
                             std::cout << "CGI needed " << std::endl;
                             // this->other_response("204", " NO Content"); CGI response
@@ -218,9 +218,10 @@ void Response::build_GET()
         }
         else
         {
-            if (cgi_path != " " && this->response_items.Extension != "html")
+            if (cgi_path != " " && (this->response_items.Extension == "php" || this->response_items.Extension == "py") )
             {
                             std::cout << "CGI needed " << std::endl;
+                            GET_CGI_DATA(this->response_items);
                             // this->other_response("204", " NO Content"); CGI response
             }
             else
@@ -508,6 +509,8 @@ void Response::ft_success_code(std::string status, std::string message, std::str
     response << "Connection: close\r\n";
     response << "Content-Type: " << this->get_Content_type(URI) << "\r\n";
     response << "Host: " << this->response_items.server << "\r\n";
+    response << "Set-Cookie: yummy_cookie=darkmod; Domain=10.12.8.1; Path=/websites/;\r\n";
+    // response << "Set-Cookie: my_cookie_name=darkmode;  Domain=localhost; Path=/websites/; Secure; HttpOnly" <<   "\r\n";
     response << "Date: " << this->get_Date() << "\r\n\r\n";
     response << message;
 }

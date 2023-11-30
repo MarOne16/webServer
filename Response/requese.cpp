@@ -123,10 +123,10 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         this->status_response_code = 400;
     if(this->response_items.method ==  "POST" && this->response_items.lenghtbody == 0)
         this->status_response_code = 400;
-    if(this->response_items.Headers.find("Transfer-Encoding")->second != "chunked" && this->response_items.lenghtbody != 0  )
-        this->status_response_code = 400;
-    else if(atoi((this->response_items.Headers.find("Content-Length")->second).data()) != (int)req.length())
-        this->status_response_code = 400;
+    // if(this->response_items.Headers.find("Transfer-Encoding")->second != "chunked" && this->response_items.lenghtbody != 0  )
+    //     this->status_response_code = 400;
+    // else if(atoi((this->response_items.Headers.find("Content-Length")->second).data()) != (int)req.length())
+    //     this->status_response_code = 400;
     
     }catch(std::exception& e)
     {
@@ -506,10 +506,10 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         it = location.begin();
         while(it != location.end())
         {
-            std::cout << " location find " << it->first << std::endl;
+            // std::cout << " location find " << it->first << std::endl;
             if(it->first.find(this->response_items.Extension) != std::string::npos)
             {
-                std::cout << "inside extension" << std::endl;
+                // std::cout << "inside extension" << std::endl;
                 this->response_items.location->allowed_methods = it->second.allowed_methods;
                 this->response_items.location->root = it->second.root;
                 this->response_items.location->index = it->second.index;
@@ -524,7 +524,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
             it++;
         }
     }
-     std::cout << "outside extension" << std::endl;
+    //  std::cout << "outside extension" << std::endl;
     pos = Path.rfind("/");
     while(pos != -1)
     {
@@ -545,7 +545,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         }
         pos = Path.rfind("/"); 
     }
-    std::cout  <<  "path:" << Path << std::endl;
+    // std::cout  <<  "path:" << Path << std::endl;
     Path = "/";
    it = location.find(Path);
     if(it != location.end())
