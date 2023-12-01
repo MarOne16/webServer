@@ -20,15 +20,22 @@ typedef struct envirmoment
     std::string  SERVER_ADDR;
     std::string  SERVER_PORT;
     std::string  SERVER_NAME;
-    static const size_t NUM_ELEMENTS = 14;
+    std::string  PATH_INFO;
+    std::string  PATH_TRANSLATED;
+    std::string  REDIRECT_STATUS;
+    static const size_t NUM_ELEMENTS = 17;
 } envirmoment;
 
 typedef struct cgi_data
 {
-    // http_items  &response_tools;
+    http_items &response_tools;
     envirmoment env_server;
     std::string body;
-}   cgi_data;
+
+    // Constructor with initializer list to initialize the reference member
+    cgi_data(http_items &rt, const envirmoment &es, const std::string &b)
+        : response_tools(rt), env_server(es), body(b) {}
+} cgi_data;
 
 std::string EXEC_CGI(cgi_data &cgi, char **extra_env);
 cgi_data GET_CGI_DATA(http_items &response_items);
