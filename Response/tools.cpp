@@ -109,3 +109,39 @@ std::string Response::trim(std::string original)
         return "";
     return original.substr(begin_index, i + 1);
 }
+
+
+
+std::string  parserbody(std::string reqbody)
+{
+    // std::string reqbody="7\r\nMozilla\r\n0\r\n11\r\nDeveloper Network\r\n0\r\n\r\n";
+
+std::stringstream ss;
+std::stringstream body;
+ss << reqbody;
+
+int pos = 0 ;
+std::string token;
+int hash = -1;
+ while(pos != -1 && hash)
+{
+    pos = reqbody.find("\r\n");
+    if(reqbody[0] == '\r' && reqbody[1] == '\n')
+    {
+        reqbody = reqbody.substr(2);
+        break;
+    }
+    token = reqbody.substr(0, pos);
+    hash = std::stoi(token, 0, 16);
+    if(hash != 0)
+    {
+        
+        token = reqbody.substr(pos + 2 , hash + 2);
+        reqbody = reqbody.substr(pos + hash + 2 + 2);
+        body << token;
+    }
+  
+} 
+return body.str();
+
+}

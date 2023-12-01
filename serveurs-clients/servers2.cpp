@@ -302,83 +302,236 @@ int contente_second(std::map<int, int> &state, int fd)
     return (-1);
 }
 
-void converture_hex(std::string hex, size_t &lenght)
+std::string traitement_chunkde(size_t &i, int &state, std::string request, std::map<int, int> &satate, int fd, std::map<int, std::string> &numbers)
 {
-    lenght = std::stoul(hex, 0, 16);
-}
 
-std::string chunked_ramase(std::string request, std::map<int, size_t> &flags, int &stop, size_t &i, int fd)
-{
-    int state = 1;
     std::string chunked;
-    size_t j = i;
-    while (state)
+    size_t lenght;
+
+    while (i == 0 || state == 1)
     {
+        /// that mind complier
+        std::string cheked;
         std::string number;
-        std::string last;
-        size_t lengt;
-        for (i = j; i < request.size() && request[i] != '\r'; i++)
+
+        while (is_digit(request[i]))
+        {
             number += request[i];
-        converture_hex(number, lengt);
+            i++;
+        }
+        std::stringstream stream(number);
+        stream >> lenght;
         if (!request[i])
         {
-            flags.erase(fd);
-            flags.insert(std::make_pair(fd, 2.5));
+            //\n
+            satate[fd] = -2;
+            if (numbers.find(fd) != numbers.end())
+                numbers[fd] = number;
+            else
+                numbers.insert(std::make_pair(fd, number));
             return (chunked);
         }
         if (!request[i + 1])
         {
+            //\r
+            satate[fd] = -3;
+            if (numbers.find(fd) != numbers.end())
+                numbers[fd] = number;
+            else
+                numbers.insert(std::make_pair(fd, number));
+            return (chunked);
+        }
+        i += 2;
+        if (lenght == 0)
+        {
+            satate[fd] = 0;
+            chunked += "\r\n";
+            return (chunked);
+        }
+        for (size_t j = i; j < request.size(); j++ && i++)
+        {
+            if (is_digit(request[j]) && cheked.size() >= (lenght + 2))
+            {
+                state = 1;
+                break;
+            }
+            cheked += request[j];
+            chunked += request[j];
+        }
+        if (cheked.size() == (lenght + 2))
+            satate[fd] = -1;
+
+        else
+            satate[fd] = (lenght - cheked.size());
+    }
+    return (chunked);
+}
+std::string check_complier_chunkerd(std::string request, std::map<int, int> &satate, int fd, std::map<int, std::string> &numbers)
+{
+    std::string chunked;
+
+    size_t lenght = 0;
+    int state = 0;
+    size_t i = 0;
+
+    // 1 // that is mind complier
+    if (satate.empty() || contente_second(satate, fd) != -1)
+        chunked = traitement_chunkde(i, state, request, satate, fd, numbers);
+
+    // that is mind not complier
+    else if (contente_second(satate, fd) > 0)
+    {
+        int fix = contente_second(satate, fd);
+        for (i = 0; (int)i < fix; i++)
+            chunked += request[i];
+        i += 2;
+        chunked += traitement_chunkde(i, state, request, satate, fd, numbers);
+    }
+    else if (contente_second(satate, fd) == -2)
+    {
+        // r
+        if (is_digit(request[i]))
+        {
+            std::string num;
+            num = numbers[fd];
+            while (is_digit(request[i]))
+            {
+                num += request[i];
+                i++;
+            }
+            std::stringstream stream(num);
+            stream >> lenght;
+            for (size_t j = i; j < (lenght + 2); j++)
+            {
+                chunked += request[j];
+                i++;
+            }
+        }
+        else
+            i += 2;
+        chunked += traitement_chunkde(i, state, request, satate, fd, numbers);
+    }
+    else if (contente_second(satate, fd) == -3)
+    {
+        // n
+
+        i++;
+        chunked = traitement_chunkde(i, state, request, satate, fd, numbers);
+    }
+    // std::cout<<request;
+    // exit(0);
+
+    return (chunked);
+}
+void converture_hex(std::string hex, size_t &lenght)
+{
+    std::cout << "hex : " <<  hex << std::endl;
+      lenght = std::stoul(hex, 0, 16);
+}
+int digital(std::string number)
+{
+    for (size_t i = 0; i < number.size(); i++)
+        if (!is_digit(number[i]))
+            return (0);
+    return (1);
+}
+std::string chunked_ramase(std::string request, std::map<int, size_t> &flags, int &stop, size_t &i, int fd, std::map<int, char> &cha)
+{
+    int state = 1;
+    std::string chunked;
+    size_t j = i;
+
+    while (state)
+    {
+        /* code */
+        std::string number;
+        std::string last;
+        size_t lengt;
+        for (i = j; request[i] != '\r' && i < request.size(); i++)
+            number += request[i];
+        converture_hex(number, lengt);
+
+        if (!request[i])
+        {
+
             flags.erase(fd);
-            flags.insert(std::make_pair(fd, 1.5));
+            flags.insert(std::make_pair(fd, lengt));
+
+            cha.erase(fd);
+            cha.insert(std::make_pair(fd, '\r'));
+            return (chunked);
+        }
+        if (!request[i + 1])
+        {
+
+            flags.erase(fd);
+            flags.insert(std::make_pair(fd, lengt));
+            cha.erase(fd);
+            cha.insert(std::make_pair(fd, '\n'));
             return (chunked);
         }
         i += 2;
         // cas 0
         if (lengt == 0)
         {
+
             chunked += "\r\n";
+
             stop = 1;
+
             return (chunked);
         }
         lengt += 2;
         size_t chek = lengt;
-        for (j = i; j < request.size() && chek; j++ && i++)
+        for (j = i; j < request.size() && chek; j++)
         {
 
-            chunked += request[i];
-            last += request[i];
+            chunked += request[j];
+            last += request[j];
             chek--;
+            //   std::cout<<request[i];
         }
+
+        i = j;
         if (!request[i])
         {
             size_t t = (lengt)-last.size();
             flags.erase(fd);
             flags.insert(std::make_pair(fd, t));
+
             return (chunked);
         }
     }
     return ("NULL");
 }
-
-std::string chunked_request(std::string request, std::map<int, size_t> &flags, int &stop, int fd)
+std::string chunked_request(std::string request, std::map<int, size_t> &flags, int &stop, int fd, std::map<int, char> &cha)
 {
     std::string chunked;
+
     if (flags.find(fd) == flags.end())
         flags.insert(std::make_pair(fd, 0));
 
     std::map<int, size_t>::iterator it = flags.find(fd);
+    std::map<int, char>::iterator itt = cha.find(fd);
     size_t i = 0;
-    if (it->second == 1.5)
-        i++;
-    else if (it->second == 2.5)
-        i += 2;
-    else if (it->second > 0)
+    size_t j = 0;
+    if (itt != cha.end())
+    {
+        if (itt->second == '\r')
+            j += 2;
+        if (itt->second == '\n')
+            j++;
+    }
+    // if (it->second == 18446744073709551615UL)
+    //     i++;
+    // else if (it->second == 18446744073709551614UL)
+    //     i += 2;
+    if (it->second > 0)
     {
         size_t size;
-        for (i = 0; request[i] && i < it->second; i++)
 
+        for (i = j; i < it->second && i < request.size(); i++)
             chunked += request[i];
-
         if (!request[i])
         {
             size = it->second - chunked.size();
@@ -387,14 +540,14 @@ std::string chunked_request(std::string request, std::map<int, size_t> &flags, i
             return (chunked);
         }
     }
-    chunked += chunked_ramase(request, flags, stop, i, fd);
+    chunked += chunked_ramase(request, flags, stop, i, fd, cha);
+
     return (chunked);
 }
 
-void request_inserer(char buffer[1024], int buff_size, int fd, std::map<int, std::string> &map_request, std::map<int, size_t> &checker, int &stop, std::map<int, size_t> &flags, std::map<int, int> &chunked)
+void request_inserer(char buffer[1024], int buff_size, int fd, std::map<int, std::string> &map_request, std::map<int, size_t> &checker, int &stop, std::map<int, size_t> &flags, std::map<int, int> &chunked, std::map<int, char> &cha)
 {
     int j = 0;
-
     if (map_request.find(fd) == map_request.end())
     {
         map_request.insert(std::make_pair(fd, ""));
@@ -406,7 +559,6 @@ void request_inserer(char buffer[1024], int buff_size, int fd, std::map<int, std
     if (it != map_request.end() && it_checker != checker.end())
     {
         std::string request = std::string(buffer, buff_size);
-
         if (j == 1)
         {
             it_checker->second = content_lenght(request) + length_heder(request.substr(0, content_lenght(request)));
@@ -415,8 +567,8 @@ void request_inserer(char buffer[1024], int buff_size, int fd, std::map<int, std
             else
                 chunked.insert(std::make_pair(fd, 0));
         }
-        if (chunked[fd] == 0)
 
+        if (chunked[fd] == 0)
         {
             it->second += request;
             if (it->second.size() >= it_checker->second)
@@ -424,13 +576,15 @@ void request_inserer(char buffer[1024], int buff_size, int fd, std::map<int, std
         }
         else
         {
+         
+
             if (j == 1)
             {
                 it->second = request.substr(0, content_lenght(request));
-                it->second += chunked_request(request.substr(content_lenght(request), request.size()), flags, stop, fd);
+                it->second += chunked_request(request.substr(content_lenght(request), request.size()), flags, stop, fd, cha);
             }
             else
-                it->second += chunked_request(request, flags, stop, fd);
+                it->second += chunked_request(request, flags, stop, fd, cha);
         }
         request.clear();
     }
@@ -440,7 +594,7 @@ void request_inserer(char buffer[1024], int buff_size, int fd, std::map<int, std
 int main(int ac, const char **av)
 {
     // how to serveu run the port serveur
-    // create multi serveur
+    // create multi server
     //  innsilit port
     (void)ac;
     try
@@ -461,6 +615,7 @@ int main(int ac, const char **av)
         std::string respense;
         std::map<int, std::string> map_request;
         std::map<int, size_t> checker;
+        std::map<int, char> cha;
         ports(port, data_conf.m_servers);
         for (unsigned int i = 0; i < data_conf.getNumber_ofServers(); i++)
         {
@@ -475,11 +630,11 @@ int main(int ac, const char **av)
             int opt = 1;
             if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) == -1)
             {
-                perror("setsockopt");
+                perror("setsockopt:failed ");
             }
             if (setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(int)) == -1)
             {
-                perror("setsockopt");
+                perror("setsockopt:failed ");
             }
             fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC); /// non-blocking file descriptors
             adrese.sin_addr.s_addr = INADDR_ANY;
@@ -511,6 +666,7 @@ int main(int ac, const char **av)
         std::string request;
         std::vector<int> client;
         std::map<int, int> chunked;
+        std::map<int, int> satate;
         char buf[1024];
         // size_t cherk;
         int stop = 0;
@@ -545,15 +701,24 @@ int main(int ac, const char **av)
                     {
                         bzero(buf, 1024);
                         int rec = recv(fds[i].fd, buf, 1024, 0);
+                        //    buf[rec ] = '\0';
+                        //    std::cout<<buf;
+                        //        exit(0);
                         if (rec < 0)
                             perror("recv");
                         else if (rec == 0)
                         {
-                         
+                            // client bye bye
+                            // state
+                            stop = 0;
+                            // chnuked
+
+                            // std::map<int, std::string> number;
                             map_request.erase(fds[i].fd);
                             checker.erase(fds[i].fd);
                             chunked.erase(fds[i].fd);
                             flags.erase(fds[i].fd);
+                            cha.erase(fds[i].fd);
                             client.erase(std::find(client.begin(), client.end(), fds[i].fd));
                             close(fds[i].fd);
                             fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
@@ -562,13 +727,16 @@ int main(int ac, const char **av)
                         else
                         {
 
-                            request_inserer(buf, rec, fds[i].fd, map_request, checker, stop, flags, chunked);
-                            request = data(map_request, fds[i].fd);
+                            request_inserer(buf, rec, fds[i].fd, map_request, checker, stop, flags, chunked, cha);
 
                             if (stop == 1)
                             {
-                                bzero(buf, 1024);
-                                // std::cerr << request;
+                                request = data(map_request, fds[i].fd);
+                                // bzero(buf, 1024);
+                            // std::cerr<<request;
+                            // exit(0);
+                                    stop = 0;
+                                // std::cout<<"hiii --\n"<<request;
                                 std::string port, name_serveur;
                                 geve_port_name(request, name_serveur, port);
                                 int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur);
@@ -583,14 +751,20 @@ int main(int ac, const char **av)
                                     send(fds[i].fd, requ.c_str(), requ.length(), 0);
                                     requ.clear();
                                 }
+
+                                // state
+                                // chnuked
                                 request.clear();
-                                map_request.erase(fds[i].fd);
-                                checker.erase(fds[i].fd);
-                                flags.erase(fds[i].fd);
-                                chunked.erase(fds[i].fd);
-                                client.erase(std::find(client.begin(), client.end(), fds[i].fd));
-                                close(fds[i].fd);
-                                fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
+                                // map_request.erase(fds[i].fd);
+                                // checker.erase(fds[i].fd);
+                                // chunked.erase(fds[i].fd);
+                                // flags.erase(fds[i].fd);
+                                // cha.erase(fds[i].fd);
+                                // std::map<int, std::string> number;
+
+                                // client.erase(std::find(client.begin(), client.end(), fds[i].fd));
+                                // close(fds[i].fd);
+                                // fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
                             }
                         }
                     }

@@ -129,8 +129,8 @@ public:
     void return_pages(std::string& pages_return, std::string& url);
     void ft_success_code(std::string status, std::string message,  std::string URI);
     void ft_redirect(std::string status, std::string message);
-    void ft_bad_request(std::string status, std::string message);
-    void ft_forbidden_request(std::string status, std::string message);
+    // void ft_bad_request(std::string status, std::string message);
+    // void ft_forbidden_request(std::string status, std::string message);
     void other_response(std::string status, std::string desc);
     void ft_default_pages(std::string status, std::string& message, std::string& path);
 
@@ -139,4 +139,5 @@ public:
 int getServerId(std::map<unsigned int, server> &serv, int port, std::string server_name);
 std::vector<std::string> split_v(std::string &str, std::string delimiter);
 std::string Get_response(server &server_data);
+std::string  parserbody(std::string reqbody);
 #endif
