@@ -1,0 +1,56 @@
+POST / HTTP/1.1
+Transfer-Encoding: chunked
+User-Agent: PostmanRuntime/7.33.0
+Accept: */*
+Postman-Token: ee506e38-b96f-46eb-8c55-d764d3f9879c
+Host: localhost:8002
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Content-Type: multipart/form-data; boundary=--------------------------835543427155503883172579
+
+----------------------------835543427155503883172579
+Content-Disposition: form-data; name="file"; filename="index.html"
+Content-Type: text/html
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to webserver root !</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+
+3a
+
+----------------------------835543427155503883172579--
+
+0
+
+inx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+
+
+----------------------------835543427155503883172579--
+
+

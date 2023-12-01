@@ -35,6 +35,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         Headers_elements();
         
         // store body
+        req =  parserbody(req);
         if(response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
         {
             pos = req.find("&");
@@ -123,10 +124,16 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         this->status_response_code = 400;
     if(this->response_items.method ==  "POST" && this->response_items.lenghtbody == 0)
         this->status_response_code = 400;
-    if(this->response_items.Headers.find("Transfer-Encoding")->second != "chunked" && this->response_items.lenghtbody != 0 && this->response_items.Headers.find("Content-Length") == this->response_items.Headers.end() )
+    if(this->response_items.Headers.find("Transfer-Encoding")->second == "chunked" && this->response_items.lenghtbody == 0  )
+    {
+        puts("here");
         this->status_response_code = 400;
-    // else if(atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody)
-    //     this->status_response_code = 400;
+    }
+    else if(this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end() && atoi((this->response_items.Headers.find("Content-Length")->second).data()) != (int)req.length())
+    {
+            puts("here1");
+            this->status_response_code = 400;
+    }
     
     }catch(std::exception& e)
     {
@@ -163,8 +170,10 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
     std::string del = " ";
     std::string str = "POST GET DELETE";
     std::vector<std::string> Methode = split_v(methods, del);
-   std::vector<std::string> defaultMethods = split_v(str, " ");
+    std::vector<std::string> defaultMethods = split_v(str, " ");
     unsigned int  i;
+
+   
     while(line_init >> part)
         line.push_back(part);
     this->response_items.method = line[0];
@@ -297,7 +306,6 @@ int  Requese::check_elemens(std::string& key)
         "Via",
         "Warning",
         "Content-Disposition",
-        // Add your custom headers if needed
     };
 
     unsigned  int i = 0;
@@ -350,7 +358,6 @@ int Requese::check_content_type(std::string &value)
         "application/x-www-form-urlencoded",
         "application/graphql",
         "application/vnd.api+json",
-        // Add more as needed
     };
     unsigned int it = 0;
     token = value;
@@ -386,7 +393,6 @@ int Requese::check_Transfer_Encoding(std::string& value)
             "deflate",
             "compress",
             "identity"
-        // Add more as needed
     };
     unsigned  it =  0;
     while(it < transferEncodings->length())
@@ -493,23 +499,26 @@ const char *Requese::ErrorSyntax::what() const throw()
     return "Error  requese Headers or body";
 }
 
+
 std::string Requese::find_location(server& server_data, std::string& PATH)
 {
+    std::map<std::string , s_location> location = server_data.locations;
+    std::map<std::string , s_location>::iterator it;
+    int pos = 0;
+    std::string Path = PATH;
+
+
     this->response_items.port = server_data.port;
     this->response_items.server_name = server_data.server_name;
-    std::string Path = PATH;
-    std::map<std::string , s_location> location = server_data.locations;
-   std::map<std::string , s_location>::iterator it;
-    int pos = 0;
     if(!this->response_items.Extension.empty())
     {
         it = location.begin();
         while(it != location.end())
         {
-            // std::cout << " location find " << it->first << std::endl;
+            std::cout << " location find " << it->first << std::endl;
             if(it->first.find(this->response_items.Extension) != std::string::npos)
             {
-                // std::cout << "inside extension" << std::endl;
+                std::cout << "inside extension" << std::endl;
                 this->response_items.location->allowed_methods = it->second.allowed_methods;
                 this->response_items.location->root = it->second.root;
                 this->response_items.location->index = it->second.index;
@@ -524,11 +533,10 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
             it++;
         }
     }
-     std::cout << "outside extension" << std::endl;
-    pos = Path.rfind("/");
+    // pos = Path.rfind("/");
     while(pos != -1)
     {
-        Path = Path.substr(0, pos);
+       
         it = location.find(Path);
         if(it != location.end())
         {
@@ -544,10 +552,10 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
             return Path;
         }
         pos = Path.rfind("/"); 
+        Path = Path.substr(0, pos);
     }
-    std::cout  <<  "path:" << Path << std::endl;
     Path = "/";
-   it = location.find(Path);
+    it = location.find(Path);
     if(it != location.end())
     {
         this->response_items.location->allowed_methods = it->second.allowed_methods;
