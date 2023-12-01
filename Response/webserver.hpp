@@ -18,8 +18,9 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <unistd.h>
 #include "../serveurs-clients/servers.hpp"
-#include "../cgi/cgi.hpp"
+#include "../cgi_bin/cgi.hpp"
 
 struct RequestBody
 {

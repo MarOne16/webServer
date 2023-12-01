@@ -25,7 +25,7 @@ void ConfigParser::setConfKeys()
     confKeys.push_back("request_content");
     confKeys.push_back("}");
     confKeys.push_back("{");
-    confKeys.push_back(";");
+    // confKeys.push_back(";");
     confKeys.push_back(")");
     confKeys.push_back("(");
     confKeys.push_back("client_max_body_size");
