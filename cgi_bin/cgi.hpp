@@ -25,7 +25,7 @@ typedef struct envirmoment
 
 typedef struct cgi_data
 {
-    http_items  &response_tools;
+    // http_items  &response_tools;
     envirmoment env_server;
     std::string body;
 }   cgi_data;

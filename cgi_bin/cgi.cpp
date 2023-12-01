@@ -29,13 +29,13 @@ void debud_cgi_data(cgi_data &cgi, char **extra_env)
 cgi_data GET_CGI_DATA(http_items &response_items)
 {
     cgi_data cgi;
-    cgi.response_tools = response_items;
+    // cgi.response_tools = response_items;
     cgi.env_server = GET_SETENV_SERVER(response_items);
     cgi.body = response_items.Body;
     char **envs = GET_EXTRA_ENV(cgi.env_server);
     debud_cgi_data(cgi, envs);
-    std::string R =  EXEC_CGI(cgi, envs);
-    std::cout << RED << R << RESET << std::endl;
+    // std::string R =  EXEC_CGI(cgi, envs);
+    // std::cout << RED << R << RESET << std::endl;
     return cgi;
 }
 
@@ -45,13 +45,13 @@ envirmoment GET_SETENV_SERVER(http_items &response_items)
     if ((response_items.Path.substr(response_items.Path.find_last_of(".") + 1)) == "py")
         env.SCRIPT_FILENAME = "SCRIPT_FILENAME=" + response_items.location->cgi_path;
     else if ((response_items.Path.substr(response_items.Path.find_last_of(".") + 1)) == "php")
-        env.SCRIPT_FILENAME = "SCRIPT_FILENAME=~/php_cgi_bin";
+        env.SCRIPT_FILENAME = "SCRIPT_FILENAME=" + response_items.location->cgi_path;
     env.SERVER_SOFTWARE = "SERVER_SOFTWARE=WEBSERV42";
     env.REQUEST_METHOD = "REQUEST_METHOD=" + response_items.method;
     env.QUERY_STRING = "QUERY_STRING=" + response_items.Query_String;
     env.CONTENT_TYPE = "CONTENT_TYPE=" + response_items.Headers.find("Host")->second;
     env.CONTENT_LENGTH = "CONTENT_LENGTH=" + (response_items.Headers.find("Content-Length")->second == "" ? "1024" : response_items.Headers.find("Content-Length")->second);
-    env.SCRIPT_NAME = "SCRIPT_NAME=" + response_items.location->root + response_items.Path.substr(response_items.Path.find_last_of("/"));
+    env.SCRIPT_NAME = "SCRIPT_NAME=" + response_items.location->root + response_items.Path.substr(response_items.Path.find_last_of("/") + 1);
     env.REQUEST_URI = "REQUEST_URI=" + response_items.Path;
     env.DOCUMENT_ROOT = "DOCUMENT_ROOT=" + response_items.location->root;
     env.DOCUMENT_URI = "DOCUMENT_URI=" + response_items.Path;
@@ -149,8 +149,8 @@ std::string exec_get(cgi_data &cgi, char **extra_env)
             c = cgi.body[j];
             write(cgi_input[1], &c, 1);
         }
-        int sizeread = cgi.response_tools.Headers.find("Content-Length")->second == "" ? 1024 : std::stoi(cgi.response_tools.Headers.find("Content-Length")->second);
-        while (read(cgi_output[0], &c, 1) > 0 && sizeread-- > 0)
+        // int sizeread = cgi.response_tools.Headers.find("Content-Length")->second == "" ? 1024 : std::stoi(cgi.response_tools.Headers.find("Content-Length")->second);
+        while (read(cgi_output[0], &c, 1) > 0 ) // TODO buffer read
         {
             cgi_response += c;
         }
@@ -206,8 +206,8 @@ std::string exec_post(cgi_data &cgi, char **extra_env)
             write(post_in, &c, 1);
         }
         waitpid(cgi_pid, &status, 0);
-        int sizeread = cgi.response_tools.Headers.find("Content-Length")->second == "" ? 1024 : std::stoi(cgi.response_tools.Headers.find("Content-Length")->second);
-        while (read(post_out, &c, 1) > 0 && sizeread-- > 0)
+        // int sizeread = cgi.response_tools.Headers.find("Content-Length")->second == "" ? 1024 : std::stoi(cgi.response_tools.Headers.find("Content-Length")->second);
+        while (read(post_out, &c, 1) > 0 )
         {
             cgi_response += c;
         }
