@@ -34,8 +34,8 @@ cgi_data GET_CGI_DATA(http_items &response_items)
     cgi.body = response_items.Body;
     char **envs = GET_EXTRA_ENV(cgi.env_server);
     debud_cgi_data(cgi, envs);
-    // std::string R =  EXEC_CGI(cgi, envs);
-    // std::cout << RED << R << RESET << std::endl;
+    std::string R =  EXEC_CGI(cgi, envs);
+    std::cout << RED << R << RESET << std::endl;
     return cgi;
 }
 
@@ -136,6 +136,8 @@ std::string exec_get(cgi_data &cgi, char **extra_env)
         close(cgi_input[1]);
         const char *file = strdup(cgi.env_server.SCRIPT_FILENAME.substr(cgi.env_server.SCRIPT_FILENAME.find_last_of("=") + 1).c_str());
         const char *script_name = strdup(cgi.env_server.SCRIPT_NAME.substr(cgi.env_server.SCRIPT_NAME.find_last_of("=") + 1).c_str());
+        std::cout << BLUE << file << std::endl;
+        std::cout << script_name << RESET << std::endl;
         char *const argv[] = {const_cast<char*>(file), const_cast<char*>(script_name), nullptr};  // Construct argv array
         execve(file, argv, extra_env);
         exit(0);
