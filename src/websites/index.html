@@ -15,8 +15,9 @@
 			let backgroundColorCookie = document.cookie;
 			let status;
 			console.log("All Cookies:", backgroundColorCookie);
-			if(!backgroundColorCookie)
+			if(backgroundColorCookie)
 			{
+				console.log("Backgro")
 				document.addEventListener("DOMContentLoaded", () => {
 					status = confirm (
 						"accepting cookies !!!"

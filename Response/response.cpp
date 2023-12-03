@@ -1,12 +1,12 @@
 #include "./webserver.hpp"
 
-void cgi_funct(http_items &response_items)
-{
-    std::cout << response_items.method << std::endl;
-    std::cout << response_items.Extension << std::endl;
-    std::cout << response_items.location->autoindex << std::endl;
+// void cgi_funct(http_items &response_items)
+// {
+//     std::cout << response_items.method << std::endl;
+//     std::cout << response_items.Extension << std::endl;
+//     std::cout << response_items.location->autoindex << std::endl;
 
-}
+// }
 
 
 Response::Response(int status, std::vector<std::string> init_line, http_items &response_items)
@@ -18,6 +18,7 @@ Response::Response(int status, std::vector<std::string> init_line, http_items &r
 
 std::string Response::build_response()
 {
+    std::cout <<  "=> " << this->response_items.Path << std::endl;
     if (this->status == 400)
         this->other_response("400", "Bad Request");
     else if (this->status == 505)
@@ -30,16 +31,20 @@ std::string Response::build_response()
         this->other_response("411", "Length Required");
     else if (!this->response_items.location->return_code_url.empty())
     {
-        std::cout << "Request-URI retun "   << std::endl; 
         std::string url = (this->response_items.location->root + this->response_items.Path);
-        return_pages(this->response_items.location->return_code_url, url); // TODO: check if this redirected response work
+        std::cout << url << std::endl;
+        return_pages(this->response_items.location->return_code_url, this->response_items.Path); // TODO: check if this redirected response work
     }
     else if (this->response_items.method == "GET")
+    {
+
         this->build_GET();
+    }
     else if (this->response_items.method == "DELETE")
         this->build_DELETE();
     else if (this->response_items.method == "POST")
         this->build_POST();
+    delete this->response_items.location;
     return (response.str());
 }
 
@@ -85,25 +90,25 @@ std::string Response::get_Content_type(std::string url)
 }
 
 
-std::string Response::get_type(std::string extension)
-{
-    extension = trim(extension);
-    std::cout << "extension: " << extension << std::endl;
-    if (extension.compare("text/html; charset=UTF-8") == 0 || extension.compare("text/html;") == 0)
-        return ".html";
-    else if (extension.compare("application/json") == 0)
-        return ".json";
-    else if (extension.compare("image/x-icon") == 0)
-        return ".ico";
-    else if (extension.compare("image/jpeg") == 0)
-        return "jpeg";
-    else if (extension.compare("image/jpg") == 0)
-        return ".jpg";
-    else if (extension.compare("video/mp4") == 0)
-        return ".mp4";
-    else
-        return ".txt";
-}
+// std::string Response::get_type(std::string extension)
+// {
+//     extension = trim(extension);
+//     // std::cout << "extension: " << extension << std::endl;
+//     if (extension.compare("text/html; charset=UTF-8") == 0 || extension.compare("text/html;") == 0)
+//         return ".html";
+//     else if (extension.compare("application/json") == 0)
+//         return ".json";
+//     else if (extension.compare("image/x-icon") == 0)
+//         return ".ico";
+//     else if (extension.compare("image/jpeg") == 0)
+//         return "jpeg";
+//     else if (extension.compare("image/jpg") == 0)
+//         return ".jpg";
+//     else if (extension.compare("video/mp4") == 0)
+//         return ".mp4";
+//     else
+//         return ".txt";
+// }
 
 
 
@@ -119,16 +124,19 @@ void Response::build_GET()
     std::string index;
     std::string autoIndexPage;
     URI += this->response_items.Path.substr(1); // TODO : check if path is beging with /
+    
     status = stat(URI.data(), &buffer);
+    
     if (status != -1)
     {
         if (this->response_items.Extension.empty() == 1)
         {
-            
             if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
                 this->ft_redirect("301", this->response_items.Path + "/");
             else
             {
+                
+                
                 index = check_index_file(URI);
                 if (index.empty())
                 {
@@ -180,7 +188,6 @@ void Response::build_GET()
                 {
                     URI += index;
                     status = stat(URI.data(), &buffer);
-                    
                     if (status != -1)
                     {
                         this->response_items.Extension = URI.substr(URI.rfind('.'));
@@ -192,7 +199,7 @@ void Response::build_GET()
                         else
                         {
                             if (this->get_permission(URI) == -1)
-                                this->other_response("404", " No Permission");
+                                this->other_response("403", "  Forbidden");
                             else if (this->get_permission(URI) == -2)
                                 this->other_response("403", " Forbidden");
                             else
@@ -204,6 +211,7 @@ void Response::build_GET()
                     }
                     else
                     {
+                        
                         URI += "index.html";
                         std::string content_body = read_file(URI.c_str());
                         if (access(URI.c_str(), F_OK | W_OK) != 0)
@@ -226,6 +234,7 @@ void Response::build_GET()
             }
             else
             {
+                std::cout << "here" << std::endl;
                 if (this->get_permission(URI) == -1)
                      this->other_response("404", " No Permission");
                 else if (this->get_permission(URI) == -2)
@@ -240,7 +249,7 @@ void Response::build_GET()
     }
     else
     {
-        std::cout << "Request-URI retun :|" << URI << "|" << std::endl;
+        // std::cout << "Request-URI retun :|" << URI << "|" << std::endl;
         this->other_response("404", " Not Found");
     }
 }
@@ -403,6 +412,7 @@ void Response::build_POST()
                                 break;
                             }
                             totalBytesWritten += bytesToWrite;
+                            // delete (*it);
                         }
                    }
                     file.close();
@@ -426,6 +436,7 @@ void Response::build_POST()
                 this->other_response("500", "Internal Server Error");
                 return;
             }
+            file << this->response_items.Body;
             this->other_response("202", "Accepted");
         }
     }
@@ -446,7 +457,7 @@ std::string Response::read_file(const std::string &filename)
     std::stringstream ss;
     if (!file.is_open())
     {
-        return "errot opne file";
+        return "not found";
     }
     ss << file.rdbuf();
     file.close();
@@ -460,6 +471,7 @@ std::string Response::read_file(const std::string &filename)
 
 void Response::return_pages(std::string &pages_return, std::string &url)
 {
+    // std::cout << "Returning" << std::endl;
     std::vector<std::string> pages = split_v(pages_return, " ");
     switch (atoi(pages[0].c_str()))
     {
@@ -493,9 +505,10 @@ void Response::ft_default_pages(std::string status, std::string &message, std::s
     std::string filename;
     if (stat(this->response_items.error_pages.find(status)->second.c_str(), &buffer) != -1)
     {
-        if (path[0] != '/')
-            path = "/" + path;
-        filename = this->response_items.location->root + path;
+        // if (path[0] != '/')
+        //     path = "/" + path;
+        
+        filename = path;
         message = this->read_file(filename);
     }
 }
@@ -509,8 +522,7 @@ void Response::ft_success_code(std::string status, std::string message, std::str
     response << "Connection: close\r\n";
     response << "Content-Type: " << this->get_Content_type(URI) << "\r\n";
     response << "Host: " << this->response_items.server << "\r\n";
-    response << "Set-Cookie: yummy_cookie=darkmod; Domain=10.12.8.1; Path=/websites/;\r\n";
-    // response << "Set-Cookie: my_cookie_name=darkmode;  Domain=localhost; Path=/websites/; Secure; HttpOnly" <<   "\r\n";
+    response << "Set-Cookie: yummy_cookie=darkmod; Domain=localhost; Path=/websites/;\r\n";
     response << "Date: " << this->get_Date() << "\r\n\r\n";
     response << message;
 }
@@ -518,8 +530,11 @@ void Response::ft_success_code(std::string status, std::string message, std::str
 void Response::ft_redirect(std::string status, std::string message)
 {
     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
+    {
         ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));
         std::cout << "uri checkc: " << message  <<  " " << status  << std::endl;
+
+    }
     response << "HTTP/1.1 " << status << " Moved Permanently\r\n";
     response << "Location: " << message << "\r\n";
     response << "Content-Length: 0\r\n";
@@ -551,7 +566,11 @@ void Response::other_response(std::string status, std::string desc)
                                         </body>\n\
                                         </html>\n";
     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
+    {
+        std::cout << "here " << std::endl;
+        std::cout << this->response_items.error_pages.find(status)->second << std::endl;
         ft_default_pages(status, body, (this->response_items.error_pages.find(status)->second));
+    }
     response << "HTTP/1.1 " << status << " " << desc << "\r\n";
     response << "Content-Type: text/html\r\n";
     response << "Content-Length: " << body.length() << "\r\n";
