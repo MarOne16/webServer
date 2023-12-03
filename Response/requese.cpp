@@ -2,7 +2,7 @@
 
 Requese::Requese(std::string req, server& server_data):req(req),status_response_code(200)
 {
-    // std::cout << req << std::endl;
+    
     this->response_items.location = new s_location;
     this->response_items.lenghtbody = 0;
     this->response_items.error_pages = server_data.error_pages;
@@ -204,9 +204,16 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
           this->response_items.Query_String = "";
      }
      if(this->response_items.Path.rfind(".") != std::string::npos)
-        this->response_items.Extension = this->response_items.Path.substr(this->response_items.Path.rfind(".") + 1);
+     {
+        if(this->response_items.Path.rfind(".") > this->response_items.Path.rfind("/"))
+            this->response_items.Extension = this->response_items.Path.substr(this->response_items.Path.rfind(".") + 1);
+        else
+            this->response_items.Extension  = "";
+
+     }
     else
          this->response_items.Extension  = "";
+    std::cout << this->response_items.Extension << std::endl;
     if(line.size() != 3)
         this->status_response_code = 400;
     i = 0;

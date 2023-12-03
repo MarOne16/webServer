@@ -135,8 +135,8 @@ int hash = -1;
     hash = std::stoi(token, 0, 16);
     if(hash != 0)
     {
-        // if(hash > reqbody.length())
-        //     return "";
+        if(hash > (int)reqbody.length())
+            return "";
         token = reqbody.substr(pos + 2 , hash);
         reqbody = reqbody.substr(pos + hash + 4);
         body << token;

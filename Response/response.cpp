@@ -36,10 +36,7 @@ std::string Response::build_response()
         return_pages(this->response_items.location->return_code_url, this->response_items.Path); // TODO: check if this redirected response work
     }
     else if (this->response_items.method == "GET")
-    {
-
         this->build_GET();
-    }
     else if (this->response_items.method == "DELETE")
         this->build_DELETE();
     else if (this->response_items.method == "POST")
@@ -128,15 +125,14 @@ void Response::build_GET()
     status = stat(URI.data(), &buffer);
     
     if (status != -1)
-    {
+    {   
+        std::cout << this->response_items.Extension << "<====\n"; 
         if (this->response_items.Extension.empty() == 1)
         {
             if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
                 this->ft_redirect("301", this->response_items.Path + "/");
             else
             {
-                
-                
                 index = check_index_file(URI);
                 if (index.empty())
                 {
@@ -234,7 +230,6 @@ void Response::build_GET()
             }
             else
             {
-                std::cout << "here" << std::endl;
                 if (this->get_permission(URI) == -1)
                      this->other_response("404", " No Permission");
                 else if (this->get_permission(URI) == -2)
@@ -242,6 +237,7 @@ void Response::build_GET()
                 else
                 {
                     std::string content_body = read_file(URI);
+                    std::cout << "body:" <<  content_body << std::endl;
                     this->ft_success_code("200", content_body, URI);
                 }
             }
