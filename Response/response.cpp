@@ -46,7 +46,7 @@ std::string Response::build_response()
 std::string Response::get_Content_type(std::string url)
 {
 
-    std::string contentTypes[23] = {
+    std::string contentTypes[25] = {
         "text/plain",
         "text/html",
         "text/css",
@@ -59,6 +59,7 @@ std::string Response::get_Content_type(std::string url)
         "application/octet-stream",
         "image/jpeg",
         "image/png",
+        "image/jpg",
         "image/gif",
         "image/svg+xml",
         "audio/mpeg",
@@ -73,7 +74,7 @@ std::string Response::get_Content_type(std::string url)
     };
     std::string extension = url.substr(url.rfind(".") + 1);
     unsigned int i = 0;
-    while (i < 23)
+    while (i < 25)
     {
         if (contentTypes[i].find(extension) != std::string::npos)
             return contentTypes[i];
@@ -118,14 +119,14 @@ void Response::build_GET()
     std::string index;
     std::string autoIndexPage;
     URI += this->response_items.Path.substr(1); // TODO : check if path is beging with /
-                std::cout << "uri: " << URI << std::endl;
     status = stat(URI.data(), &buffer);
     if (status != -1)
     {
         if (this->response_items.Extension.empty() == 1)
         {
+            
             if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
-                this->ft_redirect("300", this->response_items.Path + "/");
+                this->ft_redirect("301", this->response_items.Path + "/");
             else
             {
                 index = check_index_file(URI);
@@ -138,10 +139,14 @@ void Response::build_GET()
                         URI += "index.html";
                         if (access(URI.c_str(), F_OK | W_OK) != 0)
                         {
+                            //
+                            closedir(dir);
                             this->other_response("403", " Forbidden");
                             return;
                         }
                         std::string content_body = read_file(URI.c_str());
+                        //
+                        closedir(dir);
                         this->ft_success_code("200", content_body, URI);
 
                     }
@@ -179,11 +184,15 @@ void Response::build_GET()
                 {
                     URI += index;
                     status = stat(URI.data(), &buffer);
+                    
                     if (status != -1)
                     {
                         this->response_items.Extension = URI.substr(URI.rfind('.'));
-                        if (!cgi_path.empty() && (this->response_items.Extension == "php" || this->response_items.Extension == "py"))
-                            this->other_response("204", " NO Content");
+                        if (cgi_path != " " && (this->response_items.Extension == "php" ||this->response_items.Extension == "php" ))
+                        {
+                            std::cout << "CGI needed " << std::endl;
+                            // this->other_response("204", " NO Content"); CGI response
+                        }
                         else
                         {
                             if (this->get_permission(URI) == -1)
@@ -213,15 +222,16 @@ void Response::build_GET()
         }
         else
         {
-            if (!cgi_path.empty() && (this->response_items.Extension == "php" || this->response_items.Extension == "py"))
+            if (cgi_path != " " && (this->response_items.Extension == "php" ||this->response_items.Extension == "php" ))
             {
-                // this->ft_success_code("200", body resturn by  CGI script ); // TODO: ADD CGI script
+                            std::cout << "CGI needed " << std::endl;
+                            // this->other_response("204", " NO Content"); CGI response
             }
             else
             {
                 if (this->get_permission(URI) == -1)
                      this->other_response("404", " No Permission");
-                else if (this->get_permission(URI) == -2 || this->response_items.Extension == "php" || this->response_items.Extension == "py")
+                else if (this->get_permission(URI) == -2)
                     this->other_response("403", " Forbidden");
                 else
                 {
@@ -232,7 +242,10 @@ void Response::build_GET()
         }
     }
     else
+    {
+        std::cout << "Request-URI retun :|" << URI << "|" << std::endl;
         this->other_response("404", " Not Found");
+    }
 }
 
 void Response::build_DELETE()
@@ -250,7 +263,7 @@ void Response::build_DELETE()
         {
             if (this->response_items.Path[this->response_items.Path.size() - 1] == '/')
             {
-                if (!cgi_path.empty())
+                if (cgi_path != " ")
                 {
                     std::string index = check_index_file(URI);
                     if (index.empty())
@@ -334,6 +347,8 @@ void Response::build_POST()
                         else
                         {
                             URI += index;
+                            std::cout << "CGI needed " << std::endl;
+                            // this->other_response("204", " NO Content"); CGI response
                             std::cout << "Returtn Code Depend on cgi";
                         }
                     }
@@ -376,7 +391,7 @@ void Response::build_POST()
                     namefile.clear();
                     if (!file.is_open())
                     {
-                        this->other_response("505", " Version Not Supported");
+                        this->other_response("500", "Internal Server Error");
                         return;
                     }
                     if (!(*it)->Content.empty())
@@ -401,7 +416,21 @@ void Response::build_POST()
             this->other_response("201", "Created");
         }
         else
+        {
+            time(&current_time);
+            ss << static_cast<int>(current_time);
+            namefile += ss.str();
+            namefile += ".";
+            namefile += this->response_items.Headers.find("Content-Type")->second.substr(this->response_items.Headers.find("Content-Type")->second.rfind("/") + 1);
+            file.open(this->response_items.location->upload_store_directory + namefile, std::ios::out | std::ios::binary);
+            namefile.clear();
+            if (!file.is_open())
+            {
+                this->other_response("500", "Internal Server Error");
+                return;
+            }
             this->other_response("202", "Accepted");
+        }
     }
 }
 
@@ -491,6 +520,7 @@ void Response::ft_redirect(std::string status, std::string message)
 {
     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
         ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));
+        std::cout << "uri checkc: " << message  <<  " " << status  << std::endl;
     response << "HTTP/1.1 " << status << " Moved Permanently\r\n";
     response << "Location: " << message << "\r\n";
     response << "Content-Length: 0\r\n";
