@@ -81,7 +81,7 @@ public:
     void Headers_elements();
     int check_elemens(std::string &key);
     int is_alpha(std::string value);
-    int check_date(std::string &value);
+    // int check_date(std::string &value);
     int check_content_type(std::string &value);
     int check_more_element(std::string &key, std::string &value);
     std::string trim(std::string original);
@@ -121,10 +121,10 @@ public:
     std::string check_index_file(std::string & url);
     void build_GET();
     void build_POST();
-    void build_DELETE();
+    void build_DELETE(void);
     int get_permission(std::string &file);
     std::string read_file(const std::string &filename);
-    void not_found();
+    // void not_found();
     int remove_all_files(const char *dirname);
     std::string trim(std::string original);
     void return_pages(std::string& pages_return, std::string& url);
