@@ -213,7 +213,7 @@ void Response::build_GET()
             if (cgi_path != " " && (this->response_items.Extension == "php" || this->response_items.Extension == "py") )
             {
                             std::cout << "CGI needed " << std::endl;
-                            GET_CGI_DATA(this->response_items);
+                            // GET_CGI_DATA(this->response_items);
                             // this->other_response("204", " NO Content"); CGI response
             }
             else
