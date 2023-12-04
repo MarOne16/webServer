@@ -51,6 +51,7 @@ typedef struct s_server
     std::map<std::string, std::string> error_pages;
     std::map<std::string, location> locations;
     std::string request_content;
+    bool connection;
 } server;
 
 class ConfigParser

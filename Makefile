@@ -1,6 +1,6 @@
 NAME   = webserv
 #  -fsanitize=address
-FLAGS  = -Wall -Wextra -Werror -std=c++98    -fsanitize=address 
+FLAGS  = -Wall -Wextra -Werror -std=c++98  -g3    -fsanitize=address
 CC     = c++
 FILES  = ./configParsing/getLocation.cpp \
 		./configParsing/configParsing.cpp \
@@ -10,7 +10,8 @@ FILES  = ./configParsing/getLocation.cpp \
 		./Response/response.cpp \
 		./Response/tools.cpp \
 		./serveurs-clients/serverTools.cpp \
-		./serveurs-clients/servers2.cpp
+		./serveurs-clients/servers2.cpp \
+		# ./cgi/cgi.cpp 
 
 
 OBJS   = $(FILES:.cpp=.o)

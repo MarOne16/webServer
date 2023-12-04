@@ -1,6 +1,37 @@
 #include "./webserver.hpp"
 
 
+
+// void Response::parser_output_cgi(cgi_data& cgiData)
+// {
+//     int pos = 0;
+//     std::string token;
+//     // std::map<std::string, std::string>::it = cgiData.cgi_Headers.begin();
+//      while(pos != -1)
+//     {
+//         pos = cgiData.body.find("\r\n");
+//         token = cgiData.body.substr(0, pos);
+//         cgiData.body.substr(pos + 1);
+//         key = trim((*it).substr(0 , pos));
+//         value = trim((*it).substr(pos + 1));
+//         cgiData.cgi_Headers[key] = value;
+//     }
+// }
+
+
+// void Response::responsecgi(cgi_data& cgidata)
+// {
+//     if(cgiData.cgi_Headers.empty())
+//     {
+//         if(cgiData.status_code == 200)
+//             this->ft_success_code(cgidata.status_code, cgidata.body, "");
+//         else
+//             this->other_response(cgidata.status_code, cgidata.status_message);
+
+//     }
+// }
+
+
 std::vector<std::string> split_v(std::string &str, std::string delimiter)
 {
     std::vector<std::string> tokens;
@@ -108,4 +139,41 @@ std::string Response::trim(std::string original)
     if (begin_index == original.size())
         return "";
     return original.substr(begin_index, i + 1);
+}
+
+
+
+std::string  parserbody(std::string reqbody)
+{
+    // std::string reqbody="7\r\nMozilla\r\n0\r\n11\r\nDeveloper Network\r\n0\r\n\r\n";
+
+std::stringstream ss;
+std::stringstream body;
+ss << reqbody;
+
+int pos = 0 ;
+std::string token;
+int hash = -1;
+ while(pos != -1 && hash)
+{
+    pos = reqbody.find("\r\n");
+    if(reqbody[0] == '\r' && reqbody[1] == '\n')
+    {
+        reqbody = reqbody.substr(2);
+        break;
+    }
+    token = reqbody.substr(0, pos);
+    hash = std::stoi(token, 0, 16);
+    if(hash != 0)
+    {
+        if(hash > (int)reqbody.length())
+            return "";
+        token = reqbody.substr(pos + 2 , hash);
+        reqbody = reqbody.substr(pos + hash + 4);
+        body << token;
+    }
+  
+} 
+return body.str();
+
 }
