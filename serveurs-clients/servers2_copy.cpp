@@ -52,7 +52,9 @@ std::string sendResponse(unsigned int index, std::map<unsigned int, server> &ser
     while (it != serv.end())
     {
         if (it->first == index)
+        {
             return (Get_response(it->second));
+        }
         it++;
     }
     return ("");
@@ -875,6 +877,7 @@ int main(int ac, const char **av)
                                 int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur);
                                 feedRequest(serveur_id, data_conf.m_servers, request);
                                 respense = sendResponse(serveur_id, data_conf.m_servers);
+                                std::cout << "connection:" << data_conf.m_servers.find(serveur_id)->second.connection << std::endl;
                                 size_t si = 0;
                                 while (respense.size() >= 0 && si != respense.size())
                                 {

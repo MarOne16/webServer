@@ -43,14 +43,15 @@ typedef struct s_location
 
 typedef struct s_server
 {
-    int                                 port;
-    std::string                         server_name;
-    std::string                         host;
-    std::string                         default_location;
-    std::string                         max_body_size;
-    std::string                         request_content;
-    std::map<std::string, std::string>  error_pages;
-    std::map<std::string, location>     locations;
+    std::string server_name;
+    std::string host;
+    int         port;
+    std::string default_location;
+    std::string max_body_size;
+    std::map<std::string, std::string> error_pages;
+    std::map<std::string, location> locations;
+    std::string request_content;
+    bool connection;
 } server;
 
 class ConfigParser
