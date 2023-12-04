@@ -186,6 +186,7 @@ void Response::build_GET()
                         if (cgi_path != " " && (this->response_items.Extension == "php" || this->response_items.Extension == "py") )
                         {
                             std::cout << "CGI needed " << std::endl;
+                            cgi_data cgi = GET_CGI_DATA(this->response_items);
                             // this->other_response("204", " NO Content"); CGI response
                         }
                         else
@@ -263,6 +264,7 @@ void Response::build_DELETE()
                         this->other_response("403", " Forbidden");
                     else
                     {
+                        cgi_data  cgi = GET_CGI_DATA(this->response_items);
                         // run cgi on requested file with DELTE REQUEST_METHOD;
                     }
                 }

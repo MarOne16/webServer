@@ -1,0 +1,5 @@
+X-Powered-By: PHP/8.2.8
+Content-type: text/html; charset=UTF-8
+
+<br />
+<b>Parse error</b>:  syntax error, unexpected character 0x17 in <b>/Users/mqaos/php_cgi_bin</b> on line <b>785</b><br />

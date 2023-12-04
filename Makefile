@@ -7,6 +7,7 @@ FILES  = ./configParsing/getLocation.cpp \
 		./configParsing/parsingTools.cpp \
 		./configParsing/hashMapParsing.cpp \
 		./cgi_bin/cgi.cpp \
+		./cgi_bin/exec_file.cpp \
 		./Response/mainResponse.cpp \
 		./Response/requese.cpp \
 		./Response/response.cpp \

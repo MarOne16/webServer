@@ -1,8 +1,16 @@
 #pragma once
 
 #include "../Response/webserver.hpp"
+#include <signal.h>
 
 class http_items;
+
+
+// typedef struct cgi_data
+// {
+//     std::string body;
+//     unsigned int status_code;
+// }
 
 typedef struct envirmoment
 {
@@ -23,6 +31,7 @@ typedef struct envirmoment
     std::string  PATH_INFO;
     std::string  PATH_TRANSLATED;
     std::string  REDIRECT_STATUS;
+    std::string  REDIRECT_STATUS_;
     static const size_t NUM_ELEMENTS = 17;
 } envirmoment;
 
@@ -31,6 +40,10 @@ typedef struct cgi_data
     http_items &response_tools;
     envirmoment env_server;
     std::string body;
+    std::string cgi_response;
+    unsigned int status_code;
+    std::string status_message;
+    std::map<std::string, std::string> cgi_headers;
 
     // Constructor with initializer list to initialize the reference member
     cgi_data(http_items &rt, const envirmoment &es, const std::string &b)
@@ -42,8 +55,8 @@ cgi_data GET_CGI_DATA(http_items &response_items);
 envirmoment GET_SETENV_SERVER(http_items &response_items);
 char **GET_EXTRA_ENV(envirmoment &env_server);
 void FREEENV_SERVER(envirmoment &env_server);
-std::string FINAL_RESPONSE(http_items &response_items);
-void debud_cgi_data(cgi_data &cgi , char **extra_env);
+cgi_data &FINAL_RESPONSE(http_items &response_items);
+void debud_cgi_data(cgi_data &cgi);
 std::string CONVERT_TO_WEB(std::string &response);
 
 #include "../Response/webserver.hpp"
