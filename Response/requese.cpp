@@ -1,8 +1,14 @@
 #include "./webserver.hpp"
 
+void Requese::check_connection(server& server_data)
+{
+    std::string value = (!this->response_items.Headers["Connection"].empty() ? this->response_items.Headers["Connection"] : "close");
+    server_data.connection = (value == "keep-alive") ? true : false;
+}
+
 Requese::Requese(std::string req, server& server_data):req(req),status_response_code(200)
 {
-    
+  
     this->response_items.location = new s_location;
     this->response_items.lenghtbody = 0;
     this->response_items.error_pages = server_data.error_pages;
@@ -42,6 +48,8 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         //parser line-request 
      
         Headers_elements();
+        check_connection(server_data);
+        
         // ckeck Headers and parser some special Headers
          if(this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
             (this->response_items.Headers.find("Transfer-Encoding"))->second != "chunked")
@@ -148,7 +156,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     }
 }
 
-std::string Requese::trim(std::string original)
+std::string trim(std::string original)
 {
     unsigned int begin_index = 0;
     unsigned int i = 0;
@@ -213,7 +221,6 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
      }
     else
          this->response_items.Extension  = "";
-    std::cout << this->response_items.Extension << std::endl;
     if(line.size() != 3)
         this->status_response_code = 400;
     i = 0;
@@ -267,8 +274,8 @@ void Requese::Headers_elements()
         value = trim((*it).substr(pos + 1));
         if((*it).substr(pos + 1, 1).c_str()[0]  != 32)
             this->status_response_code = 400;
-        this->trim(key);
-        this->trim(value);
+        // this->trim(key);
+        // this->trim(value);
         this->response_items.Headers[key] = value;
         if(key.empty() || value.empty() || check_more_element(key, value) == 0 )
         {

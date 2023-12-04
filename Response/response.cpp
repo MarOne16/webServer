@@ -1,14 +1,5 @@
 #include "./webserver.hpp"
 
-// void cgi_funct(http_items &response_items)
-// {
-//     std::cout << response_items.method << std::endl;
-//     std::cout << response_items.Extension << std::endl;
-//     std::cout << response_items.location->autoindex << std::endl;
-
-// }
-
-
 Response::Response(int status, std::vector<std::string> init_line, http_items &response_items)
 {
     this->status = status;
@@ -18,7 +9,6 @@ Response::Response(int status, std::vector<std::string> init_line, http_items &r
 
 std::string Response::build_response()
 {
-    std::cout <<  "=> " << this->response_items.Path << std::endl;
     if (this->status == 400)
         this->other_response("400", "Bad Request");
     else if (this->status == 505)
@@ -32,7 +22,6 @@ std::string Response::build_response()
     else if (!this->response_items.location->return_code_url.empty())
     {
         std::string url = (this->response_items.location->root + this->response_items.Path);
-        std::cout << url << std::endl;
         return_pages(this->response_items.location->return_code_url, this->response_items.Path); // TODO: check if this redirected response work
     }
     else if (this->response_items.method == "GET")
@@ -126,7 +115,6 @@ void Response::build_GET()
     
     if (status != -1)
     {   
-        std::cout << this->response_items.Extension << "<====\n"; 
         if (this->response_items.Extension.empty() == 1)
         {
             if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
@@ -237,7 +225,6 @@ void Response::build_GET()
                 else
                 {
                     std::string content_body = read_file(URI);
-                    std::cout << "body:" <<  content_body << std::endl;
                     this->ft_success_code("200", content_body, URI);
                 }
             }
@@ -511,11 +498,12 @@ void Response::ft_default_pages(std::string status, std::string &message, std::s
 
 void Response::ft_success_code(std::string status, std::string message, std::string URI)
 {
+    std::string connection = (!this->response_items.Headers["Connection:"].empty() ? this->response_items.Headers["Connection:"] : "close");
     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
         ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));
     response << "HTTP/1.1 " << status << " ok\r\n";
     response << "Content-length: " << message.length() << "\r\n";
-    response << "Connection: close\r\n";
+    response << "Connection:" << connection  <<  "\r\n";
     response << "Content-Type: " << this->get_Content_type(URI) << "\r\n";
     response << "Host: " << this->response_items.server << "\r\n";
     response << "Set-Cookie: yummy_cookie=darkmod; Domain=localhost; Path=/websites/;\r\n";
@@ -525,19 +513,16 @@ void Response::ft_success_code(std::string status, std::string message, std::str
 
 void Response::ft_redirect(std::string status, std::string message)
 {
+     std::string connection = (!this->response_items.Headers["Connection:"].empty() ? this->response_items.Headers["Connection:"] : "close");
     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
     {
         ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));
-        std::cout << "uri checkc: " << message  <<  " " << status  << std::endl;
-
     }
     response << "HTTP/1.1 " << status << " Moved Permanently\r\n";
     response << "Location: " << message << "\r\n";
     response << "Content-Length: 0\r\n";
-    response << "Connection: close\r\n";
-    response << "Content-Type: "
-             << "text/html"
-             << "\r\n";
+    response << "Connection:" << connection  <<  "\r\n";
+    response << "Content-Type: "<< "text/html" << "\r\n";
     response << "Host: " << this->response_items.server << "\r\n";
     response << "Date: " << this->get_Date() << "\r\n\r\n";
 }
@@ -546,6 +531,7 @@ void Response::ft_redirect(std::string status, std::string message)
 void Response::other_response(std::string status, std::string desc)
 {
     std::string body;
+    std::string connection = (!this->response_items.Headers["Connection:"].empty() ? this->response_items.Headers["Connection:"] : "close");
     body = "<!DOCTYPE html>\n<html lang=\"en\">\n\
                                                     <head>\n\
                                                     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
@@ -563,15 +549,13 @@ void Response::other_response(std::string status, std::string desc)
                                         </html>\n";
     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
     {
-        std::cout << "here " << std::endl;
-        std::cout << this->response_items.error_pages.find(status)->second << std::endl;
         ft_default_pages(status, body, (this->response_items.error_pages.find(status)->second));
     }
     response << "HTTP/1.1 " << status << " " << desc << "\r\n";
     response << "Content-Type: text/html\r\n";
     response << "Content-Length: " << body.length() << "\r\n";
     response << "Server: " << this->response_items.server << "\r\n";
-    response << "Connection: close\r\n";
+    response << "Connection:" << connection  <<  "\r\n";
     response << "Date: " << this->get_Date() << "\r\n";
     response << "\r\n"; // Blank line to separate headers and body
     response << body;

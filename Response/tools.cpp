@@ -1,6 +1,37 @@
 #include "./webserver.hpp"
 
 
+
+// void Response::parser_output_cgi(cgi_data& cgiData)
+// {
+//     int pos = 0;
+//     std::string token;
+//     // std::map<std::string, std::string>::it = cgiData.cgi_Headers.begin();
+//      while(pos != -1)
+//     {
+//         pos = cgiData.body.find("\r\n");
+//         token = cgiData.body.substr(0, pos);
+//         cgiData.body.substr(pos + 1);
+//         key = trim((*it).substr(0 , pos));
+//         value = trim((*it).substr(pos + 1));
+//         cgiData.cgi_Headers[key] = value;
+//     }
+// }
+
+
+// void Response::responsecgi(cgi_data& cgidata)
+// {
+//     if(cgiData.cgi_Headers.empty())
+//     {
+//         if(cgiData.status_code == 200)
+//             this->ft_success_code(cgidata.status_code, cgidata.body, "");
+//         else
+//             this->other_response(cgidata.status_code, cgidata.status_message);
+
+//     }
+// }
+
+
 std::vector<std::string> split_v(std::string &str, std::string delimiter)
 {
     std::vector<std::string> tokens;
