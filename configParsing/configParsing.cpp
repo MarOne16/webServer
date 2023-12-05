@@ -290,7 +290,10 @@ unsigned int ConfigParser::getNumber_ofServers()
 std::string ConfigParser::getRootServ()
 {
     if (content.find("root") == std::string::npos || !ifOutsideLocation("root"))
-        return (global_root = getDefault("root"));
+    {
+        global_root = getDefault("root");
+        return (global_root);
+    }
     if (ifOutsideLocation("root"))
     {
         std::string root = "";
@@ -310,10 +313,14 @@ std::string ConfigParser::getRootServ()
         if (!ifClosed(root))
             throw std::runtime_error("Root directive is not closed.");
         ereaseContent(content, pos, ';');
-        global_root = root.erase(root.length() - 1, 1);
+        if (!findFile(root.erase(root.length() - 1, 1)))
+            throw std::runtime_error("Root is not valid.");
+        global_root = root;
         if (global_root.find_last_of('/') != global_root.length() - 1)
             global_root += '/';
     }
+    if (global_root.empty())
+        throw std::runtime_error("Root is empty.");
     return global_root;
 }
 

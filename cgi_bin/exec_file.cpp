@@ -15,6 +15,7 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
     }
     else if (pid == 0)
     {
+        alarm(5);
         dup2(out, 1);
         dup2(in, 0);
         if (method == "REQUEST_METHOD=POST")
@@ -36,10 +37,20 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
         {
             if (WEXITSTATUS(status) != 0)
             {
-                cgi.status_code = 500;
-                cgi.cgi_response = "Error: external program execution failed";
-                cgi.status_message = "Internal Server Error";
-                return ;
+                if (WEXITSTATUS(status) == 14)
+                {
+                    cgi.status_code = 413;
+                    cgi.cgi_response = "Error: Request Entity Too Large";
+                    cgi.status_message = "Request Entity Too Large";
+                    return ;
+                }
+                else
+                {
+                    cgi.status_code = 500;
+                    cgi.cgi_response = "Error: external program execution failed";
+                    cgi.status_message = "Internal Server Error";
+                    return ;
+                }
             }
             else
                 cgi.status_code = 200;

@@ -8,7 +8,7 @@ void ConfigParser::setConfKeys()
     confKeys.push_back("error_page");
     confKeys.push_back("alias");
     confKeys.push_back("root");
-    confKeys.push_back("index");
+    confKeys.push_back("tryfile"); // index
     confKeys.push_back("cgi_path");
     confKeys.push_back("autoindex");
     confKeys.push_back("fastcgi_pass");

@@ -41,7 +41,7 @@ typedef struct cgi_data
     envirmoment env_server;
     std::string body;
     std::string cgi_response;
-    unsigned int status_code;
+    std::string status_code;
     std::string status_message;
     std::map<std::string, std::string> cgi_headers;
 

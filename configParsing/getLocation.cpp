@@ -60,14 +60,12 @@ std::string ConfigParser::getAlias(std::string location)
 
 std::string ConfigParser::getIndex(std::string location)
 {
-    if (!isInsidLocation(location, "index"))
+    if (!isInsidLocation(location, "tryfile"))
         return "";
     std::string index;
-    size_t start = location.find("index");
-    for (size_t i = start + 5; i < location.length(); i++)
+    size_t start = location.find("tryfile");
+    for (size_t i = start + 7; i < location.length(); i++)
     {
-        if (location[i] == ' ' || location[i] == '\t')
-            continue;
         if (location[i] == ';' || location[i] == '\n')
         {
             if (location[i] == ';')
