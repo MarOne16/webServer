@@ -3,6 +3,8 @@ NAME   = webserv
 FLAGS  = -Wall -Wextra -Werror -std=c++98  -g3    -fsanitize=address
 CC     = c++
 FILES  = ./configParsing/getLocation.cpp \
+		./cgi_bin/cgi.cpp \
+		./cgi_bin/exec_file.cpp \
 		./configParsing/configParsing.cpp \
 		./configParsing/parsingTools.cpp \
 		./Response/mainResponse.cpp \
