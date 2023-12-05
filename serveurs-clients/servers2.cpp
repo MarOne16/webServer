@@ -1,3 +1,5 @@
+
+
 // /* ************************************************************************** */
 // /*                                                                            */
 // /*                                                        :::      ::::::::   */
@@ -6,7 +8,7 @@
 // /*   By: iedderqi <iedderqi@student.42.fr>          +#+  +:+       +#+        */
 // /*                                                +#+#+#+#+#+   +#+           */
 // /*   Created: 2023/10/26 14:23:56 by iedderqi          #+#    #+#             */
-/*   Updated: 2023/11/04 16:27:46 by iedderqi         ###   ########.fr          */
+/*   Updated: 2023/12/05 14:45:17 by iedderqi         ###   ########.fr       */
 // /*                                                                            */
 // /* ************************************************************************** */
 
@@ -405,7 +407,6 @@ std::string check_complier_chunkerd(std::string request, std::map<int, int> &sat
     return (chunked);
 }
 
- 
 void converture_hex(std::string hex, size_t &lenght)
 {
     // std::cout << "faild :" << hex << "\n";
@@ -480,6 +481,7 @@ std::string chunked_ramase(std::string request, std::map<int, size_t> &flags, in
             return (chunked);
         }
         i = j;
+
         last.clear();
     }
     return ("NULL");
@@ -595,7 +597,7 @@ void request_inserer(char *buffer, int buff_size, int fd, std::map<int, std::str
             if (founds != std::string::npos)
                 stop = 1;
         }
-        
+
         request.clear();
     }
     return;
@@ -632,7 +634,7 @@ int main(int ac, const char **av)
         {
             struct sockaddr_in adrese;
             socklen_t addrlen = sizeof(adrese);
-            //int sockfd = socket(domain, type, protocol)
+            // int sockfd = socket(domain, type, protocol)
             int fd = socket(AF_INET, SOCK_STREAM, 0);
             if (fd < 0)
                 return (0);
@@ -648,7 +650,7 @@ int main(int ac, const char **av)
             adrese.sin_port = htons(port[i]);
             if (bind(fd, (struct sockaddr *)&adrese, sizeof(adrese)) < 0)
                 return (0);
-            if (listen(fd, 3) < 0)
+            if (listen(fd, 1024) < 0)
                 return (0);
             file.push_back(fd);
             addresses.push_back(adrese);
@@ -666,6 +668,8 @@ int main(int ac, const char **av)
         std::string request;
         std::vector<int> client;
         std::map<int, int> chunked;
+        std::map<int, size_t> len_requeste;
+        std::map<int, bool> connection;
         // size_t cherk;
         int stop = 0;
         while (true)
@@ -679,13 +683,11 @@ int main(int ac, const char **av)
                 {
                     if (std::find(file.begin(), file.end(), fds[i].fd) != file.end())
                     {
-                        std::cout << "accept client pollin " << std::endl;
 
                         int co = accept(fds[i].fd, NULL, NULL);
                         fcntl(co, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-                        if (co < 0)
-                            perror("Faild ::  accept");
-                        else
+
+                        if (co > 0)
                         {
                             struct pollfd fl;
                             fl.fd = co;
@@ -697,12 +699,12 @@ int main(int ac, const char **av)
                     }
                     else if (std::find(client.begin(), client.end(), fds[i].fd) != client.end())
                     {
-                          char *buf = (char *)malloc(1024);
+                        char *buf = (char *)malloc(1024);
                         //
-                        if(!buf )
-                            return(0);
+                        if (!buf)
+                            return (0);
                         int rec = recv(fds[i].fd, buf, 1023, 0);
-                        if (rec <= 0)
+                        if (rec == 0)
                         {
                             free(buf);
                             stop = 0;
@@ -713,6 +715,8 @@ int main(int ac, const char **av)
                             close(fds[i].fd);
                             fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
                         }
+                        else if( rec == - 1)
+                            continue;
                         else
                         {
                             request_inserer(buf, rec, fds[i].fd, map_request, checker, stop, chunked);
@@ -720,14 +724,16 @@ int main(int ac, const char **av)
                             if (stop == 1)
                             {
                                 request = data(map_request, fds[i].fd);
-                                stop = 0; 
+                                stop = 0;
                                 std::string port, name_serveur;
                                 geve_port_name(request, name_serveur, port);
                                 int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur);
                                 feedRequest(serveur_id, data_conf.m_servers, request);
                                 respense = sendResponse(serveur_id, data_conf.m_servers);
+                                connection.insert(std::make_pair(fds[i].fd, data_conf.m_servers.find(serveur_id)->second.connection));
                                 res.insert(std::make_pair(fds[i].fd, respense));
                                 fds[i].events = POLLOUT;
+                                break;
                             }
                         }
                     }
@@ -735,27 +741,59 @@ int main(int ac, const char **av)
 
                 if (fds[i].revents & POLLOUT)
                 {
+
+                    int cheker = 0;
+                    size_t t;
                     std::string respons_find;
                     respons_find = res[fds[i].fd];
-                    size_t si = 0;
-                    while (respons_find.size() >= 0 && si != respons_find.size())
+                    std::string requ;
+                    if (len_requeste.find(fds[i].fd) == len_requeste.end())
                     {
-                        std::string requ;
-                        requ = respons_find.substr(si, 1000);
-                        si += requ.size();
-                        if (send(fds[i].fd, requ.c_str(), requ.length(), 0) == -1)
-                            break;
-                        requ.clear();
+
+                        cheker = 1;
+                        requ = respons_find.substr(0, 1000);
+                        t = requ.size() + 0;
+                        len_requeste.insert(std::make_pair(fds[i].fd, t));
                     }
-                    respons_find.clear();
-                    map_request.erase(fds[i].fd);
-                    checker.erase(fds[i].fd);
-                    chunked.erase(fds[i].fd);
-                    client.erase(std::find(client.begin(), client.end(), fds[i].fd));
-                    close(fds[i].fd);
-                    res.erase(fds[i].fd);
-                    fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
-                    std::cout << "last pollout" << std::endl;
+                    else
+                    {
+                        requ = respons_find.substr(len_requeste[fds[i].fd], 1000);
+                        t = requ.size() + len_requeste[fds[i].fd];
+                        len_requeste.erase(fds[i].fd);
+                        len_requeste.insert(std::make_pair(fds[i].fd, t));
+                        cheker = 1;
+                    }
+
+                    if (cheker)
+                    {
+                        if (send(fds[i].fd, requ.c_str(), requ.length(), 0) == -1)
+                            cheker = 0;
+                        if (t == respons_find.size())
+                            cheker = 0;
+                    }
+                    requ.clear();
+                    if (!cheker)
+                    {
+                        respons_find.clear();
+                        len_requeste.erase(fds[i].fd);
+                        map_request.erase(fds[i].fd);
+                        checker.erase(fds[i].fd);
+                        chunked.erase(fds[i].fd);
+                        res.erase(fds[i].fd);
+                        if (connection.find(fds[i].fd) != connection.end() && connection[fds[i].fd] == 0)
+                        {
+                            connection.erase(fds[i].fd);
+                            close(fds[i].fd);
+                            client.erase(std::find(client.begin(), client.end(), fds[i].fd));
+                            fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
+                        }
+                        else
+                        {
+                            connection.erase(fds[i].fd);
+                            fds[i].events = POLLIN;
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -766,5 +804,5 @@ int main(int ac, const char **av)
     }
 }
 
-//siege -b --delay=0.5 --file=url.txt --concurrent=15 --no-parser
-// siege --delay=0.5 --file=url.txt --internet --verbose --reps=200 --concurrent=15 --no-parser
+// siege -b --delay=0.5 --file=url.txt --concurrent=15 --no-parser
+//  siege --delay=0.5 --file=url.txt --internet --verbose --reps=200 --concurrent=15 --no-parser

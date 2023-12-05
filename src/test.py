@@ -1,3 +1,3 @@
 
-# while True:
-print("Starting subprocess")
+while True:
+    print("Starting subprocess")
