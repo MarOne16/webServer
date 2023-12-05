@@ -37,7 +37,8 @@ envirmoment GET_SETENV_SERVER(http_items &response_items)
     env.QUERY_STRING = "QUERY_STRING=" + response_items.Query_String;
     env.CONTENT_TYPE = "CONTENT_TYPE=txt/html "; //TODO: change this
     env.CONTENT_LENGTH = "CONTENT_LENGTH=" + (response_items.Headers.find("Content-Length")->second == "" ? "1024" : response_items.Headers.find("Content-Length")->second);
-    env.SCRIPT_NAME = "SCRIPT_NAME=" + response_items.location->root + response_items.Path.substr(response_items.Path.find_last_of("/") + 1);
+    env.SCRIPT_NAME = "SCRIPT_NAME=" + response_items.location->root + response_items.Path.substr(response_items.Path.find_first_of("/") + 1);
+    std::cout << "SCRIPT_NAME: " << env.SCRIPT_NAME << std::endl;
     env.REQUEST_URI = "REQUEST_URI=" + response_items.Path;
     env.DOCUMENT_ROOT = "DOCUMENT_ROOT=" + response_items.location->root;
     env.DOCUMENT_URI = "DOCUMENT_URI=" + response_items.Path;

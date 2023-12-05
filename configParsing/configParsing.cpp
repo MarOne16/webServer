@@ -1,5 +1,7 @@
 #include "configParsing.hpp"
 
+unsigned int alarmCounter = INT_MAX;
+
 ConfigParser::ConfigParser(const char **argv)
 {
     setConfKeys();
@@ -98,6 +100,7 @@ void ConfigParser::feedServers()
 {
     static int i;
     globalUpload();
+    setAlarm();
     server server_tmp;
     server_tmp.port = getPort();
     server_tmp.server_name = getServerName();
@@ -290,7 +293,10 @@ unsigned int ConfigParser::getNumber_ofServers()
 std::string ConfigParser::getRootServ()
 {
     if (content.find("root") == std::string::npos || !ifOutsideLocation("root"))
-        return (global_root = getDefault("root"));
+    {
+        global_root = getDefault("root");
+        return (global_root);
+    }
     if (ifOutsideLocation("root"))
     {
         std::string root = "";
@@ -310,10 +316,14 @@ std::string ConfigParser::getRootServ()
         if (!ifClosed(root))
             throw std::runtime_error("Root directive is not closed.");
         ereaseContent(content, pos, ';');
-        global_root = root.erase(root.length() - 1, 1);
+        if (!findFile(root.erase(root.length() - 1, 1)))
+            throw std::runtime_error("Root is not valid.");
+        global_root = root;
         if (global_root.find_last_of('/') != global_root.length() - 1)
             global_root += '/';
     }
+    if (global_root.empty())
+        throw std::runtime_error("Root is empty.");
     return global_root;
 }
 
@@ -377,4 +387,30 @@ void ConfigParser::globalUpload()
             upload += '/';
         global_upload_store = upload;
     }
+}
+
+void ConfigParser::setAlarm()
+{
+    if (content.find("alarm") == std::string::npos)
+        return;
+    size_t pos = content.find("alarm");
+    std::string alarm = "";
+    for (size_t i = pos + 5; i < content.length(); i++)
+    {
+        if (content[i] == ';')
+            break;
+        alarm += content[i];
+    }
+    for (size_t i = 0; i < alarm.length(); i++)
+    {
+        if (alarm[i] == ' ' || alarm[i] == '\t' || alarm[i] == '\n')
+            alarm.erase(i--, 1);
+    }
+    if (notIn(alarm, "0123456789"))
+        throw std::runtime_error("Alarm is not valid excepted only numbers.");
+    if (alarm.length() > 10)
+        throw std::runtime_error("Alarm too big.");
+    alarmCounter = toInt(alarm);
+    if (alarmCounter < 0)
+        throw std::runtime_error("Alarm is negative.");
 }

@@ -167,8 +167,8 @@ void checkServer(std::map<unsigned int , server> &m_servers)
         std::map<unsigned int , server>::iterator it2 = ++it;
         while (it2 != m_servers.end())
         {
-            if (it2->second.port == p && (it2->second.server_name == s_n))
-                throw std::runtime_error("Two servers have the same port and same server_name");
+            if (it2->second.port == p)
+                throw std::runtime_error("Two servers have the same port");
             it2++;
         }
         it++;

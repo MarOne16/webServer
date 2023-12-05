@@ -518,7 +518,6 @@ void Response::ft_redirect(std::string status, std::string message)
     response << "Date: " << this->get_Date() << "\r\n\r\n";
 }
 
-
 void Response::other_response(std::string status, std::string desc)
 {
     std::string body;
