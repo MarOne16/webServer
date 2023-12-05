@@ -115,14 +115,17 @@ void Response::build_GET()
     
     if (status != -1)
     {   
-        if (this->response_items.Extension.empty() == 1)
+        std::cout << "Error: " << this->response_items.Extension << std::endl;
+        if (this->response_items.Extension.empty())
         {
             
             if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
                 this->ft_redirect("301", this->response_items.Path + "/");
             else
             {
+                
                 index = check_index_file(URI);
+                std::cout << "index :" << index << " " << URI << std::endl;
                 if (index.empty())
                 {
                     DIR *dir = opendir(URI.c_str());
@@ -176,13 +179,17 @@ void Response::build_GET()
                 else
                 {
                     URI += index;
+                    this->response_items.Path += index;
                     status = stat(URI.data(), &buffer);
                     
                     if (status != -1)
                     {
                         this->response_items.Extension = URI.substr(URI.rfind('.'));
-                        if (!cgi_path.empty() && (this->response_items.Extension == "php" || this->response_items.Extension == "py"))
-                            this->other_response("204", " NO Content");
+                        if (cgi_path != " " && (this->response_items.Extension == "php" || this->response_items.Extension == "py") )
+                        {
+                            std::cout << "cgi here" << std::endl;
+                            responsecgi(GET_CGI_DATA(this->response_items));
+                        }
                         else
                         {
                             if (this->get_permission(URI) == -1)
@@ -198,7 +205,6 @@ void Response::build_GET()
                     }
                     else
                     {
-                        
                         URI += "index.html";
                         std::string content_body = read_file(URI.c_str());
                         if (access(URI.c_str(), F_OK | W_OK) != 0)
@@ -213,10 +219,8 @@ void Response::build_GET()
         }
         else
         {
-            if (!cgi_path.empty() && (this->response_items.Extension == "php" || this->response_items.Extension == "py"))
-            {
-                // this->ft_success_code("200", body resturn by  CGI script ); // TODO: ADD CGI script
-            }
+            if (cgi_path != " " && (this->response_items.Extension == "php" || this->response_items.Extension == "py") )
+                            responsecgi(GET_CGI_DATA(this->response_items));
             else
             {
                 if (this->get_permission(URI) == -1)
@@ -233,7 +237,7 @@ void Response::build_GET()
     }
     else
         this->other_response("404", " Not Found");
-    }
+}
 
 
 void Response::build_DELETE(void)
@@ -254,6 +258,7 @@ void Response::build_DELETE(void)
                 if (cgi_path != " ")
                 {
                     std::string index = check_index_file(URI);
+                    this->response_items.Path += index;
                     if (index.empty())
                         this->other_response("403", " Forbidden");
                     else
@@ -326,6 +331,7 @@ void Response::build_POST()
                 else
                 {
                     index = this->check_index_file(URI);
+                    this->response_items.Path += index;
                     if (index.empty())
                         this->other_response("403", " Forbidden");
                     else

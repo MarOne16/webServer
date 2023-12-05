@@ -1,6 +1,7 @@
 #ifndef WEB_SERVER
 #define WEB_SERVER
 
+#include "../cgi_bin/cgi.hpp"
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -18,9 +19,24 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <unistd.h>
 #include "../serveurs-clients/servers.hpp"
-#include "../cgi_bin/cgi.hpp"
+
+
+// typedef struct cgi_data
+// {
+//     http_items &response_tools;
+//     envirmoment env_server;
+//     std::string body;
+//     std::string cgi_response;
+//     unsigned int status_code;
+//     std::string status_message;
+//     std::map<std::string, std::string> cgi_headers;
+
+//     // Constructor with initializer list to initialize the reference member
+//     cgi_data(http_items &rt, const envirmoment &es, const std::string &b)
+//         : response_tools(rt), env_server(es), body(b) {}
+// } cgi_data;
+
 
 struct RequestBody
 {
@@ -123,11 +139,11 @@ public:
     std::string check_index_file(std::string & url);
     void build_GET();
     void build_POST();
-    void build_DELETE(void);
+    void build_DELETE();
     int get_permission(std::string &file);
     std::string read_file(const std::string &filename);
     // void parser_output_cgi(cgi_data& cgiData);
-    // void responsecgi(cgi_data& cgidata);
+    void responsecgi( const cgi_data& cgidata);
     int remove_all_files(const char *dirname);
     std::string trim(std::string original);
     void return_pages(std::string& pages_return, std::string& url);

@@ -1,7 +1,21 @@
 #pragma once
 
-#include "../Response/webserver.hpp"
+// #include "../Response/webserver.hpp"
+#include <iostream>
+#include <map>
 #include <signal.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <vector>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <ctime>
+#include <dirent.h>
+#include <fstream>
 
 class http_items;
 
@@ -41,7 +55,7 @@ typedef struct cgi_data
     envirmoment env_server;
     std::string body;
     std::string cgi_response;
-    unsigned int status_code;
+    std::string status_code;
     std::string status_message;
     std::map<std::string, std::string> cgi_headers;
 
@@ -57,6 +71,5 @@ char **GET_EXTRA_ENV(envirmoment &env_server);
 void FREEENV_SERVER(envirmoment &env_server);
 cgi_data &FINAL_RESPONSE(http_items &response_items);
 void debud_cgi_data(cgi_data &cgi);
-std::string CONVERT_TO_WEB(std::string &response);
 
 #include "../Response/webserver.hpp"

@@ -3,21 +3,23 @@ NAME   = webserv
 FLAGS  = -Wall -Wextra -Werror -std=c++98  -g  -fsanitize=address
 CC     = c++
 FILES  = ./configParsing/getLocation.cpp \
+		./cgi_bin/cgi.cpp \
+		./cgi_bin/exec_file.cpp \
 		./configParsing/configParsing.cpp \
 		./configParsing/parsingTools.cpp \
 		./configParsing/hashMapParsing.cpp \
-		./cgi_bin/cgi.cpp \
-		./cgi_bin/exec_file.cpp \
 		./Response/mainResponse.cpp \
 		./Response/requese.cpp \
 		./Response/response.cpp \
 		./Response/tools.cpp \
 		./serveurs-clients/serverTools.cpp \
-		./serveurs-clients/severfinal.cpp 
+		./serveurs-clients/servers2_copy.cpp 
 
 
 OBJS   = $(FILES:.cpp=.o)
-HEADER = ./Response/webserver.hpp
+HEADER = ./Response/webserver.hpp \
+		 ./cgi_bin/cgi.cpp \
+		 ./configParsing/configParsing.hpp \
 
 all: $(NAME)
 
