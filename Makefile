@@ -13,7 +13,7 @@ FILES  = ./configParsing/getLocation.cpp \
 		./Response/response.cpp \
 		./Response/tools.cpp \
 		./serveurs-clients/serverTools.cpp \
-		./serveurs-clients/servers2_copy.cpp 
+		./serveurs-clients/servers2.cpp 
 
 
 OBJS   = $(FILES:.cpp=.o)
