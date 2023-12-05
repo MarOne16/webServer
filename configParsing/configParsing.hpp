@@ -26,6 +26,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+extern unsigned int alarmCounter;
+
 typedef struct s_location
 {
     std::string                         root;
@@ -81,6 +83,7 @@ class ConfigParser
         bool ifOutsideLocation(std::string line);
         void globalUpload();
 
+        void setAlarm();
         // geters
         int                         getPort();
         unsigned int                getNumber_ofServers();

@@ -2,6 +2,7 @@
 
 void ConfigParser::setConfKeys()
 {
+    confKeys.push_back("alarm");
     confKeys.push_back("server");
     confKeys.push_back("listen");
     confKeys.push_back("location");
