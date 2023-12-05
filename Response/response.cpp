@@ -1,14 +1,5 @@
 #include "./webserver.hpp"
 
-void cgi_funct(http_items &response_items)
-{
-    std::cout << response_items.method << std::endl;
-    std::cout << response_items.Extension << std::endl;
-    std::cout << response_items.location->autoindex << std::endl;
-
-}
-
-
 Response::Response(int status, std::vector<std::string> init_line, http_items &response_items)
 {
     this->status = status;
@@ -30,9 +21,8 @@ std::string Response::build_response()
         this->other_response("411", "Length Required");
     else if (!this->response_items.location->return_code_url.empty())
     {
-        std::cout << "Request-URI retun "   << std::endl; 
         std::string url = (this->response_items.location->root + this->response_items.Path);
-        return_pages(this->response_items.location->return_code_url, url); // TODO: check if this redirected response work
+        return_pages(this->response_items.location->return_code_url, this->response_items.Path); // TODO: check if this redirected response work
     }
     else if (this->response_items.method == "GET")
         this->build_GET();
@@ -40,6 +30,7 @@ std::string Response::build_response()
         this->build_DELETE();
     else if (this->response_items.method == "POST")
         this->build_POST();
+    delete this->response_items.location;
     return (response.str());
 }
 
@@ -74,7 +65,7 @@ std::string Response::get_Content_type(std::string url)
     };
     std::string extension = url.substr(url.rfind(".") + 1);
     unsigned int i = 0;
-    while (i < 23)
+    while (i < 25)
     {
         if (contentTypes[i].find(extension) != std::string::npos)
             return contentTypes[i];
@@ -85,25 +76,25 @@ std::string Response::get_Content_type(std::string url)
 }
 
 
-std::string Response::get_type(std::string extension)
-{
-    extension = trim(extension);
-    std::cout << "extension: " << extension << std::endl;
-    if (extension.compare("text/html; charset=UTF-8") == 0 || extension.compare("text/html;") == 0)
-        return ".html";
-    else if (extension.compare("application/json") == 0)
-        return ".json";
-    else if (extension.compare("image/x-icon") == 0)
-        return ".ico";
-    else if (extension.compare("image/jpeg") == 0)
-        return "jpeg";
-    else if (extension.compare("image/jpg") == 0)
-        return ".jpg";
-    else if (extension.compare("video/mp4") == 0)
-        return ".mp4";
-    else
-        return ".txt";
-}
+// std::string Response::get_type(std::string extension)
+// {
+//     extension = trim(extension);
+//     // std::cout << "extension: " << extension << std::endl;
+//     if (extension.compare("text/html; charset=UTF-8") == 0 || extension.compare("text/html;") == 0)
+//         return ".html";
+//     else if (extension.compare("application/json") == 0)
+//         return ".json";
+//     else if (extension.compare("image/x-icon") == 0)
+//         return ".ico";
+//     else if (extension.compare("image/jpeg") == 0)
+//         return "jpeg";
+//     else if (extension.compare("image/jpg") == 0)
+//         return ".jpg";
+//     else if (extension.compare("video/mp4") == 0)
+//         return ".mp4";
+//     else
+//         return ".txt";
+// }
 
 
 
@@ -121,15 +112,20 @@ void Response::build_GET()
     URI += this->response_items.Path.substr(1); // TODO : check if path is beging with /
                 std::cout << "uri: " << URI << std::endl;
     status = stat(URI.data(), &buffer);
+    
     if (status != -1)
-    {
-        if (this->response_items.Extension.empty() == 1)
+    {   
+        std::cout << "Error: " << this->response_items.Extension << std::endl;
+        if (this->response_items.Extension.empty())
         {
+            
             if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
-                this->ft_redirect("300", this->response_items.Path + "/");
+                this->ft_redirect("301", this->response_items.Path + "/");
             else
             {
+                
                 index = check_index_file(URI);
+                std::cout << "index :" << index << " " << URI << std::endl;
                 if (index.empty())
                 {
                     DIR *dir = opendir(URI.c_str());
@@ -139,10 +135,14 @@ void Response::build_GET()
                         URI += "index.html";
                         if (access(URI.c_str(), F_OK | W_OK) != 0)
                         {
+                            //
+                            closedir(dir);
                             this->other_response("403", " Forbidden");
                             return;
                         }
                         std::string content_body = read_file(URI.c_str());
+                        //
+                        closedir(dir);
                         this->ft_success_code("200", content_body, URI);
 
                     }
@@ -179,20 +179,21 @@ void Response::build_GET()
                 else
                 {
                     URI += index;
+                    this->response_items.Path += index;
                     status = stat(URI.data(), &buffer);
+                    
                     if (status != -1)
                     {
                         this->response_items.Extension = URI.substr(URI.rfind('.'));
                         if (cgi_path != " " && (this->response_items.Extension == "php" || this->response_items.Extension == "py") )
                         {
-                            std::cout << "CGI needed " << std::endl;
-                            cgi_data cgi = GET_CGI_DATA(this->response_items);
-                            // this->other_response("204", " NO Content"); CGI response
+                            std::cout << "cgi here" << std::endl;
+                            responsecgi(GET_CGI_DATA(this->response_items));
                         }
                         else
                         {
                             if (this->get_permission(URI) == -1)
-                                this->other_response("404", " No Permission");
+                                this->other_response("403", "  Forbidden");
                             else if (this->get_permission(URI) == -2)
                                 this->other_response("403", " Forbidden");
                             else
@@ -218,17 +219,13 @@ void Response::build_GET()
         }
         else
         {
-            std::cout << "extension: " << this->response_items.Extension << std::endl;
-            if (!cgi_path.empty() && (this->response_items.Extension == "php" || this->response_items.Extension == "py"))
-            {
-                // this->ft_success_code("200", body resturn by  CGI script ); // TODO: ADD CGI script
-                cgi_data  cgi = GET_CGI_DATA(this->response_items);
-            }
+            if (cgi_path != " " && (this->response_items.Extension == "php" || this->response_items.Extension == "py") )
+                            responsecgi(GET_CGI_DATA(this->response_items));
             else
             {
                 if (this->get_permission(URI) == -1)
                      this->other_response("404", " No Permission");
-                else if (this->get_permission(URI) == -2 || this->response_items.Extension == "php" || this->response_items.Extension == "py")
+                else if (this->get_permission(URI) == -2)
                     this->other_response("403", " Forbidden");
                 else
                 {
@@ -242,7 +239,8 @@ void Response::build_GET()
         this->other_response("404", " Not Found");
 }
 
-void Response::build_DELETE()
+
+void Response::build_DELETE(void)
 {
     struct stat buffer;
     int status;
@@ -257,9 +255,10 @@ void Response::build_DELETE()
         {
             if (this->response_items.Path[this->response_items.Path.size() - 1] == '/')
             {
-                if (!cgi_path.empty())
+                if (cgi_path != " ")
                 {
                     std::string index = check_index_file(URI);
+                    this->response_items.Path += index;
                     if (index.empty())
                         this->other_response("403", " Forbidden");
                     else
@@ -332,6 +331,7 @@ void Response::build_POST()
                 else
                 {
                     index = this->check_index_file(URI);
+                    this->response_items.Path += index;
                     if (index.empty())
                         this->other_response("403", " Forbidden");
                     else
@@ -341,6 +341,8 @@ void Response::build_POST()
                         else
                         {
                             URI += index;
+                            std::cout << "CGI needed " << std::endl;
+                            // this->other_response("204", " NO Content"); CGI response
                             std::cout << "Returtn Code Depend on cgi";
                         }
                     }
@@ -398,6 +400,7 @@ void Response::build_POST()
                                 break;
                             }
                             totalBytesWritten += bytesToWrite;
+                            // delete (*it);
                         }
                    }
                     file.close();
@@ -408,23 +411,10 @@ void Response::build_POST()
             this->other_response("201", "Created");
         }
         else
-        {
-            time(&current_time);
-            ss << static_cast<int>(current_time);
-            namefile += ss.str();
-            namefile += ".";
-            namefile += this->response_items.Headers.find("Content-Type")->second.substr(this->response_items.Headers.find("Content-Type")->second.rfind("/") + 1);
-            file.open(this->response_items.location->upload_store_directory + namefile, std::ios::out | std::ios::binary);
-            namefile.clear();
-            if (!file.is_open())
-            {
-                this->other_response("500", "Internal Server Error");
-                return;
-            }
             this->other_response("202", "Accepted");
         }
     }
-}
+
 
 int Response::get_permission(std::string &file)
 {
@@ -441,7 +431,7 @@ std::string Response::read_file(const std::string &filename)
     std::stringstream ss;
     if (!file.is_open())
     {
-        return "errot opne file";
+        return "not found";
     }
     ss << file.rdbuf();
     file.close();
@@ -455,6 +445,7 @@ std::string Response::read_file(const std::string &filename)
 
 void Response::return_pages(std::string &pages_return, std::string &url)
 {
+    // std::cout << "Returning" << std::endl;
     std::vector<std::string> pages = split_v(pages_return, " ");
     switch (atoi(pages[0].c_str()))
     {
@@ -488,39 +479,41 @@ void Response::ft_default_pages(std::string status, std::string &message, std::s
     std::string filename;
     if (stat(this->response_items.error_pages.find(status)->second.c_str(), &buffer) != -1)
     {
-        if (path[0] != '/')
-            path = "/" + path;
-        filename = this->response_items.location->root + path;
+        // if (path[0] != '/')
+        //     path = "/" + path;
+        
+        filename = path;
         message = this->read_file(filename);
     }
 }
 
 void Response::ft_success_code(std::string status, std::string message, std::string URI)
 {
+    std::string connection = (!this->response_items.Headers["Connection:"].empty() ? this->response_items.Headers["Connection:"] : "close");
     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
         ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));
     response << "HTTP/1.1 " << status << " ok\r\n";
     response << "Content-length: " << message.length() << "\r\n";
-    response << "Connection: close\r\n";
+    response << "Connection:" << connection  <<  "\r\n";
     response << "Content-Type: " << this->get_Content_type(URI) << "\r\n";
     response << "Host: " << this->response_items.server << "\r\n";
-    response << "Set-Cookie: yummy_cookie=darkmod; Domain=10.12.8.1; Path=/websites/;\r\n";
-    // response << "Set-Cookie: my_cookie_name=darkmode;  Domain=localhost; Path=/websites/; Secure; HttpOnly" <<   "\r\n";
+    response << "Set-Cookie: yummy_cookie=darkmod; Domain=localhost; Path=/websites/;\r\n";
     response << "Date: " << this->get_Date() << "\r\n\r\n";
     response << message;
 }
 
 void Response::ft_redirect(std::string status, std::string message)
 {
+     std::string connection = (!this->response_items.Headers["Connection:"].empty() ? this->response_items.Headers["Connection:"] : "close");
     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
+    {
         ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));
+    }
     response << "HTTP/1.1 " << status << " Moved Permanently\r\n";
     response << "Location: " << message << "\r\n";
     response << "Content-Length: 0\r\n";
-    response << "Connection: close\r\n";
-    response << "Content-Type: "
-             << "text/html"
-             << "\r\n";
+    response << "Connection:" << connection  <<  "\r\n";
+    response << "Content-Type: "<< "text/html" << "\r\n";
     response << "Host: " << this->response_items.server << "\r\n";
     response << "Date: " << this->get_Date() << "\r\n\r\n";
 }
@@ -528,6 +521,7 @@ void Response::ft_redirect(std::string status, std::string message)
 void Response::other_response(std::string status, std::string desc)
 {
     std::string body;
+    std::string connection = (!this->response_items.Headers["Connection:"].empty() ? this->response_items.Headers["Connection:"] : "close");
     body = "<!DOCTYPE html>\n<html lang=\"en\">\n\
                                                     <head>\n\
                                                     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
@@ -544,12 +538,14 @@ void Response::other_response(std::string status, std::string desc)
                                         </body>\n\
                                         </html>\n";
     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
+    {
         ft_default_pages(status, body, (this->response_items.error_pages.find(status)->second));
+    }
     response << "HTTP/1.1 " << status << " " << desc << "\r\n";
     response << "Content-Type: text/html\r\n";
     response << "Content-Length: " << body.length() << "\r\n";
     response << "Server: " << this->response_items.server << "\r\n";
-    response << "Connection: close\r\n";
+    response << "Connection:" << connection  <<  "\r\n";
     response << "Date: " << this->get_Date() << "\r\n";
     response << "\r\n"; // Blank line to separate headers and body
     response << body;

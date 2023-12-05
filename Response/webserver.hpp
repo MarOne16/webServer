@@ -1,6 +1,7 @@
 #ifndef WEB_SERVER
 #define WEB_SERVER
 
+#include "../cgi_bin/cgi.hpp"
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -18,9 +19,24 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <unistd.h>
 #include "../serveurs-clients/servers.hpp"
-#include "../cgi_bin/cgi.hpp"
+
+
+// typedef struct cgi_data
+// {
+//     http_items &response_tools;
+//     envirmoment env_server;
+//     std::string body;
+//     std::string cgi_response;
+//     unsigned int status_code;
+//     std::string status_message;
+//     std::map<std::string, std::string> cgi_headers;
+
+//     // Constructor with initializer list to initialize the reference member
+//     cgi_data(http_items &rt, const envirmoment &es, const std::string &b)
+//         : response_tools(rt), env_server(es), body(b) {}
+// } cgi_data;
+
 
 struct RequestBody
 {
@@ -51,6 +67,7 @@ public:
     std::string Extension;
     std::string server;
     s_location *location;
+    bool connection;
     std::map<std::string, std::string> error_pages;
 
     // std::string root;
@@ -81,13 +98,14 @@ public:
     void Headers_elements();
     int check_elemens(std::string &key);
     int is_alpha(std::string value);
-    int check_date(std::string &value);
+    // int check_date(std::string &value);
     int check_content_type(std::string &value);
     int check_more_element(std::string &key, std::string &value);
-    std::string trim(std::string original);
+   
     int check_host(std::string &value);
     int check_Transfer_Encoding(std::string &value);
     int check_connection(std::string &value);
+    void check_connection(server &server_data);
     // std::string find_location(std::map<std::string , s_location>& location, std::string& PATH);
     std::string find_location(server &server_data, std::string &PATH);
     //    void  set_Initial_Request_line(std::string req)
@@ -124,7 +142,8 @@ public:
     void build_DELETE();
     int get_permission(std::string &file);
     std::string read_file(const std::string &filename);
-    void not_found();
+    // void parser_output_cgi(cgi_data& cgiData);
+    void responsecgi( const cgi_data& cgidata);
     int remove_all_files(const char *dirname);
     std::string trim(std::string original);
     void return_pages(std::string& pages_return, std::string& url);
@@ -141,4 +160,5 @@ int getServerId(std::map<unsigned int, server> &serv, int port, std::string serv
 std::vector<std::string> split_v(std::string &str, std::string delimiter);
 std::string Get_response(server &server_data);
 std::string  parserbody(std::string reqbody);
+std::string trim(std::string original);
 #endif

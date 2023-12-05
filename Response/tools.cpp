@@ -1,6 +1,38 @@
 #include "./webserver.hpp"
 
 
+
+// void Response::parser_output_cgi(cgi_data& cgiData)
+// {
+//     int pos = 0;
+//     std::string token;
+//     // std::map<std::string, std::string>::it = cgiData.cgi_Headers.begin();
+//      while(pos != -1)
+//     {
+//         pos = cgiData.body.find("\r\n");
+//         token = cgiData.body.substr(0, pos);
+//         cgiData.body.substr(pos + 1);
+//         key = trim((*it).substr(0 , pos));
+//         value = trim((*it).substr(pos + 1));
+//         cgiData.cgi_Headers[key] = value;
+//     }
+// }
+
+
+void Response::responsecgi(const cgi_data& cgidata)
+{
+    // if(cgidata.cgi_headers.empty())
+    // {
+        std::cout << "here" << std::endl;
+        if(cgidata.status_code == "200")
+            this->ft_success_code(cgidata.status_code, cgidata.cgi_response, "");
+        else
+            this->other_response(cgidata.status_code, cgidata.status_message);
+
+    // }
+}
+
+
 std::vector<std::string> split_v(std::string &str, std::string delimiter)
 {
     std::vector<std::string> tokens;
@@ -49,8 +81,11 @@ std::string Response::check_index_file(std::string &url)
         entity = readdir(dir);
         while (entity != NULL)
         {
+            std::cout << "|" << entity->d_name << "|"  << "|" << files[i] << "|" << std::endl;
             if (entity->d_name == files[i])
-                return files[i];
+            {
+                return entity->d_name ;
+            }
             entity = readdir(dir);
         }
         i++;
@@ -135,9 +170,10 @@ int hash = -1;
     hash = std::stoi(token, 0, 16);
     if(hash != 0)
     {
-        
-        token = reqbody.substr(pos + 2 , hash + 2);
-        reqbody = reqbody.substr(pos + hash + 2 + 2);
+        if(hash > (int)reqbody.length())
+            return "";
+        token = reqbody.substr(pos + 2 , hash);
+        reqbody = reqbody.substr(pos + hash + 4);
         body << token;
     }
   

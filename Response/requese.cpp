@@ -1,9 +1,16 @@
 #include "./webserver.hpp"
 
+void Requese::check_connection(server& server_data)
+{
+    // std::cout << "Checking connection : " <<   this->response_items.Headers["Connection"] << std::endl;
+    std::string value = (!this->response_items.Headers["Connection"].empty() ? this->response_items.Headers["Connection"] : "close");
+    server_data.connection = (value == "keep-alive") ? true : false;
+}
+
 Requese::Requese(std::string req, server& server_data):req(req),status_response_code(200)
 {
+//   std::cout << req << std::endl;
     this->response_items.location = new s_location;
-    this->response_items.chunked_body = 0;
     this->response_items.lenghtbody = 0;
     this->response_items.error_pages = server_data.error_pages;
     std::string token;
@@ -11,12 +18,16 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     int pos = 0;
     std::string value;
     std::string key;
-    std::map<std::string, s_location> lc;
+    if (req.empty())
+    {
+        this->status_response_code = 400;
+        return;
+    }
     try{
         while(pos != -1)
         {
             pos = req.find("\r\n");
-            if(req[0] == '\r' && req[1] == '\n')
+            if((req[0] == '\r' && req[1] == '\n'))
             {
                 req = req.substr(2);
                 break;
@@ -24,124 +35,129 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             token = req.substr(0, pos);
             req = req.substr(pos + 2, req.length());
             response_items.Req.push_back(token);
+            // std::cout  << token <<  std::endl;
             i++;
         } 
-        //find match location
+        if (response_items.Req.empty())
+        {
+            this->status_response_code = 400;
+            return;
+        }
         parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
         find_location(server_data, this->response_items.Path);     
         parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
         //parser line-request 
-        // ckeck Headers and parser some special Headers
+     
         Headers_elements();
+        check_connection(server_data);
         
-        // store body
-        req =  parserbody(req);
-        if(response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
-        {
-            pos = req.find("&");
-            // std::cout  << 
-                this->response_items.lenghtbody += req.length();
-            while(pos != -1 && !req.empty())
-            {
-                token = req.substr(0, pos);
-                this->response_items.EncodedFormbody[token.substr(0, token.find("="))] = token.substr(token.find("=") + 1);
-                token.clear();
-                req = req.substr(pos + 1, req.length());
-            }
-        }
-        else if(response_items.Headers["Content-Type"].find("multipart/form-data") != std::string::npos)
-        {
-            if(req[req.length() - 1] != '\n')
-                req +='\n';
-            std::stringstream os(req);
-            RequestBody *ele;
-            std::ofstream file;
-            
-            while (std::getline(os, token, '\n'))
-            {
-                ele = new RequestBody;
-                    token = token.substr(0, token.size() - 1);;
-                    int i =0;
-                    while(token.compare(this->response_items.bondary) != 0)
-                    {
-                        i++;
-                        if (token.find("Content-Disposition") != std::string::npos) 
-                        {
-                                ele->ContentDisposition = token;
-                                token.clear();
-                        }
-                        if (token.find("Content-Type") != std::string::npos  ) 
-                        {
-                                
-                                ele->ContentType = token;
-                                std::getline(os, token, '\n');
-                                token.clear();
-                        }
-                        else
-                        {
+        // ckeck Headers and parser some special Headers
+         if(this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
+            (this->response_items.Headers.find("Transfer-Encoding"))->second != "chunked")
+                this->status_response_code = 501;
+        if(this->response_items.method ==  "POST" && this->response_items.Headers.find("Transfer-Encoding") == this->response_items.Headers.end() &&
+                this->response_items.Headers.find("Content-Length") == this->response_items.Headers.end())
+                this->status_response_code = 411;    
 
-                             
-                            ele->Content.append(token);
-                            if(!ele->Content.empty())
-                                ele->Content.append("\n");
-                            token.clear();
-                        }
-                        std::getline(os, token, '\n');
-                        if(os.eof() ||  token.find(this->response_items.bondary) != std::string::npos)
-                            break;
-                    }
-                    file.close();
-                    if(!ele->Content.empty() )
-                    {
-                        if(!ele->ContentDisposition.empty())
-                        {
-                            this->response_items.lenghtbody +=  ele->ContentDisposition.length();
-                        }
-                        this->response_items.lenghtbody +=  ele->Content.length();
-                        ele->Content.pop_back();
-                        this->response_items.ChunkedBody.push_back(ele);
-                       
-                    }
+        if(!req.empty())
+        {
+            // store body
+            if(this->response_items.Headers["Transfer-Encoding"] == "chunked")
+                req =  parserbody(req);
+            if(response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
+            {
+                pos = req.find("&");
+                    this->response_items.lenghtbody += req.length();
+                while(pos != -1 && !req.empty())
+                {
+                    token = req.substr(0, pos);
+                    this->response_items.EncodedFormbody[token.substr(0, token.find("="))] = token.substr(token.find("=") + 1);
+                    token.clear();
+                    req = req.substr(pos + 1, req.length());
+                }
             }
+            else if(response_items.Headers["Content-Type"].find("multipart/form-data") != std::string::npos)
+            {
+                if(req[req.length() - 1] != '\n')
+                    req +='\n';
+                std::stringstream os(req);
+                RequestBody *ele;
+                std::ofstream file;
+                
+                while (std::getline(os, token, '\n'))
+                {
+                    ele = new RequestBody;
+                        token = token.substr(0, token.size() - 1);;
+                        int i =0;
+                        while(token.compare(this->response_items.bondary) != 0)
+                        {
+                            i++;
+                            if (token.find("Content-Disposition") != std::string::npos) 
+                            {
+                                    ele->ContentDisposition = token;
+                                    token.clear();
+                            }
+                            if (token.find("Content-Type") != std::string::npos  ) 
+                            {
+                                    
+                                    ele->ContentType = token;
+                                    std::getline(os, token, '\n');
+                                    token.clear();
+                            }
+                            else
+                            {
+
+                                
+                                ele->Content.append(token);
+                                if(!ele->Content.empty())
+                                    ele->Content.append("\n");
+                                token.clear();
+                            }
+                            std::getline(os, token, '\n');
+                            if(os.eof() ||  token.find(this->response_items.bondary) != std::string::npos)
+                                break;
+                        }
+                        file.close();
+                        if(!ele->Content.empty() )
+                        {
+                            if(!ele->ContentDisposition.empty())
+                            {
+                                this->response_items.lenghtbody +=  ele->ContentDisposition.length();
+                            }
+                            this->response_items.lenghtbody +=  ele->Content.length();
+                            ele->Content.pop_back();
+                            this->response_items.ChunkedBody.push_back(ele);
+                        
+                        }
+                }
+        }
+        else
+        {
+            this->response_items.Body =  req;
+            this->response_items.lenghtbody +=  this->response_items.Body.length();
+        }
     }
-    else
-    {
-        this->response_items.Body =  req;
-        this->response_items.lenghtbody +=  this->response_items.Body.length();
-    }
-    
    if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str())) // TODO: check size 
         this->status_response_code = 413;
    if(this->response_items.Path.length() > 2048)
         this->status_response_code = 414;
-    if(this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
-    (this->response_items.Headers.find("Transfer-Encoding"))->second != "chunked")
-        this->status_response_code = 501;
-    if(this->response_items.method ==  "POST" && this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
-        this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end())
-        this->status_response_code = 411;    
     if(this->response_items.method !=  "POST" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
     if(this->response_items.method ==  "POST" && this->response_items.lenghtbody == 0)
         this->status_response_code = 400;
     if(this->response_items.Headers.find("Transfer-Encoding")->second == "chunked" && this->response_items.lenghtbody == 0  )
-    {
-        puts("here");
         this->status_response_code = 400;
-    }
     else if(this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end() && atoi((this->response_items.Headers.find("Content-Length")->second).data()) != (int)req.length())
-    {
-            puts("here1");
             this->status_response_code = 400;
-    }
+   
     
     }catch(std::exception& e)
     {
-        std::cout  << e.what() << std::endl;
+        //std::cout  << e.what() << std::endl;
     }
 }
 
-std::string Requese::trim(std::string original)
+std::string trim(std::string original)
 {
     unsigned int begin_index = 0;
     unsigned int i = 0;
@@ -184,7 +200,7 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
         this->response_items.Query_String = line[1].substr(line[1].find('?') + 1 , line[1].find("#") -( line[1].find('?') + 1));
         this->response_items.Fragment_iden = line[1].substr(line[1].find("#") + 1, line[1].length());
      }
-     else if(line[1].find("?") != std::string::npos  && line[1].find("#") == -std::string::npos)
+     else if(line[1].find("?") != std::string::npos  && line[1].find("#") == std::string::npos)
      {
         this->response_items.Path = line[1].substr(0, line[1].find("?"));
         this->response_items.Query_String = line[1].substr((line[1].find("?") + 1), line[1].length());
@@ -197,7 +213,13 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
           this->response_items.Query_String = "";
      }
      if(this->response_items.Path.rfind(".") != std::string::npos)
-        this->response_items.Extension = this->response_items.Path.substr(this->response_items.Path.rfind(".") + 1);
+     {
+        if(this->response_items.Path.rfind(".") > this->response_items.Path.rfind("/"))
+            this->response_items.Extension = this->response_items.Path.substr(this->response_items.Path.rfind(".") + 1);
+        else
+            this->response_items.Extension  = "";
+
+     }
     else
          this->response_items.Extension  = "";
     if(line.size() != 3)
@@ -253,8 +275,8 @@ void Requese::Headers_elements()
         value = trim((*it).substr(pos + 1));
         if((*it).substr(pos + 1, 1).c_str()[0]  != 32)
             this->status_response_code = 400;
-        this->trim(key);
-        this->trim(value);
+        // this->trim(key);
+        // this->trim(value);
         this->response_items.Headers[key] = value;
         if(key.empty() || value.empty() || check_more_element(key, value) == 0 )
         {
@@ -404,6 +426,7 @@ int Requese::check_Transfer_Encoding(std::string& value)
         }
         if(value == transferEncodings[it])
             return 1;
+        it++;
     }
     return 0;
 }
@@ -540,6 +563,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         it = location.find(Path);
         if(it != location.end())
         {
+            std::cout << "location: " << it->second.index << " " << std::endl;
             this->response_items.location->allowed_methods = it->second.allowed_methods;
             this->response_items.location->root = it->second.root;
             this->response_items.location->index = it->second.index;
@@ -567,6 +591,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         this->response_items.location->cgi_path = it->second.cgi_path;
         this->response_items.location->upload_enable = it->second.upload_enable;
         this->response_items.location->autoindex = it->second.autoindex;
+        
     }
     else
         this->status_response_code = 404;
