@@ -1,0 +1,10 @@
+*.o
+*.tldr
+test.cpp
+test.o
+webserver
+.vscode
+a.out
+*.txt
+# /Response
+# /serveurs-clients
