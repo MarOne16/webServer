@@ -1,21 +1,25 @@
 NAME   = webserv
-#  -fsanitize=address
-FLAGS  = -Wall -Wextra -Werror -std=c++98  -g3    -fsanitize=address
+
+FLAGS  = -Wall -Wextra -Werror -std=c++98  -g   
 CC     = c++
 FILES  = ./configParsing/getLocation.cpp \
+		./cgi_bin/cgi.cpp \
+		./cgi_bin/exec_file.cpp \
 		./configParsing/configParsing.cpp \
 		./configParsing/parsingTools.cpp \
+		./configParsing/hashMapParsing.cpp \
 		./Response/mainResponse.cpp \
 		./Response/requese.cpp \
 		./Response/response.cpp \
 		./Response/tools.cpp \
 		./serveurs-clients/serverTools.cpp \
-		./serveurs-clients/servers2.cpp \
-		# ./cgi/cgi.cpp 
+		./serveurs-clients/servers2.cpp 
 
 
 OBJS   = $(FILES:.cpp=.o)
-HEADER = ./Response/webserver.hpp
+HEADER = ./Response/webserver.hpp \
+		 ./cgi_bin/cgi.cpp \
+		 ./configParsing/configParsing.hpp \
 
 all: $(NAME)
 

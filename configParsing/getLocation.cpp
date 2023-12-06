@@ -60,14 +60,12 @@ std::string ConfigParser::getAlias(std::string location)
 
 std::string ConfigParser::getIndex(std::string location)
 {
-    if (!isInsidLocation(location, "index"))
+    if (!isInsidLocation(location, "tryfile"))
         return "";
     std::string index;
-    size_t start = location.find("index");
-    for (size_t i = start + 5; i < location.length(); i++)
+    size_t start = location.find("tryfile");
+    for (size_t i = start + 7; i < location.length(); i++)
     {
-        if (location[i] == ' ' || location[i] == '\t')
-            continue;
         if (location[i] == ';' || location[i] == '\n')
         {
             if (location[i] == ';')
@@ -106,6 +104,8 @@ std::string ConfigParser::getCgiPath(std::string location)
     if (!ifClosed(cgi_path))
         throw std::runtime_error("Cgi path directive is not closed.");
     cgi_path.erase(cgi_path.length() - 1, 1);
+    if (findFile(cgi_path) == false)
+        throw std::runtime_error("Cgi path is not valid.");
     return cgi_path;
 }
 
@@ -214,7 +214,7 @@ std::string ConfigParser::getReturnCodeUrl(std::string location)
 {
     if (!isInsidLocation(location, "return"))
         return "";
-    std::string return_code_url = "";
+    std::string return_code_url  = "";
     size_t start = location.find("return");
     for (size_t i = start + 6; i < location.length(); i++)
     {

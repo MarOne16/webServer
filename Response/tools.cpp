@@ -19,17 +19,18 @@
 // }
 
 
-// void Response::responsecgi(cgi_data& cgidata)
-// {
-//     if(cgiData.cgi_Headers.empty())
-//     {
-//         if(cgiData.status_code == 200)
-//             this->ft_success_code(cgidata.status_code, cgidata.body, "");
-//         else
-//             this->other_response(cgidata.status_code, cgidata.status_message);
+void Response::responsecgi(const cgi_data& cgidata)
+{
+    // if(cgidata.cgi_headers.empty())
+    // {
+        // std::cout << "here" << std::endl;
+        if(cgidata.status_code == "200")
+            this->ft_success_code(cgidata.status_code, cgidata.cgi_response, "");
+        else
+            this->other_response(cgidata.status_code, cgidata.status_message);
 
-//     }
-// }
+    // }
+}
 
 
 std::vector<std::string> split_v(std::string &str, std::string delimiter)
@@ -80,8 +81,11 @@ std::string Response::check_index_file(std::string &url)
         entity = readdir(dir);
         while (entity != NULL)
         {
+            // std::cout << "|" << entity->d_name << "|"  << "|" << files[i] << "|" << std::endl;
             if (entity->d_name == files[i])
-                return files[i];
+            {
+                return entity->d_name ;
+            }
             entity = readdir(dir);
         }
         i++;
