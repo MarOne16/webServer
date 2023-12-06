@@ -153,7 +153,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     
     }catch(std::exception& e)
     {
-        //std::cout  << e.what() << std::endl;
+        std::cout  << e.what() << std::endl;
     }
 }
 
@@ -538,10 +538,8 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         it = location.begin();
         while(it != location.end())
         {
-            std::cout << " location find " << it->first << std::endl;
             if(it->first.find(this->response_items.Extension) != std::string::npos)
             {
-                std::cout << "inside extension" << std::endl;
                 this->response_items.location->allowed_methods = it->second.allowed_methods;
                 this->response_items.location->root = it->second.root;
                 this->response_items.location->index = it->second.index;
@@ -563,7 +561,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         it = location.find(Path);
         if(it != location.end())
         {
-            std::cout << "location: " << it->second.index << " " << std::endl;
+            // std::cout << "location: " << it->second.index << " " << std::endl;
             this->response_items.location->allowed_methods = it->second.allowed_methods;
             this->response_items.location->root = it->second.root;
             this->response_items.location->index = it->second.index;

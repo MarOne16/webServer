@@ -693,7 +693,7 @@ int main(int ac, const char **av)
                             fl.fd = co;
                             fl.events = POLLIN;
                             client.push_back(co);
-                            fds.push_back(fl);
+                            fds.push_back(fl); // container-overflow
                         }
                         break;
                     }
@@ -739,7 +739,7 @@ int main(int ac, const char **av)
                     }
                 }
 
-                if (fds[i].revents & POLLOUT)
+                if (  fds[i].revents & POLLOUT)
                 {
 
                     int cheker = 0;

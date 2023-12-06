@@ -23,7 +23,7 @@ void Response::responsecgi(const cgi_data& cgidata)
 {
     // if(cgidata.cgi_headers.empty())
     // {
-        std::cout << "here" << std::endl;
+        // std::cout << "here" << std::endl;
         if(cgidata.status_code == "200")
             this->ft_success_code(cgidata.status_code, cgidata.cgi_response, "");
         else
@@ -81,7 +81,7 @@ std::string Response::check_index_file(std::string &url)
         entity = readdir(dir);
         while (entity != NULL)
         {
-            std::cout << "|" << entity->d_name << "|"  << "|" << files[i] << "|" << std::endl;
+            // std::cout << "|" << entity->d_name << "|"  << "|" << files[i] << "|" << std::endl;
             if (entity->d_name == files[i])
             {
                 return entity->d_name ;

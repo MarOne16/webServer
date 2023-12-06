@@ -55,7 +55,7 @@ public:
     std::string Query_String;
     std::string Fragment_iden;
     std::string http_version;
-    int port;
+    std::string port;
     std::string server_name;
     std::map<std::string, std::string> Headers;
     std::vector<std::string> Req;
