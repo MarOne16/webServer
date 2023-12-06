@@ -64,6 +64,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             // store body
             if(this->response_items.Headers["Transfer-Encoding"] == "chunked")
                 req =  parserbody(req);
+            this->response_items.Body =  req;
             if(response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
             {
                 pos = req.find("&");
@@ -141,7 +142,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         this->status_response_code = 413;
    if(this->response_items.Path.length() > 2048)
         this->status_response_code = 414;
-    if(this->response_items.method !=  "POST" && this->response_items.lenghtbody != 0 )
+    if(this->response_items.method != "POST" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
     if(this->response_items.method ==  "POST" && this->response_items.lenghtbody == 0)
         this->status_response_code = 400;

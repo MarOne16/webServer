@@ -149,7 +149,6 @@ std::string Response::trim(std::string original)
 
 std::string  parserbody(std::string reqbody)
 {
-    // std::string reqbody="7\r\nMozilla\r\n0\r\n11\r\nDeveloper Network\r\n0\r\n\r\n";
 
 std::stringstream ss;
 std::stringstream body;

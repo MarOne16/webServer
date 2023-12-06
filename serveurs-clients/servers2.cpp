@@ -629,6 +629,7 @@ int main(int ac, const char **av)
         std::map<int, std::string> map_request;
         std::map<int, size_t> checker;
         std::map<int, std::string> res;
+        std::map<int , int > data_port ;
         ports(port, data_conf.m_servers);
         for (unsigned int i = 0; i < data_conf.getNumber_ofServers(); i++)
         {
@@ -652,6 +653,7 @@ int main(int ac, const char **av)
                 return (0);
             if (listen(fd, 1024) < 0)
                 return (0);
+            data_port.insert(std::make_pair(fd, port[i]));
             file.push_back(fd);
             addresses.push_back(adrese);
             addresselent.push_back(addrlen);
@@ -670,6 +672,7 @@ int main(int ac, const char **av)
         std::map<int, int> chunked;
         std::map<int, size_t> len_requeste;
         std::map<int, bool> connection;
+        std::map<int , int >config;
         // size_t cherk;
         int stop = 0;
         while (true)
@@ -694,7 +697,12 @@ int main(int ac, const char **av)
                             fl.events = POLLIN;
                             client.push_back(co);
                             fds.push_back(fl); // container-overflow
+                            std::map<int , int >::iterator it = data_port.find(fds[i].fd);
+                            int port = it->second ;
+                            config.insert(std::make_pair(fds[i].fd, port));;
+                            //data_port
                         }
+
                         break;
                     }
                     else if (std::find(client.begin(), client.end(), fds[i].fd) != client.end())
@@ -725,6 +733,8 @@ int main(int ac, const char **av)
                             {
                                 request = data(map_request, fds[i].fd);
                                 stop = 0;
+                                //  std::map<int , int >::iterator it = config.find(fds[i].fd); 
+                                // it->second == port
                                 std::string port, name_serveur;
                                 geve_port_name(request, name_serveur, port);
                                 int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur);
@@ -806,3 +816,4 @@ int main(int ac, const char **av)
 
 // siege -b --delay=0.5 --file=url.txt --concurrent=15 --no-parser
 //  siege --delay=0.5 --file=url.txt --internet --verbose --reps=200 --concurrent=15 --no-parser
+//siege -b 127.0.0.1:8002  
