@@ -203,28 +203,25 @@ std::string ConfigParser::getServerName()
 std::string ConfigParser::getHost()
 {
     if (!ifInside("server", "host"))
-        return "localhost";
+        return "0.0.0.0";
     size_t pos = this->content.find("host");
     std::string host = "";
     for (size_t i = pos + 4; i < this->content.length(); i++)
     {
+        if (content[i] == ' ' || content[i] == '\t')
+            continue;
         if (content[i] == ';')
+        {
+            host += content[i];
             break;
+        }
         host += content[i];
     }
-    for (size_t i = 0; i < host.length(); i++)
-    {
-        if (host[i] == ' ' || host[i] == '\t' || host[i] == '\n')
-            host.erase(i--, 1);
-    }
-    for (size_t i = 0; i < host.length(); i++)
-    {
-        if (isalnum(host[i]) || host[i] == '.' || host[i] == '-' || host[i] == '_')
-            continue;
-        else
-            throw std::runtime_error("Host is not valid.");
-    }
-    return host;
+    if (!ifClosed(host))
+        throw std::runtime_error("Host directive is not closed.");
+    if (notIn(host.erase(host.length() - 1, 1), "0123456789.") || host.empty())
+        throw std::runtime_error("Host is not valid.");
+    return host.substr(0, host.length() - 1);
 }
 
 std::string ConfigParser::getMaxBodySize()
