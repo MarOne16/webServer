@@ -26,21 +26,19 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-extern unsigned int alarmCounter;
-
 typedef struct s_location
 {
-    std::string                         root;
-    std::string                         alias;
-    std::string                         index;
-    std::string                         cgi_path;
-    std::string                         autoindex;
-    std::string                         fastcgi_pass;
-    std::string                         cgi_extension;
-    std::string                         allowed_methods;
-    std::string                         return_code_url;
-    std::string                         upload_store_directory;
-    std::string                         upload_enable;
+    std::string root;
+    std::string alias;
+    std::string index;
+    std::string cgi_path;
+    std::string autoindex;
+    std::string fastcgi_pass;
+    std::string cgi_extension;
+    std::string allowed_methods;
+    std::string return_code_url;
+    std::string upload_store_directory;
+    std::string upload_enable;
 } location;
 
 typedef struct s_server
@@ -62,7 +60,6 @@ class ConfigParser
         DIR *dir;           // for reading directory
         struct dirent *ent; // for reading directory
         char *m_fileName;
-        std::list<std::string> confKeys;
         ConfigParser();
 
     public:
@@ -73,8 +70,6 @@ class ConfigParser
         std::string content;
         std::string servers_content; // content of one server
         // methods for parsing
-        void setConfKeys();
-        void check_if_in_confKeys(std::string line);
         char *getFileName(const char *extension);
         bool isValideScope(std::string scope);
         bool ifInside(std::string scope, std::string toFind);
@@ -84,14 +79,13 @@ class ConfigParser
         bool ifOutsideLocation(std::string line);
         void globalUpload();
 
-        void setAlarm();
         // geters
-        int                         getPort();
-        unsigned int                getNumber_ofServers();
-        std::string                 getServerName();
-        std::string                 getRootServ();
-        std::string                 getHost();
-        std::string                 getMaxBodySize();
+        int             getPort();
+        unsigned int    getNumber_ofServers();
+        std::string     getServerName();
+        std::string     getRootServ();
+        std::string     getHost();
+        std::string     getMaxBodySize();
         std::map<std::string, std::string> getErrorPages();
         void feedLocations(); // feed m_locations
         bool isInsidLocation(std::string location ,std::string toFind);
@@ -125,4 +119,3 @@ bool notHas(std::string str, std::string s);
 void addElement(std::string &str, std::string element, size_t pos);
 void checkServer(std::map<unsigned int , server> &m_servers);
 std::string getDefault(std::string path);
-std::string getKey(std::string line);

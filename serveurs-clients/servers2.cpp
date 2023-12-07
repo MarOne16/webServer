@@ -113,7 +113,7 @@ void port_name_serveur(std::string request, std::string &port, std::string &name
     }
 }
 
-void geve_port_name(std::string request, std::string &name_serveur, std::string &port)
+void geve_port_host(std::string request, std::string &name_serveur, std::string &port)
 {
 
     for (size_t i = 0; i < request.size(); i++)
@@ -125,6 +125,32 @@ void geve_port_name(std::string request, std::string &name_serveur, std::string 
         if (i + 4 < request.size() && is_Host(request.substr(i, 4)))
 
             port_name_serveur(inforamation(request, i + 5), port, name_serveur);
+    }
+}
+ 
+
+void geve_port_serveur(std::string request, std::string &name_serveur)
+{
+
+    for (size_t i = 0; i < request.size(); i++)
+    {
+        if (request[i] == '\r')
+            i++;
+        if (request[i] == '\n')
+            i++;
+        if (i + 4 < request.size() && is_Host(request.substr(i, 4)))
+        {
+                i = i+4 ;
+                i+=2;
+                while(request[i] != '\r')
+                {
+                    name_serveur+=request[i];
+                    i++;
+                }
+                //  ignore_espace(name_serveur);
+            
+            }
+            // port_name_serveur(inforamation(request, i + 5), port, name_serveur);
     }
 }
 
@@ -629,7 +655,6 @@ int main(int ac, const char **av)
         std::map<int, std::string> map_request;
         std::map<int, size_t> checker;
         std::map<int, std::string> res;
-        std::map<int , int > data_port ;
         ports(port, data_conf.m_servers);
         for (unsigned int i = 0; i < data_conf.getNumber_ofServers(); i++)
         {
@@ -645,15 +670,26 @@ int main(int ac, const char **av)
                 return (0);
             if (setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(int)) == -1)
                 return (0);
-            fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC); /// non-blocking file descriptors
+            fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+             /// non-blocking file descriptors
+             //   host 
+
+             //  server_address.sin_family = AF_INET;
+
+    // Convert the loopback address "127.0.0.1" to binary format and store it in sin_addr.s_addr
+    // if (inet_pton(AF_INET, "127.0.0.1", &server_address.sin_addr) <= 0) {
+    //     // Handle error
+    //     perror("Error converting loopback address");
+    //     exit(EXIT_FAILURE);
+    // }
+    //
             adrese.sin_addr.s_addr = INADDR_ANY;
             adrese.sin_family = AF_INET;
             adrese.sin_port = htons(port[i]);
             if (bind(fd, (struct sockaddr *)&adrese, sizeof(adrese)) < 0)
                 return (0);
-            if (listen(fd, 1024) < 0)
+            if (listen(fd,1024) < 0)
                 return (0);
-            data_port.insert(std::make_pair(fd, port[i]));
             file.push_back(fd);
             addresses.push_back(adrese);
             addresselent.push_back(addrlen);
@@ -672,7 +708,6 @@ int main(int ac, const char **av)
         std::map<int, int> chunked;
         std::map<int, size_t> len_requeste;
         std::map<int, bool> connection;
-        std::map<int , int >config;
         // size_t cherk;
         int stop = 0;
         while (true)
@@ -696,13 +731,8 @@ int main(int ac, const char **av)
                             fl.fd = co;
                             fl.events = POLLIN;
                             client.push_back(co);
-                            fds.push_back(fl); // container-overflow
-                            std::map<int , int >::iterator it = data_port.find(fds[i].fd);
-                            int port = it->second ;
-                            config.insert(std::make_pair(fds[i].fd, port));;
-                            //data_port
+                            fds.push_back(fl);
                         }
-
                         break;
                     }
                     else if (std::find(client.begin(), client.end(), fds[i].fd) != client.end())
@@ -733,10 +763,14 @@ int main(int ac, const char **av)
                             {
                                 request = data(map_request, fds[i].fd);
                                 stop = 0;
-                                //  std::map<int , int >::iterator it = config.find(fds[i].fd); 
-                                std::string port, name_serveur;
-                                geve_port_name(request, name_serveur, port);
-                                int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur);
+                                std::string port, name_host,name_serveur;
+                                geve_port_host(request, name_host, port);
+                                 geve_port_serveur(request, name_serveur);
+                                // std::cout<<request ;
+                                // std::cout<<name_serveur<<"\n";
+                                // std::cout<< name_host;
+                                // exit(0);
+                                int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_host);
                                 feedRequest(serveur_id, data_conf.m_servers, request);
                                 respense = sendResponse(serveur_id, data_conf.m_servers);
                                 connection.insert(std::make_pair(fds[i].fd, data_conf.m_servers.find(serveur_id)->second.connection));
@@ -748,7 +782,7 @@ int main(int ac, const char **av)
                     }
                 }
 
-                if (  fds[i].revents & POLLOUT)
+                if (fds[i].revents & POLLOUT)
                 {
 
                     int cheker = 0;
@@ -815,4 +849,8 @@ int main(int ac, const char **av)
 
 // siege -b --delay=0.5 --file=url.txt --concurrent=15 --no-parser
 //  siege --delay=0.5 --file=url.txt --internet --verbose --reps=200 --concurrent=15 --no-parser
-//siege -b 127.0.0.1:8002  
+//siege -b 127.0.0.1:8002 
+
+
+/// omz_termsupport_cwd:3: pipe failed: too many open files in system                  
+// zsh: pipe failed: too many open files in system 

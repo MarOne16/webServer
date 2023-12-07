@@ -2,14 +2,13 @@
 
 void Requese::check_connection(server& server_data)
 {
-    // std::cout << "Checking connection : " <<   this->response_items.Headers["Connection"] << std::endl;
     std::string value = (!this->response_items.Headers["Connection"].empty() ? this->response_items.Headers["Connection"] : "close");
     server_data.connection = (value == "keep-alive") ? true : false;
 }
 
 Requese::Requese(std::string req, server& server_data):req(req),status_response_code(200)
 {
-//   std::cout << req << std::endl;
+  
     this->response_items.location = new s_location;
     this->response_items.lenghtbody = 0;
     this->response_items.error_pages = server_data.error_pages;
@@ -561,7 +560,6 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         it = location.find(Path);
         if(it != location.end())
         {
-            // std::cout << "location: " << it->second.index << " " << std::endl;
             this->response_items.location->allowed_methods = it->second.allowed_methods;
             this->response_items.location->root = it->second.root;
             this->response_items.location->index = it->second.index;
