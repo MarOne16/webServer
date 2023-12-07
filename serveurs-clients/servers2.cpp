@@ -740,6 +740,7 @@ int main(int ac, const char **av)
                             client.push_back(co);
                             fds.push_back(fl);
                         }
+                         
                         break;
                     }
                     else if (std::find(client.begin(), client.end(), fds[i].fd) != client.end())
@@ -759,9 +760,14 @@ int main(int ac, const char **av)
                             client.erase(std::find(client.begin(), client.end(), fds[i].fd));
                             close(fds[i].fd);
                             fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
+                                break;
+                            
+                             
                         }
                         else if (rec == -1)
+                         
                             continue;
+                        
                         else
                         {
                             request_inserer(buf, rec, fds[i].fd, map_request, checker, stop, chunked);
@@ -784,13 +790,14 @@ int main(int ac, const char **av)
                                 connection.insert(std::make_pair(fds[i].fd, data_conf.m_servers.find(serveur_id)->second.connection));
                                 res.insert(std::make_pair(fds[i].fd, respense));
                                 fds[i].events = POLLOUT;
+                               
                                 break;
                             }
                         }
                     }
                 }
-
-                if (fds[i].revents & POLLOUT)
+ 
+                if (   fds[i].revents & POLLOUT)
                 {
 
                     int cheker = 0;
@@ -834,6 +841,8 @@ int main(int ac, const char **av)
                         if (connection.find(fds[i].fd) != connection.end() && connection[fds[i].fd] == 0)
                         {
                             connection.erase(fds[i].fd);
+
+                             
                             close(fds[i].fd);
                             client.erase(std::find(client.begin(), client.end(), fds[i].fd));
                             fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
