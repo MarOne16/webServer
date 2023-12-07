@@ -168,7 +168,7 @@ void checkServer(std::map<unsigned int , server> &m_servers)
         std::map<unsigned int , server>::iterator it2 = ++it;
         while (it2 != m_servers.end())
         {
-            if (it2->second.port == p && it2->second.server_name == s_n)
+            if (it2->second.port == p && it2->second.server_name == s_n  && it2->second.host == host)
                 throw std::runtime_error("Two servers have the same port, server_name and host.");
             it2++;
         }
@@ -199,4 +199,28 @@ std::string getDefault(std::string path)
             throw std::runtime_error("Default upload dir not found.");
     }
     return "get_default_error";
+}
+
+std::string convertDomainToIPv4(const std::string& domain)
+{
+    struct addrinfo hints, *result, *p;
+    char ipstr[INET_ADDRSTRLEN];
+    std::memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if (getaddrinfo(domain.c_str(), nullptr, &hints, &result) != 0) {
+        return "";
+    }
+
+    for (p = result; p != nullptr; p = p->ai_next) {
+        if (p->ai_family == AF_INET) {
+            struct sockaddr_in* ipv4 = reinterpret_cast<struct sockaddr_in*>(p->ai_addr);
+            inet_ntop(AF_INET, &(ipv4->sin_addr), ipstr, sizeof(ipstr));
+            freeaddrinfo(result);
+            return ipstr;
+        }
+    }
+    freeaddrinfo(result);
+    return "";
 }

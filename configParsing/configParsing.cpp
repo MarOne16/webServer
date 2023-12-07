@@ -64,6 +64,7 @@ void ConfigParser::feedContent()
         server += servers_content[i];
     }
     ereaseContent(this->servers_content, pos, '}');
+    this->content.clear();
     this->content = server;
     feedServers();
 }
@@ -176,27 +177,23 @@ int      ConfigParser::getPort()
 std::string ConfigParser::getServerName()
 {
     if (!ifInside("server", "server_name"))
-        return "localhost";
+        throw std::runtime_error("No server_name directive found.");
     size_t pos = this->content.find("server_name");
     std::string serverName = "";
-    for (size_t i = pos + 12; i < this->content.length(); i++)
+    for (size_t i = pos + 11; i < this->content.length(); i++)
     {
         if (content[i] == ';')
+        {
+            if (serverName.empty())
+                throw std::runtime_error("Server name is empty.");
+            serverName += content[i];
             break;
+        }
         serverName += content[i];
     }
-    for (size_t i = 0; i < serverName.length(); i++)
-    {
-        if (serverName[i] == ' ' || serverName[i] == '\t' || serverName[i] == '\n')
-            serverName.erase(i--, 1);
-    }
-    for (size_t i = 0; i < serverName.length(); i++)
-    {
-        if (isalnum(serverName[i]) || serverName[i] == '.' || serverName[i] == '-' || serverName[i] == '_')
-            continue;
-        else
-            throw std::runtime_error("Server name is not valid.");
-    }
+    if (!ifClosed(serverName))
+        throw std::runtime_error("Server name directive is not closed.");
+    serverName.erase(serverName.length() - 1, 1);
     return serverName;
 }
 
@@ -219,9 +216,10 @@ std::string ConfigParser::getHost()
     }
     if (!ifClosed(host))
         throw std::runtime_error("Host directive is not closed.");
-    if (notIn(host.erase(host.length() - 1, 1), "0123456789.") || host.empty())
+    host = convertDomainToIPv4(host.erase(host.length() - 1, 1));
+    if (host.empty())
         throw std::runtime_error("Host is not valid.");
-    return host.substr(0, host.length() - 1);
+    return host;
 }
 
 std::string ConfigParser::getMaxBodySize()

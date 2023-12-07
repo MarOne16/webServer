@@ -23,6 +23,7 @@ void feedRequest(unsigned int index, std::map<unsigned int, server> &serv, std::
     {
         if (it->first == index)
         {
+
             it->second.request_content = content;
             break;
         }
@@ -738,9 +739,8 @@ int main(int ac, const char **av)
                             fl.fd = co;
                             fl.events = POLLIN;
                             client.push_back(co);
-                            fds.push_back(fl); // container-overflow
+                            fds.push_back(fl);
                         }
-                         
                         break;
                     }
                     else if (std::find(client.begin(), client.end(), fds[i].fd) != client.end())
@@ -761,9 +761,13 @@ int main(int ac, const char **av)
                             close(fds[i].fd);
                             fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
                                 break;
+                            
+                             
                         }
                         else if (rec == -1)
+                         
                             continue;
+                        
                         else
                         {
                             request_inserer(buf, rec, fds[i].fd, map_request, checker, stop, chunked);
@@ -773,14 +777,13 @@ int main(int ac, const char **av)
                                 request = data(map_request, fds[i].fd);
                                 stop = 0;
                                 std::string port, name_host, name_serveur;
-                                // geve_port_host(request, name_host, port);
-                                // geve_port_serveur(request, name_serveur);
+                                geve_port_host(request, name_host, port);
+                                geve_port_serveur(request, name_serveur);
                                 // std::cout << request;
                                 // std::cout << name_serveur << "\n";
                                 // std::cout << name_host;
-                                // // TODO mqaos implimentation
-                                // exit(0);
-                                int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_host);
+                                // // // TODO mqaos implimentation
+                                int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur, name_host);
                                 feedRequest(serveur_id, data_conf.m_servers, request);
                                 respense = sendResponse(serveur_id, data_conf.m_servers);
                                 connection.insert(std::make_pair(fds[i].fd, data_conf.m_servers.find(serveur_id)->second.connection));
