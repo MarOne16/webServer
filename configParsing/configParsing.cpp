@@ -113,6 +113,7 @@ void ConfigParser::feedServers()
     m_servers[i++] = server_tmp;
     if (this->servers_content.find("server") != std::string::npos)
         feedContent();
+    // closedir(dir);
 }
 
 bool ConfigParser::ifInside(std::string scope, std::string toFind)
@@ -413,4 +414,9 @@ void ConfigParser::setAlarm()
     alarmCounter = toInt(alarm);
     if (alarmCounter < 0)
         throw std::runtime_error("Alarm is negative.");
+}
+
+void ConfigParser::closeDir()
+{
+    closedir(this->dir);
 }

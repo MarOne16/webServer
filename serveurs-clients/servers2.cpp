@@ -615,7 +615,8 @@ int main(int ac, const char **av)
         ConfigParser data_conf(av);       //
         data_conf.readConfigFile();       //
         data_conf.checkBrackets();        ///
-        checkServer(data_conf.m_servers); ///
+        checkServer(data_conf.m_servers);
+        data_conf.closeDir(); // clos
         /////////////////////////////
         std::vector<int> port;
         std::vector<int> file;

@@ -107,7 +107,7 @@ public:
     int check_connection(std::string &value);
     void check_connection(server &server_data);
     // std::string find_location(std::map<std::string , s_location>& location, std::string& PATH);
-    std::string find_location(server &server_data, std::string &PATH);
+    void find_location(server &server_data, std::string &PATH);
     //    void  set_Initial_Request_line(std::string req)
     class ErrorSyntax : public std::exception
     {
@@ -134,7 +134,7 @@ public:
     std::string  build_response();
     // std::string get_Content_type();
     std::string get_Content_type(std::string url);
-    std::string get_type(std::string extension);
+    void  ft_free(std::vector<RequestBody *>& arr);
     std::string get_Date();
     std::string check_index_file(std::string & url);
     void build_GET();

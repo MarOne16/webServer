@@ -2,7 +2,6 @@
 
 void Requese::check_connection(server& server_data)
 {
-    // std::cout << "Checking connection : " <<   this->response_items.Headers["Connection"] << std::endl;
     std::string value = (!this->response_items.Headers["Connection"].empty() ? this->response_items.Headers["Connection"] : "close");
     server_data.connection = (value == "keep-alive") ? true : false;
 }
@@ -178,7 +177,7 @@ std::string trim(std::string original)
 }
 
 
-void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& methods )
+void Requese::parser_init_line(std::string Initial_Request_Line, std::string& methods )
 {
     std::stringstream line_init(Initial_Request_Line);
     std::string part;
@@ -276,8 +275,6 @@ void Requese::Headers_elements()
         value = trim((*it).substr(pos + 1));
         if((*it).substr(pos + 1, 1).c_str()[0]  != 32)
             this->status_response_code = 400;
-        // this->trim(key);
-        // this->trim(value);
         this->response_items.Headers[key] = value;
         if(key.empty() || value.empty() || check_more_element(key, value) == 0 )
         {
@@ -524,7 +521,7 @@ const char *Requese::ErrorSyntax::what() const throw()
 }
 
 
-std::string Requese::find_location(server& server_data, std::string& PATH)
+void Requese::find_location(server& server_data, std::string& PATH)
 {
     std::map<std::string , s_location> location = server_data.locations;
     std::map<std::string , s_location>::iterator it;
@@ -550,7 +547,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
                 this->response_items.location->cgi_path = it->second.cgi_path;
                 this->response_items.location->upload_enable = it->second.upload_enable;
                 this->response_items.location->autoindex = it->second.autoindex;
-                return Path;
+                return ;
             }
             it++;
         }
@@ -562,7 +559,6 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         it = location.find(Path);
         if(it != location.end())
         {
-            // std::cout << "location: " << it->second.index << " " << std::endl;
             this->response_items.location->allowed_methods = it->second.allowed_methods;
             this->response_items.location->root = it->second.root;
             this->response_items.location->index = it->second.index;
@@ -572,7 +568,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
             this->response_items.location->cgi_path = it->second.cgi_path;
             this->response_items.location->upload_enable = it->second.upload_enable;
             this->response_items.location->autoindex =it->second.autoindex;
-            return Path;
+            return ;
         }
         pos = Path.rfind("/"); 
         Path = Path.substr(0, pos);
@@ -590,9 +586,8 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         this->response_items.location->cgi_path = it->second.cgi_path;
         this->response_items.location->upload_enable = it->second.upload_enable;
         this->response_items.location->autoindex = it->second.autoindex;
-        
+        return ;
     }
     else
         this->status_response_code = 404;
-    return Path;
 }

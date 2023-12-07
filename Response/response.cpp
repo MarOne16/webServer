@@ -7,6 +7,17 @@ Response::Response(int status, std::vector<std::string> init_line, http_items &r
     this->init_line = init_line;
 }
 
+void Response::ft_free(std::vector<RequestBody *>& arr)
+{
+    std::vector<RequestBody *>::iterator it = arr.begin();
+
+    while(it != arr.end())
+    {
+        delete (*it);
+        it++;
+    }
+}
+
 std::string Response::build_response()
 {
     if (this->status == 400)
@@ -35,6 +46,8 @@ std::string Response::build_response()
     else if (this->response_items.method == "POST")
         this->build_POST();
     delete this->response_items.location;
+    ft_free(this->response_items.ChunkedBody);
+    // delete  this->response_items.ChunkedBody;
     return (response.str());
 }
 
@@ -53,10 +66,9 @@ void Response::build_GET()
     URI += this->response_items.Path.substr(1); // TODO : check if path is beging with /
     
     status = stat(URI.data(), &buffer);
-    std::cout << "GET " << URI << std::endl;
     if (status != -1)
     {   
-        std::cout << "Error: " << this->response_items.Extension << std::endl;
+        // std::cout << "Error: " << this->response_items.Extension << std::endl;
         if (this->response_items.Extension.empty())
         {
             if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
@@ -65,7 +77,6 @@ void Response::build_GET()
             {
                 
                 index = check_index_file(URI);
-                std::cout << "index :" << index << " " << URI << std::endl;
                 if (index.empty())
                 {
                     DIR *dir = opendir(URI.c_str());
@@ -234,14 +245,15 @@ void Response::build_POST()
     time_t current_time;
     std::ofstream file;
     std::vector<RequestBody *>::iterator it;
+    std::vector<RequestBody *>::iterator tmp;
 
 
     URI += this->response_items.Path.substr(1);
 
     status = stat(URI.c_str(), &buffer);
-    std::cout << URI.c_str() << std::endl;
     if (upload_enable == "off")
     {
+            
         if (status != -1)
         {
             if (!this->response_items.Extension.empty())
@@ -249,10 +261,7 @@ void Response::build_POST()
                 if (!cgi_path.empty())
                     responsecgi(GET_CGI_DATA(this->response_items));
                 else
-                {
-
                     this->other_response("403", " Forbidden");
-                }
             }
             else
             {
@@ -325,7 +334,6 @@ void Response::build_POST()
                                 break;
                             }
                             totalBytesWritten += bytesToWrite;
-                            // delete (*it);
                         }
                    }
                     file.close();
@@ -397,7 +405,7 @@ void Response::ft_success_code(std::string status, std::string message, std::str
     response << "Connection:" << connection  <<  "\r\n";
     response << "Content-Type: " << this->get_Content_type(URI) << "\r\n";
     response << "Host: " << this->response_items.server << "\r\n";
-    response << "Set-Cookie: yummy_cookie=darkmod; Domain=localhost; Path=/websites/;\r\n";
+    response << "Set-Cookie: yummy_cookie=darkmod;  Path=/websites/;\r\n";
     response << "Date: " << this->get_Date() << "\r\n\r\n";
     response << message;
 }
@@ -440,6 +448,7 @@ void Response::other_response(std::string status, std::string desc)
                                         </html>\n";
     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
     {
+        std::cout << "here" << std::endl;
         ft_default_pages(status, body, (this->response_items.error_pages.find(status)->second));
     }
     response << "HTTP/1.1 " << status << " " << desc << "\r\n";

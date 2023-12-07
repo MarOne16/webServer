@@ -83,6 +83,8 @@ class ConfigParser
         void feedContent();
         bool ifOutsideLocation(std::string line);
         void globalUpload();
+        void closeDir();
+
 
         void setAlarm();
         // geters
