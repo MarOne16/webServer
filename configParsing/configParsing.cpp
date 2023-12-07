@@ -1,7 +1,10 @@
 #include "configParsing.hpp"
 
+unsigned int alarmCounter = INT_MAX;
+
 ConfigParser::ConfigParser(const char **argv)
 {
+    setConfKeys();
     if (argv[1])
     {
         std::ifstream file(argv[1]);
@@ -20,6 +23,7 @@ ConfigParser::ConfigParser(const char **argv)
 
 ConfigParser::~ConfigParser()
 {
+    closedir(dir);
     // system("leaks a.out");
 }
 
@@ -77,6 +81,18 @@ void ConfigParser::checkBrackets()
     }
     if (left != right)
         throw std::runtime_error("Brackets are not balanced.");
+    // send line by line to check_if_in_confKeys
+    std::string line;
+    for (size_t i = 0; i < this->servers_content.length(); i++)
+    {
+        if (this->servers_content[i] != '\n' && this->servers_content[i] != '\0')
+        {
+            line += this->servers_content[i];
+            continue;
+        }
+        check_if_in_confKeys(getKey(line));
+        line.clear();
+    }
     feedContent();
 }
 
@@ -84,6 +100,7 @@ void ConfigParser::feedServers()
 {
     static int i;
     globalUpload();
+    setAlarm();
     server server_tmp;
     server_tmp.port = getPort();
     server_tmp.server_name = getServerName();
@@ -131,7 +148,7 @@ bool ConfigParser::isValideScope(std::string scope)
     return false;
 }
 
-int ConfigParser::getPort()
+int      ConfigParser::getPort()
 {
     std::string port = "";
     if (!ifInside("server", "listen"))
@@ -140,10 +157,20 @@ int ConfigParser::getPort()
     for (size_t i = pos + 7; i < this->content.length(); i++)
     {
         if (content[i] == ';')
+        {
+            if (port.empty())
+                throw std::runtime_error("Port is empty.");
+            port += content[i];
             break;
+        }
         port += content[i];
     }
-    return toInt(port);
+    if (!ifClosed(port))
+        throw std::runtime_error("Listen directive is not closed.");
+    ereaseContent(this->content, pos, ';');
+    if (ifInside("server", "listen"))
+        throw std::runtime_error("multiple listen directive not allowed.");
+    return toInt(port.erase(port.length() - 1, 1));
 }
 
 std::string ConfigParser::getServerName()
@@ -227,9 +254,9 @@ std::string ConfigParser::getMaxBodySize()
 std::map<std::string, std::string> ConfigParser::getErrorPages()
 {
     std::map<std::string, std::string> errorPages;
-start:
+    start:
     if (!ifInside("server", "error_page"))
-        throw std::runtime_error("No error page directive found.");
+        return errorPages;
     size_t pos = this->content.find("error_page");
     std::string errorPage = "";
     for (size_t i = pos + 10; i < this->content.length(); i++)
@@ -244,13 +271,13 @@ start:
     std::list<std::string>::iterator ite = errorPageList.end();
     std::list<std::string>::iterator last = --errorPageList.end();
     if ((*last).find(".html") == std::string::npos)
-        throw std::runtime_error("Error page is not valid.");
+        throw std::runtime_error("Error page is not valid excepted only .html files.");
     for (; it != ite; it++)
     {
         if (it == last)
             break;
         if (notIn(*it, "0123456789") || (*it).length() != 3)
-            throw std::runtime_error("Error page is not valid.");
+            throw std::runtime_error("Error page: satus request is not valid.");
         errorPages[*it] = *last;
     }
     if (this->content.find("error_page") != std::string::npos)
@@ -266,7 +293,10 @@ unsigned int ConfigParser::getNumber_ofServers()
 std::string ConfigParser::getRootServ()
 {
     if (content.find("root") == std::string::npos || !ifOutsideLocation("root"))
-        return (global_root = getDefault("root"));
+    {
+        global_root = getDefault("root");
+        return (global_root);
+    }
     if (ifOutsideLocation("root"))
     {
         std::string root = "";
@@ -286,8 +316,14 @@ std::string ConfigParser::getRootServ()
         if (!ifClosed(root))
             throw std::runtime_error("Root directive is not closed.");
         ereaseContent(content, pos, ';');
-        global_root = root.erase(root.length() - 1, 1);
+        if (!findFile(root.erase(root.length() - 1, 1)))
+            throw std::runtime_error("Root is not valid.");
+        global_root = root;
+        if (global_root.find_last_of('/') != global_root.length() - 1)
+            global_root += '/';
     }
+    if (global_root.empty())
+        throw std::runtime_error("Root is empty.");
     return global_root;
 }
 
@@ -344,7 +380,37 @@ void ConfigParser::globalUpload()
         }
         if (!ifClosed(upload))
             throw std::runtime_error("upload directive is not closed.");
+        if (!findFile(upload.erase(upload.length() - 1, 1)))
+            throw std::runtime_error("upload_store_directory is not valid.");
         ereaseContent(content, pos, ';');
-        global_upload_store = upload.erase(upload.length() - 1, 1);
+        if (upload.find_last_of('/') != upload.length() - 1)
+            upload += '/';
+        global_upload_store = upload;
     }
+}
+
+void ConfigParser::setAlarm()
+{
+    if (content.find("alarm") == std::string::npos)
+        return;
+    size_t pos = content.find("alarm");
+    std::string alarm = "";
+    for (size_t i = pos + 5; i < content.length(); i++)
+    {
+        if (content[i] == ';')
+            break;
+        alarm += content[i];
+    }
+    for (size_t i = 0; i < alarm.length(); i++)
+    {
+        if (alarm[i] == ' ' || alarm[i] == '\t' || alarm[i] == '\n')
+            alarm.erase(i--, 1);
+    }
+    if (notIn(alarm, "0123456789"))
+        throw std::runtime_error("Alarm is not valid excepted only numbers.");
+    if (alarm.length() > 10)
+        throw std::runtime_error("Alarm too big.");
+    alarmCounter = toInt(alarm);
+    if (alarmCounter < 0)
+        throw std::runtime_error("Alarm is negative.");
 }

@@ -14,6 +14,7 @@
 
 #include "../Response/webserver.hpp"
 #include <fstream>
+#include <arpa/inet.h>
 
 void feedRequest(unsigned int index, std::map<unsigned int, server> &serv, std::string content)
 {
@@ -127,7 +128,6 @@ void geve_port_host(std::string request, std::string &name_serveur, std::string 
             port_name_serveur(inforamation(request, i + 5), port, name_serveur);
     }
 }
- 
 
 void geve_port_serveur(std::string request, std::string &name_serveur)
 {
@@ -140,17 +140,16 @@ void geve_port_serveur(std::string request, std::string &name_serveur)
             i++;
         if (i + 4 < request.size() && is_Host(request.substr(i, 4)))
         {
-                i = i+4 ;
-                i+=2;
-                while(request[i] != '\r')
-                {
-                    name_serveur+=request[i];
-                    i++;
-                }
-                //  ignore_espace(name_serveur);
-            
+            i = i + 4;
+            i += 2;
+            while (request[i] != '\r')
+            {
+                name_serveur += request[i];
+                i++;
             }
-            // port_name_serveur(inforamation(request, i + 5), port, name_serveur);
+            //  ignore_espace(name_serveur);
+        }
+        // port_name_serveur(inforamation(request, i + 5), port, name_serveur);
     }
 }
 
@@ -671,25 +670,33 @@ int main(int ac, const char **av)
             if (setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(int)) == -1)
                 return (0);
             fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-             /// non-blocking file descriptors
-             //   host 
+            /// non-blocking file descriptors
+            //   host
 
-             //  server_address.sin_family = AF_INET;
+            //  server_address.sin_family = AF_INET;
 
-    // Convert the loopback address "127.0.0.1" to binary format and store it in sin_addr.s_addr
-    // if (inet_pton(AF_INET, "127.0.0.1", &server_address.sin_addr) <= 0) {
-    //     // Handle error
-    //     perror("Error converting loopback address");
-    //     exit(EXIT_FAILURE);
-    // }
-    //
-            adrese.sin_addr.s_addr = INADDR_ANY;
+            // Convert the loopback address "127.0.0.1" to binary format and store it in sin_addr.s_addr
             adrese.sin_family = AF_INET;
+            std::map<unsigned int, server>::iterator it = data_conf.m_servers.find(i);
+
+            if (inet_pton(AF_INET, it->second.host.c_str(), &adrese.sin_addr) <= 0)
+            {
+               printf("inet_pton  : : failed  \n");
+                return (0);
+            }
+
+            // adrese.sin_addr.s_addr = INADDR_ANY;
             adrese.sin_port = htons(port[i]);
             if (bind(fd, (struct sockaddr *)&adrese, sizeof(adrese)) < 0)
+            {
+                printf("bind : : Can't assign requested address\n");
                 return (0);
-            if (listen(fd,1024) < 0)
+            }
+            if (listen(fd, 1024) < 0)
+            {
+                printf("listen : : Can't lisen \n");
                 return (0);
+            }
             file.push_back(fd);
             addresses.push_back(adrese);
             addresselent.push_back(addrlen);
@@ -753,7 +760,7 @@ int main(int ac, const char **av)
                             close(fds[i].fd);
                             fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
                         }
-                        else if( rec == - 1)
+                        else if (rec == -1)
                             continue;
                         else
                         {
@@ -763,12 +770,13 @@ int main(int ac, const char **av)
                             {
                                 request = data(map_request, fds[i].fd);
                                 stop = 0;
-                                std::string port, name_host,name_serveur;
-                                geve_port_host(request, name_host, port);
-                                 geve_port_serveur(request, name_serveur);
-                                // std::cout<<request ;
-                                // std::cout<<name_serveur<<"\n";
-                                // std::cout<< name_host;
+                                std::string port, name_host, name_serveur;
+                                // geve_port_host(request, name_host, port);
+                                // geve_port_serveur(request, name_serveur);
+                                // std::cout << request;
+                                // std::cout << name_serveur << "\n";
+                                // std::cout << name_host;
+                                // // TODO mqaos implimentation
                                 // exit(0);
                                 int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_host);
                                 feedRequest(serveur_id, data_conf.m_servers, request);
@@ -849,8 +857,7 @@ int main(int ac, const char **av)
 
 // siege -b --delay=0.5 --file=url.txt --concurrent=15 --no-parser
 //  siege --delay=0.5 --file=url.txt --internet --verbose --reps=200 --concurrent=15 --no-parser
-//siege -b 127.0.0.1:8002 
+// siege -b 127.0.0.1:8002
 
-
-/// omz_termsupport_cwd:3: pipe failed: too many open files in system                  
-// zsh: pipe failed: too many open files in system 
+/// omz_termsupport_cwd:3: pipe failed: too many open files in system
+// zsh: pipe failed: too many open files in system
