@@ -153,7 +153,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     
     }catch(std::exception& e)
     {
-        //std::cout  << e.what() << std::endl;
+        std::cout  << e.what() << std::endl;
     }
 }
 

@@ -118,7 +118,6 @@ void Response::build_GET()
         std::cout << "Error: " << this->response_items.Extension << std::endl;
         if (this->response_items.Extension.empty())
         {
-            
             if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
                 this->ft_redirect("301", this->response_items.Path + "/");
             else
@@ -181,7 +180,6 @@ void Response::build_GET()
                     URI += index;
                     this->response_items.Path += index;
                     status = stat(URI.data(), &buffer);
-                    
                     if (status != -1)
                     {
                         this->response_items.Extension = URI.substr(URI.rfind('.'));
@@ -205,6 +203,7 @@ void Response::build_GET()
                     }
                     else
                     {
+                        
                         URI += "index.html";
                         std::string content_body = read_file(URI.c_str());
                         if (access(URI.c_str(), F_OK | W_OK) != 0)
