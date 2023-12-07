@@ -761,13 +761,9 @@ int main(int ac, const char **av)
                             close(fds[i].fd);
                             fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
                                 break;
-                            
-                             
                         }
                         else if (rec == -1)
-                         
                             continue;
-                        
                         else
                         {
                             request_inserer(buf, rec, fds[i].fd, map_request, checker, stop, chunked);
