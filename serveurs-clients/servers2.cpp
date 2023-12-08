@@ -433,11 +433,7 @@ std::string check_complier_chunkerd(std::string request, std::map<int, int> &sat
     return (chunked);
 }
 
-void converture_hex(std::string hex, size_t &lenght)
-{
-    // std::cout << "faild :" << hex << "\n";
-    lenght = std::stoul(hex, 0, 16);
-}
+ 
 int digital(std::string number)
 {
     for (size_t i = 0; i < number.size(); i++)
@@ -457,11 +453,11 @@ std::string chunked_ramase(std::string request, std::map<int, size_t> &flags, in
 
         std::string number;
 
-        size_t lengt;
+        size_t lengt = 0;
         for (i = j; i < request.size() && request[i] != '\r'; i++)
             number += request[i];
         // number[i] = '\0';
-        converture_hex(number, lengt);
+        
         if (!request[i] && request[i - 1] != '\r')
         {
 
@@ -534,7 +530,7 @@ std::string chunked_request(std::string request, std::map<int, size_t> &flags, i
             // 012
 
             flags.erase(fd);
-            size_t lenght;
+            size_t lenght = 0;
             std::map<int, std::string>::iterator itter = num.find(fd);
             std::string number;
             number = itter->second;
@@ -542,7 +538,7 @@ std::string chunked_request(std::string request, std::map<int, size_t> &flags, i
             for (j = 0; j < request.size() && request[j] != '\r'; j++)
                 size += request[j];
             number += size;
-            converture_hex(number, lenght);
+             
             if (lenght == 0)
             {
                 stop = 1;
