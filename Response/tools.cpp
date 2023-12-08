@@ -49,20 +49,24 @@ std::string Response::check_index_file(std::string &url)
 {
     DIR *dir = opendir(url.c_str());
     std::vector<std::string> files = split_v(this->response_items.location->index, " "); // change by value depends on location
-    if (dir == NULL)
-        return "";
     struct dirent *entity;
     unsigned int i = 0;
+    if (dir != NULL)
+    {
     while (i < files.size())
     {
         entity = readdir(dir);
         while (entity != NULL)
         {
             if (entity->d_name == files[i])
+            {
+                closedir(dir);
                 return entity->d_name ;
+            }
             entity = readdir(dir);
         }
         i++;
+    }
     }
     closedir(dir);
     return "";
