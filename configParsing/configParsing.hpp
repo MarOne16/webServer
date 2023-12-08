@@ -61,6 +61,7 @@ typedef struct s_server
 class ConfigParser
 {
     private:
+        bool isArgv;
         DIR *dir;           // for reading directory
         struct dirent *ent; // for reading directory
         char *m_fileName;
@@ -74,6 +75,7 @@ class ConfigParser
         std::map<unsigned int , server> m_servers;
         std::string content;
         std::string servers_content; // content of one server
+        void closeDir();
         // methods for parsing
         void setConfKeys();
         void check_if_in_confKeys(std::string line);

@@ -7,6 +7,7 @@ ConfigParser::ConfigParser(const char **argv)
     setConfKeys();
     if (argv[1])
     {
+        isArgv = true;
         std::ifstream file(argv[1]);
         if (!file.is_open())
             throw std::runtime_error("File not found.");
@@ -15,6 +16,7 @@ ConfigParser::ConfigParser(const char **argv)
     }
     else
     {
+        isArgv = false;
         m_fileName = getFileName(".conf");
         if (!m_fileName)
             throw std::runtime_error("No .conf file found in the directory.");
@@ -23,7 +25,7 @@ ConfigParser::ConfigParser(const char **argv)
 
 ConfigParser::~ConfigParser()
 {
-    closedir(dir);
+    // closedir(dir);
     // system("leaks a.out");
 }
 
@@ -408,4 +410,10 @@ void ConfigParser::setAlarm()
     alarmCounter = toInt(alarm);
     if (alarmCounter < 0)
         throw std::runtime_error("Alarm is negative.");
+}
+
+void ConfigParser::closeDir()
+{
+    if (isArgv == false)
+        closedir(dir);
 }
