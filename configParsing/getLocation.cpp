@@ -13,7 +13,9 @@ bool ConfigParser::isInsidLocation(std::string location ,std::string toFind)
 std::string ConfigParser::getRootLocation(std::string location)
 {
     if (!isInsidLocation(location, "root"))
-        return global_root;
+    {
+        return this->global_root;
+    }
     std::string root = "";
     size_t start = location.find("root");
     for (size_t i = start + 4; i < location.length(); i++)
@@ -346,8 +348,7 @@ void ConfigParser::feedLocations()
         tmp.upload_store_directory = getUploadDirectory(this->content.substr(start2, end));
         tmp.upload_enable = getUploadEnable(this->content.substr(start2, end));
     }
-    this->m_locations.insert(std::pair<std::string, location>(locationname, tmp));
+    this->m_locations[locationname] = tmp;
     ereaseContent(this->content, start, ')');
-    // exit(0);
     goto start;
 }

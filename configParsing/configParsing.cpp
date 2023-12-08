@@ -64,6 +64,7 @@ void ConfigParser::feedContent()
         server += servers_content[i];
     }
     ereaseContent(this->servers_content, pos, '}');
+    this->content.clear();
     this->content = server;
     feedServers();
 }
@@ -177,54 +178,48 @@ int      ConfigParser::getPort()
 std::string ConfigParser::getServerName()
 {
     if (!ifInside("server", "server_name"))
-        return "localhost";
+        throw std::runtime_error("No server_name directive found.");
     size_t pos = this->content.find("server_name");
     std::string serverName = "";
-    for (size_t i = pos + 12; i < this->content.length(); i++)
+    for (size_t i = pos + 11; i < this->content.length(); i++)
     {
         if (content[i] == ';')
+        {
+            if (serverName.empty())
+                throw std::runtime_error("Server name is empty.");
+            serverName += content[i];
             break;
+        }
         serverName += content[i];
     }
-    for (size_t i = 0; i < serverName.length(); i++)
-    {
-        if (serverName[i] == ' ' || serverName[i] == '\t' || serverName[i] == '\n')
-            serverName.erase(i--, 1);
-    }
-    for (size_t i = 0; i < serverName.length(); i++)
-    {
-        if (isalnum(serverName[i]) || serverName[i] == '.' || serverName[i] == '-' || serverName[i] == '_')
-            continue;
-        else
-            throw std::runtime_error("Server name is not valid.");
-    }
+    if (!ifClosed(serverName))
+        throw std::runtime_error("Server name directive is not closed.");
+    serverName.erase(serverName.length() - 1, 1);
     return serverName;
 }
 
 std::string ConfigParser::getHost()
 {
     if (!ifInside("server", "host"))
-        return "localhost";
+        return "0.0.0.0";
     size_t pos = this->content.find("host");
     std::string host = "";
     for (size_t i = pos + 4; i < this->content.length(); i++)
     {
+        if (content[i] == ' ' || content[i] == '\t')
+            continue;
         if (content[i] == ';')
+        {
+            host += content[i];
             break;
+        }
         host += content[i];
     }
-    for (size_t i = 0; i < host.length(); i++)
-    {
-        if (host[i] == ' ' || host[i] == '\t' || host[i] == '\n')
-            host.erase(i--, 1);
-    }
-    for (size_t i = 0; i < host.length(); i++)
-    {
-        if (isalnum(host[i]) || host[i] == '.' || host[i] == '-' || host[i] == '_')
-            continue;
-        else
-            throw std::runtime_error("Host is not valid.");
-    }
+    if (!ifClosed(host))
+        throw std::runtime_error("Host directive is not closed.");
+    host = convertDomainToIPv4(host.erase(host.length() - 1, 1));
+    if (host.empty())
+        throw std::runtime_error("Host is not valid.");
     return host;
 }
 

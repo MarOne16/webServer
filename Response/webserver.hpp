@@ -20,6 +20,7 @@
 #include <sstream>
 #include <string>
 #include "../serveurs-clients/servers.hpp"
+// #include "../cgi/cgi.hpp"
 
 
 // typedef struct cgi_data
@@ -156,7 +157,7 @@ public:
 
 };
 
-int getServerId(std::map<unsigned int, server> &serv, int port, std::string server_name);
+int getServerId(std::map<unsigned int, server> &serv, int port, std::string server_name, std::string host);
 std::vector<std::string> split_v(std::string &str, std::string delimiter);
 std::string Get_response(server &server_data);
 std::string  parserbody(std::string reqbody);

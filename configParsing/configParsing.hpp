@@ -25,6 +25,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 extern unsigned int alarmCounter;
 
@@ -128,3 +130,4 @@ void addElement(std::string &str, std::string element, size_t pos);
 void checkServer(std::map<unsigned int , server> &m_servers);
 std::string getDefault(std::string path);
 std::string getKey(std::string line);
+std::string convertDomainToIPv4(const std::string& domain);

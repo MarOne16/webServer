@@ -1,5 +1,5 @@
 <?php
-$handle = fopen("cgi_in", "r");
+$handle = fopen("php://stdin", "r");
 if ($handle) {
     while (($line = fgets($handle)) !== false) {
         echo $line;

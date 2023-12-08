@@ -145,6 +145,7 @@ void Response::build_GET()
                     }
                     else
                     {
+                        
                         URI += "index.html";
                         if (access(URI.c_str(), F_OK | W_OK) != 0)
                         {
