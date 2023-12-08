@@ -75,7 +75,6 @@ class ConfigParser
         std::map<unsigned int , server> m_servers;
         std::string content;
         std::string servers_content; // content of one server
-        void closeDir();
         // methods for parsing
         void setConfKeys();
         void check_if_in_confKeys(std::string line);
@@ -87,6 +86,8 @@ class ConfigParser
         void feedContent();
         bool ifOutsideLocation(std::string line);
         void globalUpload();
+        void closeDir();
+
 
         void setAlarm();
         // geters

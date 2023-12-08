@@ -656,6 +656,7 @@ int main(int ac, const char **av)
         std::map<int, std::string> map_request;
         std::map<int, size_t> checker;
         std::map<int, std::string> res;
+        std::map<int , int > data_port ;
         ports(port, data_conf.m_servers);
         for (unsigned int i = 0; i < data_conf.getNumber_ofServers(); i++)
         {
@@ -717,6 +718,7 @@ int main(int ac, const char **av)
         std::map<int, int> chunked;
         std::map<int, size_t> len_requeste;
         std::map<int, bool> connection;
+        std::map<int , int >config;
         // size_t cherk;
         int stop = 0;
         while (true)
@@ -740,8 +742,13 @@ int main(int ac, const char **av)
                             fl.fd = co;
                             fl.events = POLLIN;
                             client.push_back(co);
-                            fds.push_back(fl);
+                            fds.push_back(fl); // container-overflow
+                            std::map<int , int >::iterator it = data_port.find(fds[i].fd);
+                            int port = it->second ;
+                            config.insert(std::make_pair(fds[i].fd, port));;
+                            //data_port
                         }
+
                         break;
                     }
                     else if (std::find(client.begin(), client.end(), fds[i].fd) != client.end())

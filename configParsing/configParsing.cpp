@@ -116,6 +116,7 @@ void ConfigParser::feedServers()
     m_servers[i++] = server_tmp;
     if (this->servers_content.find("server") != std::string::npos)
         feedContent();
+    // closedir(dir);
 }
 
 bool ConfigParser::ifInside(std::string scope, std::string toFind)
