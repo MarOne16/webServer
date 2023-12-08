@@ -21,7 +21,6 @@ char *ConfigParser::getFileName(const char *extension)
 {
     char *fileName = NULL;
     int found = 0;
-
     dir = opendir(".");
     if (dir != NULL)
     {
@@ -33,11 +32,13 @@ char *ConfigParser::getFileName(const char *extension)
                 found++;
             }
         }
+        
     }
     if (found > 1)
         throw std::runtime_error("More than one .conf file found in the directory.");
     if (fileName == NULL)
         throw std::runtime_error("No .conf file found in the directory.");
+    
     return fileName;
 }
 

@@ -46,6 +46,7 @@ void ConfigParser::readConfigFile()
         this->servers_content += line;
         this->servers_content += '\n';
     }
+    file.close();
 }
 
 void ConfigParser::feedContent()

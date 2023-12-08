@@ -55,7 +55,6 @@ std::string Response::build_response()
 
 void Response::build_GET()
 {
-
     struct stat buffer;
     int status;
     std::string URI = this->response_items.location->root;                 // change by value depends on location
@@ -68,19 +67,16 @@ void Response::build_GET()
     status = stat(URI.data(), &buffer);
     if (status != -1)
     {   
-        // std::cout << "Error: " << this->response_items.Extension << std::endl;
         if (this->response_items.Extension.empty())
         {
             if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
                 this->ft_redirect("301", this->response_items.Path + "/");
             else
             {
-                
                 index = check_index_file(URI);
                 if (index.empty())
                 {
-                    DIR *dir = opendir(URI.c_str());
-                    struct dirent *entity;
+                    
                     if (get_auto_index == "off")
                     {
                         URI += "index.html";
@@ -89,12 +85,16 @@ void Response::build_GET()
                             this->other_response("403", " Forbidden");
                             return;
                         }
-                        // std::string content_body = read_file(URI.c_str());
                         this->ft_success_code("200",  read_file(URI.c_str()), URI);
 
                     }
                     else
                     {
+                        
+                        DIR *dir = opendir(URI.c_str());
+                        struct dirent *entity;
+                        if(dir != NULL)
+                        {
                         autoIndexPage = "<!DOCTYPE html>\n<html lang=\"en\">\n\
                                                     <head>\n\
                                                     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n\
@@ -121,6 +121,8 @@ void Response::build_GET()
                                         </body>\n\
                                         </html>\n";
                         this->ft_success_code("200", autoIndexPage, URI);
+
+                        }
                     }
                 }
                 else
@@ -216,8 +218,16 @@ void Response::build_DELETE()
         {
             if (cgi_path.empty())
             {
-                remove(URI.c_str());
-                this->other_response("204", " NO Content");
+                std::cout << "here" << std::endl;
+                if(access(URI.c_str(), F_OK | X_OK | W_OK) == 0)
+                {
+                    remove(URI.c_str());
+                    this->other_response("204", " NO Content");
+                    
+                }
+                else
+                    this->other_response("403", " Forbidden");
+                return ;
             }
             else
                 this->other_response("405", "Method Not Allowed");
@@ -229,7 +239,6 @@ void Response::build_DELETE()
 
 void Response::build_POST()
 {
-
     struct stat buffer;
     int status;
     std::string upload_enable = this->response_items.location->upload_enable;
