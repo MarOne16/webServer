@@ -1,5 +1,16 @@
 #include "cgi.hpp"
 
+void FreeENV(char **env)
+{
+    int i = 0;
+    while (env[i] != NULL)
+    {
+        delete[] env[i];
+        i++;
+    }
+    delete[] env;
+}
+
 void exec(cgi_data &cgi, char **extra_env, std::string method)
 {
     int out = open("/goinfre/cgi_out", O_RDWR | O_CREAT | O_TRUNC, 0777);
@@ -19,10 +30,9 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
         dup2(in, 0);
         if (method == "REQUEST_METHOD=POST")
             write(in, cgi.body.c_str(), cgi.body.length());
-        close(out);
         close(in);
+        close(out);
         alarm(alarmCounter);
-        std::cerr << alarmCounter << std::endl;
         const char *file = strdup(cgi.env_server.SCRIPT_FILENAME.substr(cgi.env_server.SCRIPT_FILENAME.find_last_of("=") + 1).c_str());
         const char *script_name = strdup(cgi.env_server.SCRIPT_NAME.substr(cgi.env_server.SCRIPT_NAME.find_last_of("=") + 1).c_str());
         char *const argv[] = {const_cast<char*>(file), const_cast<char*>(script_name), nullptr};  // Construct argv array
@@ -34,6 +44,7 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
         close(out);
         close(in);
         waitpid(pid, &status, 0);
+        FreeENV(extra_env);
 
         if (WIFEXITED(status))
         {

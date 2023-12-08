@@ -642,7 +642,7 @@ int main(int ac, const char **av)
         data_conf.readConfigFile();       //
         data_conf.checkBrackets();        ///
         checkServer(data_conf.m_servers); ///
-        data_conf.closeDir();                      //
+        data_conf.closeDir();             //
         /////////////////////////////
         std::vector<int> port;
         std::vector<int> file;
@@ -656,7 +656,6 @@ int main(int ac, const char **av)
         std::map<int, std::string> map_request;
         std::map<int, size_t> checker;
         std::map<int, std::string> res;
-        std::map<int , int > data_port ;
         ports(port, data_conf.m_servers);
         for (unsigned int i = 0; i < data_conf.getNumber_ofServers(); i++)
         {
@@ -665,13 +664,13 @@ int main(int ac, const char **av)
             // int sockfd = socket(domain, type, protocol)
             int fd = socket(AF_INET, SOCK_STREAM, 0);
             if (fd < 0)
-                return (0);
+                throw std::runtime_error("socket : : failed  \n");
             int opt = 1;
             ///  sgv send
             if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) == -1)
-                return (0);
+                throw std::runtime_error("setsockopt : : failed  \n");
             if (setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(int)) == -1)
-                return (0);
+                throw std::runtime_error("setsockopt : : failed  \n");
             fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
             /// non-blocking file descriptors
             //   host
@@ -683,23 +682,13 @@ int main(int ac, const char **av)
             std::map<unsigned int, server>::iterator it = data_conf.m_servers.find(i);
 
             if (inet_pton(AF_INET, it->second.host.c_str(), &adrese.sin_addr) <= 0)
-            {
-               printf("inet_pton  : : failed  \n");
-                return (0);
-            }
-
+                throw std::runtime_error("inet_pton : : failed  \n");
             // adrese.sin_addr.s_addr = INADDR_ANY;
             adrese.sin_port = htons(port[i]);
             if (bind(fd, (struct sockaddr *)&adrese, sizeof(adrese)) < 0)
-            {
-                printf("bind : : Can't assign requested address\n");
-                return (0);
-            }
+                throw std::runtime_error("bind : : failed  \n");
             if (listen(fd, 1024) < 0)
-            {
-                printf("listen : : Can't lisen \n");
-                return (0);
-            }
+                throw std::runtime_error("listen : : failed  \n");
             file.push_back(fd);
             addresses.push_back(adrese);
             addresselent.push_back(addrlen);
@@ -718,14 +707,13 @@ int main(int ac, const char **av)
         std::map<int, int> chunked;
         std::map<int, size_t> len_requeste;
         std::map<int, bool> connection;
-        std::map<int , int >config;
         // size_t cherk;
         int stop = 0;
         while (true)
         {
             int ret = poll(fds.data(), fds.size(), 0);
             if (ret == -1)
-                return (0);
+                throw std::runtime_error("poll : : failed  \n");
             for (size_t i = 0; i < fds.size(); i++)
             {
                 if (fds[i].revents & POLLIN)
@@ -742,13 +730,8 @@ int main(int ac, const char **av)
                             fl.fd = co;
                             fl.events = POLLIN;
                             client.push_back(co);
-                            fds.push_back(fl); // container-overflow
-                            std::map<int , int >::iterator it = data_port.find(fds[i].fd);
-                            int port = it->second ;
-                            config.insert(std::make_pair(fds[i].fd, port));;
-                            //data_port
+                            fds.push_back(fl);
                         }
-
                         break;
                     }
                     else if (std::find(client.begin(), client.end(), fds[i].fd) != client.end())
@@ -756,7 +739,7 @@ int main(int ac, const char **av)
                         char *buf = (char *)malloc(1024);
                         //
                         if (!buf)
-                            return (0);
+                            throw std::runtime_error("malloc : : failed  \n");
                         int rec = recv(fds[i].fd, buf, 1023, 0);
                         if (rec == 0)
                         {
@@ -787,10 +770,6 @@ int main(int ac, const char **av)
                                 std::string port, name_host, name_serveur;
                                 geve_port_host(request, name_host, port);
                                 geve_port_serveur(request, name_serveur);
-                                // std::cout << request;
-                                // std::cout << name_serveur << "\n";
-                                // std::cout << name_host;
-                                // // // TODO mqaos implimentation
                                 int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur, name_host);
                                 feedRequest(serveur_id, data_conf.m_servers, request);
                                 respense = sendResponse(serveur_id, data_conf.m_servers);

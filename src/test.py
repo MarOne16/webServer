@@ -1,20 +1,14 @@
+# import sys
 
-from PIL import Image, ImageDraw
+# def read_and_print():
+#     # Read input from stdin
+#     input_data = sys.stdin.read()
 
-# Create a new image with a white background
-width, height = 300, 200
-image = Image.new("RGB", (width, height), "white")
+#     # Print the input
+#     print("Input from stdin:")
+#     print(input_data)
 
-# Create a drawing object
-draw = ImageDraw.Draw(image)
-
-# Draw a red rectangle on the image
-rectangle_color = (255, 0, 0)  # RGB color for red
-rectangle_position = [(50, 50), (250, 150)]  # Top-left and bottom-right coordinates
-draw.rectangle(rectangle_position, fill=rectangle_color)
-
-# Save the image
-image.save("output_image.png")
-
-# Display the image (optional)
-image.show()
+# if __name__ == "__main__":
+#     read_and_print()
+while True:
+    print("Enter 'x' for exit.")

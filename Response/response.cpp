@@ -27,17 +27,19 @@ std::string Response::build_response()
     else if (this->status == 405)
         this->other_response("405", "Method not allowed");
     else if (this->status == 414)
-        this->other_response("405", "URI Too Long");
+        this->other_response("414", "URI Too Long");
     else if (this->status == 413)
         this->other_response("413", "Request-URI Too Long");
     else if (this->status == 411)
         this->other_response("411", "Length Required");
     else if (this->status == 501)
         this->other_response("501", "Not Implemented");
+    else if (this->status == 404)
+        this->other_response("404", "Not Found");
     else if (!this->response_items.location->return_code_url.empty())
     {
         std::string url = (this->response_items.location->root + this->response_items.Path);
-        return_pages(this->response_items.location->return_code_url, this->response_items.Path); // TODO: check if this redirected response work
+        return_pages(this->response_items.location->return_code_url, this->response_items.Path);
     }
     else if (this->response_items.method == "GET")
         this->build_GET();
@@ -62,7 +64,7 @@ void Response::build_GET()
     std::string cgi_path = this->response_items.location->cgi_path;        // change path with valid path from config;
     std::string index;
     std::string autoIndexPage;
-    URI += this->response_items.Path.substr(1); // TODO : check if path is beging with /
+    URI += this->response_items.Path.substr(1);
     
     status = stat(URI.data(), &buffer);
     if (status != -1)
@@ -218,7 +220,6 @@ void Response::build_DELETE()
         {
             if (cgi_path.empty())
             {
-                std::cout << "here" << std::endl;
                 if(access(URI.c_str(), F_OK | X_OK | W_OK) == 0)
                 {
                     remove(URI.c_str());
@@ -458,7 +459,6 @@ void Response::other_response(std::string status, std::string desc)
                                         </html>\n";
     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
     {
-        std::cout << "here" << std::endl;
         ft_default_pages(status, body, (this->response_items.error_pages.find(status)->second));
     }
     response << "HTTP/1.1 " << status << " " << desc << "\r\n";

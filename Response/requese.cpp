@@ -43,7 +43,9 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             return;
         }
         parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
-        find_location(server_data, this->response_items.Path);     
+        find_location(server_data, this->response_items.Path);
+        if(this->status_response_code == 404)
+            return ; 
         parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
         //parser line-request 
      
@@ -137,7 +139,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             this->response_items.lenghtbody +=  this->response_items.Body.length();
         }
     }
-   if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str())) // TODO: check size 
+   if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str()))
         this->status_response_code = 413;
    if(this->response_items.Path.length() > 2048)
         this->status_response_code = 414;

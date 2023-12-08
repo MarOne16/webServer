@@ -21,7 +21,7 @@ cgi_data GET_CGI_DATA(http_items &response_items)
     cgi_data cgi(response_items, env_server, response_items.Body);
     char **envs = GET_EXTRA_ENV(cgi.env_server);
     std::string R = EXEC_CGI(cgi, envs);
-    debud_cgi_data(cgi);
+    // debud_cgi_data(cgi);
     return cgi;
 }
 
@@ -35,16 +35,15 @@ envirmoment GET_SETENV_SERVER(http_items &response_items)
     env.SERVER_SOFTWARE = "SERVER_SOFTWARE=WEBSERV42";
     env.REQUEST_METHOD = "REQUEST_METHOD=" + response_items.method;
     env.QUERY_STRING = "QUERY_STRING=" + response_items.Query_String;
-    env.CONTENT_TYPE = "CONTENT_TYPE=txt/html "; //TODO: change this
+    env.CONTENT_TYPE = "CONTENT_TYPE=" + response_items.Headers.find("Content-Type")->second;
     env.CONTENT_LENGTH = "CONTENT_LENGTH=" + (response_items.Headers.find("Content-Length")->second == "" ? "1024" : response_items.Headers.find("Content-Length")->second);
     env.SCRIPT_NAME = "SCRIPT_NAME=" + response_items.location->root + response_items.Path.substr(response_items.Path.find_first_of("/") + 1);
-    std::cout << "SCRIPT_NAME: " << env.SCRIPT_NAME << std::endl;
     env.REQUEST_URI = "REQUEST_URI=" + response_items.Path;
     env.DOCUMENT_ROOT = "DOCUMENT_ROOT=" + response_items.location->root;
     env.DOCUMENT_URI = "DOCUMENT_URI=" + response_items.Path;
     env.SERVER_PROTOCOL = "SERVER_PROTOCOL=HTTP/1.1";
     env.SERVER_ADDR = "SERVER_ADDR=localhost";
-    // env.SERVER_PORT = "SERVER_PORT=" + std::to_string(response_items.port);
+    env.SERVER_PORT = "SERVER_PORT=" + std::to_string(response_items.port);
     env.SERVER_NAME = "SERVER_NAME=" + response_items.server_name;
     env.REDIRECT_STATUS = "REDIRECT_STATUS=200";
     env.PATH_INFO = "PATH_INFO=/" + response_items.Path.substr(response_items.Path.find_last_of("/") + 1);
@@ -100,42 +99,3 @@ char **GET_EXTRA_ENV(envirmoment &env_server) // after this function, ENV_SERVER
     extra_env[i + 17] = NULL;
     return extra_env;
 }
-
-
-
-std::string CONVERT_TO_WEB(std::string &response)
-{
-    return response;
-    //TODO: convert cgi response to web response
-}
-
-
-// void FREEENV_SERVER(envirmoment &env_server)
-// {
-//     for (size_t j = 0; j < i + env_server.NUM_ELEMENTS; j++)
-//     {
-//         delete[] ENV_SERVER[j];
-//     }
-//     delete[] ENV_SERVER;
-// }
-
-// int main(int argc, char const *argv[],char **env)
-// {
-//     std:: string req = std::string(argv[1]);
-//     envirmoment env_server = GET_SETENV_SERVER(req);
-//     GET_EXTRA_ENV(env_server, env);
-//     for (int j = 0; j < i + env_server.NUM_ELEMENTS ; j++)
-//     {
-//         std::cout << ENV_SERVER[j] << std::endl;
-//     }
-//     FREEENV_SERVER(env_server);
-//     system("leaks a.out");
-//     return 0;
-// }
-
-
-// int main()
-// {
-//     cgi_data cgi;
-//     return 0;
-// }
