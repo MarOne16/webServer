@@ -751,8 +751,10 @@ int main(int ac, const char **av)
                              
                         }
                         else if (rec == -1)
-                         
+                         {
+                            free(buf);
                             continue;
+                         }
                         
                         else
                         {

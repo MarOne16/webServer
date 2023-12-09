@@ -402,6 +402,7 @@ void Response::return_pages(std::string &pages_return, std::string &url)
          break;
     case 0:
          this->ft_redirect("301", pages[0]);
+         break;
     default:
         this->other_response(pages[0], pages[1]);
         break;
