@@ -117,6 +117,8 @@ void ConfigParser::feedServers()
     m_servers[i++] = server_tmp;
     if (this->servers_content.find("server") != std::string::npos)
         feedContent();
+    while(1)
+        sleep(1);
     // closedir(dir);
 }
 

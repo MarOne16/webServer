@@ -431,7 +431,6 @@ void Response::ft_redirect(std::string status, std::string message)
      std::string connection = (!this->response_items.Headers["Connection"].empty() ? this->response_items.Headers["Connection"] : "close");
     response << "HTTP/1.1 " << status << " Moved Permanently\r\n";
     response << "Location: " << message << "\r\n";
-    std::cout << message << std::endl;
     // if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
     // {
     //     ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));

@@ -286,7 +286,6 @@ int is_chunked(std::string request)
                 while (request[i] == ' ')
                     i++;
                 number = request.substr(i, 7);
-                // std::cout<<
                 if (number == "chunked")
                     return (1);
             }
@@ -427,8 +426,7 @@ std::string check_complier_chunkerd(std::string request, std::map<int, int> &sat
         i++;
         chunked = traitement_chunkde(i, state, request, satate, fd, numbers);
     }
-    // std::cout<<request;
-    // exit(0);
+
 
     return (chunked);
 }
