@@ -10,11 +10,6 @@ Response::Response(int status, std::vector<std::string> init_line, http_items &r
 void Response::ft_free(std::vector<RequestBody *>& arr)
 {
     std::vector<RequestBody *>::iterator it = arr.begin();
-    // if()
-    // {
-    //     std::cout << "No request body" << std::endl;
-    //     return;
-    // }
     while(it != arr.end())
     {
         delete (*it);
@@ -42,7 +37,7 @@ std::string Response::build_response()
         this->other_response("404", "Not Found");
     else if (!this->response_items.location->return_code_url.empty())
     {
-        std::string url = (this->response_items.location->root + this->response_items.Path);
+        // std::string url = (this->response_items.location->root + this->response_items.Path);
         return_pages(this->response_items.location->return_code_url, this->response_items.Path);
     }
     else if (this->response_items.method == "GET")
@@ -68,7 +63,6 @@ void Response::build_GET()
     std::string index;
     std::string autoIndexPage;
     URI += this->response_items.Path.substr(1);
-    
     status = stat(URI.data(), &buffer);
     if (status != -1)
     {   
@@ -280,7 +274,7 @@ void Response::build_POST()
             else
             {
                 if (this->response_items.Path[this->response_items.Path.size() - 1] == '/')
-                    this->ft_redirect("300", this->response_items.Path);
+                    this->ft_redirect("301", this->response_items.Path);
                 else
                 {
                     index = this->check_index_file(URI);
@@ -381,10 +375,16 @@ void Response::build_POST()
 void Response::return_pages(std::string &pages_return, std::string &url)
 {
     std::vector<std::string> pages = split_v(pages_return, " ");
-    switch (atoi(pages[0].c_str()))
+    if(url == pages[1])
+    {
+        this->ft_success_code(pages[0], read_file(pages[1]), url);
+        return;
+    }
+    
+     switch (atoi(pages[0].c_str()))
     {
     case 200:
-        this->ft_success_code(pages[0], pages[1], url);
+        this->ft_success_code(pages[0], read_file(pages[1]), url);
         break;
     case 301:
         this->ft_redirect(pages[0], pages[1]);
@@ -429,16 +429,16 @@ void Response::ft_success_code(std::string status, std::string message, std::str
 void Response::ft_redirect(std::string status, std::string message)
 {
      std::string connection = (!this->response_items.Headers["Connection"].empty() ? this->response_items.Headers["Connection"] : "close");
-    if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
-    {
-        // std::cout << "here" << std::endl;
-        ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));
-    }
     response << "HTTP/1.1 " << status << " Moved Permanently\r\n";
     response << "Location: " << message << "\r\n";
+    std::cout << message << std::endl;
+    // if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
+    // {
+    //     ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));
+    // }
     response << "Content-Length: 0\r\n";
-    response << "Connection:" << connection  <<  "\r\n";
-    response << "Content-Type: "<< "text/html" << "\r\n";
+    response << "Connection:" << "close"  <<  "\r\n";
+    response << "Content-Type: "<< connection << "\r\n";
     response << "Host: " << this->response_items.server << "\r\n";
     response << "Date: " << this->get_Date() << "\r\n\r\n";
 }
