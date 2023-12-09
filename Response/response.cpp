@@ -10,7 +10,11 @@ Response::Response(int status, std::vector<std::string> init_line, http_items &r
 void Response::ft_free(std::vector<RequestBody *>& arr)
 {
     std::vector<RequestBody *>::iterator it = arr.begin();
-
+    // if()
+    // {
+    //     std::cout << "No request body" << std::endl;
+    //     return;
+    // }
     while(it != arr.end())
     {
         delete (*it);
@@ -38,7 +42,6 @@ std::string Response::build_response()
         this->other_response("404", "Not Found");
     else if (!this->response_items.location->return_code_url.empty())
     {
-        std::cout << "here" << std::endl;
         std::string url = (this->response_items.location->root + this->response_items.Path);
         return_pages(this->response_items.location->return_code_url, this->response_items.Path);
     }
@@ -50,7 +53,6 @@ std::string Response::build_response()
         this->build_POST();
     delete this->response_items.location;
     ft_free(this->response_items.ChunkedBody);
-    // delete  this->response_items.ChunkedBody;
     return (response.str());
 }
 
@@ -400,7 +402,7 @@ void Response::return_pages(std::string &pages_return, std::string &url)
         this->other_response(pages[0], " Internal Server Error");
          break;
     case 0:
-        this->other_response("404", " Not Found");
+         this->ft_redirect("301", pages[0]);
     default:
         this->other_response(pages[0], pages[1]);
         break;
@@ -429,6 +431,7 @@ void Response::ft_redirect(std::string status, std::string message)
      std::string connection = (!this->response_items.Headers["Connection"].empty() ? this->response_items.Headers["Connection"] : "close");
     if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
     {
+        // std::cout << "here" << std::endl;
         ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));
     }
     response << "HTTP/1.1 " << status << " Moved Permanently\r\n";
