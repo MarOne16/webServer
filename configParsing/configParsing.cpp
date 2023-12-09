@@ -79,9 +79,9 @@ void ConfigParser::checkBrackets()
     int right = 0;
     for (size_t i = 0; i < this->servers_content.length(); i++)
     {
-        if (this->servers_content[i] == '{')
+        if (this->servers_content[i] == '{' || this->servers_content[i] == '(')
             left++;
-        if (this->servers_content[i] == '}')
+        if (this->servers_content[i] == '}' || this->servers_content[i] == ')')
             right++;
     }
     if (left != right)
