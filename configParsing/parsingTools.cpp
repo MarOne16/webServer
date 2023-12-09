@@ -181,8 +181,9 @@ std::string getDefault(std::string path)
 {
     if (path == "root")
     {
-        std::string current_path = getcwd(NULL, 0);
-        current_path += "/default_pages/";
+        char *current_path1 = getcwd(NULL, 0);
+        std::string current_path = current_path1 + std::string("/default_pages/");
+        free(current_path1);
         if (findFile(current_path))
             return current_path;
         else
@@ -192,8 +193,9 @@ std::string getDefault(std::string path)
     }
     if (path == "upload_store_directory")
     {
-        std::string current_path = getcwd(NULL, 0);
-        current_path += "/default_pages/";
+        char *current_path1 = getcwd(NULL, 0);
+        std::string current_path = current_path1 + std::string("/default_pages/");
+        free(current_path1);
         if (findFile(current_path))
             return current_path;
         else

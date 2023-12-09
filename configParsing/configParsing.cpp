@@ -70,6 +70,7 @@ void ConfigParser::feedContent()
     this->content.clear();
     this->content = server;
     feedServers();
+
 }
 
 void ConfigParser::checkBrackets()

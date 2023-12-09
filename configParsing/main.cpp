@@ -49,4 +49,8 @@ int main(int argc, const char **argv)
     {
         std::cerr << e.what() << std::endl;
     }
+    while (1)
+    {
+        sleep(1);
+    }
 }
