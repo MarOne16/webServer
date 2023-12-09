@@ -257,7 +257,6 @@ void Response::build_POST()
 
 
     URI += this->response_items.Path.substr(1);
-    std::cout << URI << " " << upload_enable << std::endl;
     status = stat(URI.c_str(), &buffer);
     if (upload_enable == "off")
     {
@@ -366,7 +365,7 @@ void Response::build_POST()
                 return;
             }
             file << this->response_items.Body;
-            this->other_response("202", "Accepted");
+            this->other_response("201", "Created");
         }
     }
 }
