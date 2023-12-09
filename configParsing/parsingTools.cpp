@@ -28,7 +28,7 @@ char *ConfigParser::getFileName(const char *extension)
         {
             if (ent->d_type == DT_REG && strstr(ent->d_name, extension) != NULL)
             {
-                fileName = ent->d_name;
+                fileName = strdup(ent->d_name);
                 found++;
             }
         }

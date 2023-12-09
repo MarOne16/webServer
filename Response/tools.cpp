@@ -61,7 +61,7 @@ std::string Response::check_index_file(std::string &url)
             if (entity->d_name == files[i])
             {
                 closedir(dir);
-                return entity->d_name ;
+                return files[i];
             }
             entity = readdir(dir);
         }

@@ -38,6 +38,7 @@ std::string Response::build_response()
         this->other_response("404", "Not Found");
     else if (!this->response_items.location->return_code_url.empty())
     {
+        std::cout << "here" << std::endl;
         std::string url = (this->response_items.location->root + this->response_items.Path);
         return_pages(this->response_items.location->return_code_url, this->response_items.Path);
     }
@@ -72,7 +73,7 @@ void Response::build_GET()
         if (this->response_items.Extension.empty())
         {
             if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
-                this->ft_redirect("301", this->response_items.Path + "/");
+                this->ft_redirect("301", this->response_items.Path);
             else
             {
                 index = check_index_file(URI);
@@ -260,11 +261,11 @@ void Response::build_POST()
 
 
     URI += this->response_items.Path.substr(1);
-
+    std::cout << URI << " " << upload_enable << std::endl;
     status = stat(URI.c_str(), &buffer);
     if (upload_enable == "off")
     {
-            
+          
         if (status != -1)
         {
             if (!this->response_items.Extension.empty())
@@ -398,6 +399,8 @@ void Response::return_pages(std::string &pages_return, std::string &url)
     case 500:
         this->other_response(pages[0], " Internal Server Error");
          break;
+    case 0:
+        this->other_response("404", " Not Found");
     default:
         this->other_response(pages[0], pages[1]);
         break;
