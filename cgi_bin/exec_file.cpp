@@ -26,10 +26,10 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
     }
     else if (pid == 0)
     {
-        dup2(out, 1);
-        dup2(in, 0);
         if (method == "REQUEST_METHOD=POST")
             write(in, cgi.body.c_str(), cgi.body.length());
+        dup2(out, 1);
+        dup2(in, 0);
         close(in);
         close(out);
         alarm(alarmCounter);

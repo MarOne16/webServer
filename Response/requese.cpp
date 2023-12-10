@@ -88,7 +88,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                 
                 while (std::getline(os, token, '\n'))
                 {
-                    ele = new RequestBody;
+                        ele = new RequestBody;
                         token = token.substr(0, token.size() - 1);;
                         int i =0;
                         while(token.compare(this->response_items.bondary) != 0)
@@ -108,8 +108,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                             }
                             else
                             {
-
-                                
                                 ele->Content.append(token);
                                 if(!ele->Content.empty())
                                     ele->Content.append("\n");
@@ -129,9 +127,11 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                             this->response_items.lenghtbody +=  ele->Content.length();
                             ele->Content.pop_back();
                             this->response_items.ChunkedBody.push_back(ele);
-                        
                         }
+                        else
+                            delete ele;
                 }
+
         }
         else
         {
@@ -149,9 +149,11 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         this->status_response_code = 400;
     if(this->response_items.Headers.find("Transfer-Encoding")->second == "chunked" && this->response_items.lenghtbody == 0  )
         this->status_response_code = 400;
-    else if(this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end() && atoi((this->response_items.Headers.find("Content-Length")->second).data()) != (int)req.length())
+    else if(this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end() 
+            && atoi((this->response_items.Headers.find("Content-Length")->second).data()) != (int)req.length()
+            && atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody )
             this->status_response_code = 400;
-   
+  
     
     }catch(std::exception& e)
     {

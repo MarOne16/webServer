@@ -36,10 +36,7 @@ std::string Response::build_response()
     else if (this->status == 404)
         this->other_response("404", "Not Found");
     else if (!this->response_items.location->return_code_url.empty())
-    {
-        // std::string url = (this->response_items.location->root + this->response_items.Path);
         return_pages(this->response_items.location->return_code_url, this->response_items.Path);
-    }
     else if (this->response_items.method == "GET")
         this->build_GET();
     else if (this->response_items.method == "DELETE")
@@ -184,7 +181,9 @@ void Response::build_DELETE()
     std::string URI = this->response_items.location->root;                 // change by value depends on location
     std::string get_auto_index = this->response_items.location->autoindex; // change by getter
     std::string cgi_path = this->response_items.location->cgi_path;        // change path with valid path from config;
+
     URI += this->response_items.Path.substr(1);
+    std::cout << URI << std::endl;
     status = stat(URI.c_str(), &buffer);
     if (status != -1)
     {
@@ -268,7 +267,10 @@ void Response::build_POST()
                 if (!cgi_path.empty())
                     responsecgi(GET_CGI_DATA(this->response_items));
                 else
+                {
+
                     this->other_response("403", " Forbidden");
+                }
             }
             else
             {
@@ -388,6 +390,9 @@ void Response::return_pages(std::string &pages_return, std::string &url)
     case 301:
         this->ft_redirect(pages[0], pages[1]);
         break;
+    case 302:
+        this->ft_redirect(pages[1], pages[1]);
+        break;
     case 400:
         this->other_response(pages[0], " Bad Request");
         break;
@@ -430,14 +435,13 @@ void Response::ft_redirect(std::string status, std::string message)
 {
      std::string connection = (!this->response_items.Headers["Connection"].empty() ? this->response_items.Headers["Connection"] : "close");
     response << "HTTP/1.1 " << status << " Moved Permanently\r\n";
-    response << "Location: " << message << "\r\n";
-    // if (this->response_items.error_pages.find(status) != this->response_items.error_pages.end())
-    // {
-    //     ft_default_pages(status, message, (this->response_items.error_pages.find(status)->second));
-    // }
+    if (message.find("http", 0) == 0)
+        response << "Location: " <<message << "\r\n";
+    else
+        response << "Location: " << "/" <<message << "\r\n";
     response << "Content-Length: 0\r\n";
-    response << "Connection:" << "close"  <<  "\r\n";
-    response << "Content-Type: "<< connection << "\r\n";
+    response << "Connection:" << connection <<  "\r\n";
+    response << "Content-Type: "<< "text/html" << "\r\n";
     response << "Host: " << this->response_items.server << "\r\n";
     response << "Date: " << this->get_Date() << "\r\n\r\n";
 }
