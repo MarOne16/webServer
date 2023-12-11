@@ -13,6 +13,25 @@ void debud_cgi_data(cgi_data &cgi)
     {
         std::cout << it->first << ": " << it->second << RESET<< std::endl;
     }
+    std::cout << YELLOW << cgi.env_server.SERVER_SOFTWARE << std::endl;
+    std::cout << cgi.env_server.REQUEST_METHOD << std::endl;
+    std::cout << cgi.env_server.QUERY_STRING << std::endl;
+    std::cout << cgi.env_server.CONTENT_TYPE << std::endl;
+    std::cout << cgi.env_server.CONTENT_LENGTH << std::endl;
+    std::cout << cgi.env_server.SCRIPT_FILENAME << std::endl;
+    std::cout << cgi.env_server.SCRIPT_NAME << std::endl;
+    std::cout << cgi.env_server.REQUEST_URI << std::endl;
+    std::cout << cgi.env_server.DOCUMENT_ROOT << std::endl;
+    std::cout << cgi.env_server.DOCUMENT_URI << std::endl;
+    std::cout << cgi.env_server.SERVER_PROTOCOL << std::endl;
+    std::cout << cgi.env_server.SERVER_ADDR << std::endl;
+    std::cout << cgi.env_server.SERVER_PORT << std::endl;
+    std::cout << cgi.env_server.SERVER_NAME << std::endl;
+    std::cout << cgi.env_server.PATH_INFO << std::endl;
+    std::cout << cgi.env_server.PATH_TRANSLATED << std::endl;
+    std::cout << cgi.env_server.REDIRECT_STATUS << std::endl;
+    std::cout << cgi.env_server.REDIRECT_STATUS_ << std::endl;
+    std::cout << cgi.env_server.HTTP_COOKIE << RESET<< std::endl;
 }
 
 cgi_data GET_CGI_DATA(http_items &response_items)
@@ -21,7 +40,7 @@ cgi_data GET_CGI_DATA(http_items &response_items)
     cgi_data cgi(response_items, env_server, response_items.Body);
     char **envs = GET_EXTRA_ENV(cgi.env_server);
     std::string R = EXEC_CGI(cgi, envs);
-    // debud_cgi_data(cgi);
+    debud_cgi_data(cgi);
     return cgi;
 }
 
@@ -42,12 +61,13 @@ envirmoment GET_SETENV_SERVER(http_items &response_items)
     env.DOCUMENT_ROOT = "DOCUMENT_ROOT=" + response_items.location->root;
     env.DOCUMENT_URI = "DOCUMENT_URI=" + response_items.Path;
     env.SERVER_PROTOCOL = "SERVER_PROTOCOL=HTTP/1.1";
-    env.SERVER_ADDR = "SERVER_ADDR=localhost";
+    env.SERVER_ADDR = "SERVER_ADDR=" + response_items.server_name;
     env.SERVER_PORT = "SERVER_PORT=" + std::to_string(response_items.port);
     env.SERVER_NAME = "SERVER_NAME=" + response_items.server_name;
     env.REDIRECT_STATUS = "REDIRECT_STATUS=200";
     env.PATH_INFO = "PATH_INFO=/" + response_items.Path.substr(response_items.Path.find_last_of("/") + 1);
     env.PATH_TRANSLATED = "PATH_TRANSLATED=" + response_items.location->root + response_items.Path.substr(response_items.Path.find_last_of("/") + 1);
+    env.HTTP_COOKIE = "HTTP_COOKIE=" + response_items.Headers.find("Cookie")->second;
     return env;
 }
 
@@ -96,6 +116,8 @@ char **GET_EXTRA_ENV(envirmoment &env_server) // after this function, ENV_SERVER
     strcpy(extra_env[i + 15], env_server.PATH_INFO.c_str());
     extra_env[i + 16] = new char[env_server.PATH_TRANSLATED.size() + 1];
     strcpy(extra_env[i + 16], env_server.PATH_TRANSLATED.c_str());
-    extra_env[i + 17] = NULL;
+    extra_env[i + 17] = new char[env_server.HTTP_COOKIE.size() + 1];
+    strcpy(extra_env[i + 17], env_server.HTTP_COOKIE.c_str());
+    extra_env[i + 18] = NULL;
     return extra_env;
 }
