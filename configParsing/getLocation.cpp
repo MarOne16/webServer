@@ -235,6 +235,8 @@ std::string ConfigParser::getReturnCodeUrl(std::string location)
     std::list<std::string> list = split(return_code_url, " ");
     if (list.size() != 2)
         throw std::runtime_error("Return code url directive is not valid.");
+    if (list.begin()->length() != 3 || notIn(*list.begin(), "0123456789"))
+        throw std::runtime_error("Return code url directive is not valid.");
     return return_code_url;
 }
 
