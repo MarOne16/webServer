@@ -53,7 +53,7 @@ void Requese::parser_uri(std::string& uri)
 Requese::Requese(std::string req, server& server_data):req(req),status_response_code(200)
 {
 
-
+    std::cout << req << std::endl;
     this->response_items.location = new s_location;
     this->response_items.lenghtbody = 0;
     this->response_items.error_pages = server_data.error_pages;
@@ -87,9 +87,10 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             return;
         }
         parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
-        find_location(server_data, this->response_items.Path);
-        if(this->status_response_code == 404)
+        
+        if(this->status_response_code != 200)
             return ; 
+        find_location(server_data, this->response_items.Path);
         parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
         if(this->status_response_code != 200)
             return ;
@@ -244,6 +245,12 @@ void Requese::parser_init_line(std::string Initial_Request_Line, std::string& me
    
     while(line_init >> part)
         line.push_back(part);
+    if(line.size() != 3)
+    {
+        this->status_response_code = 400;
+        return ;
+    }
+        
     this->response_items.method = line[0];
     this->response_items.http_version = line[2];
      if(line[1].find("?") != std::string::npos && line[1].find("#") != std::string::npos)
@@ -274,8 +281,6 @@ void Requese::parser_init_line(std::string Initial_Request_Line, std::string& me
      }
     else
          this->response_items.Extension  = "";
-    if(line.size() != 3)
-        this->status_response_code = 400;
     i = 0;
     while(i < Methode.size())
     {
