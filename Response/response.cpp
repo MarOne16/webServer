@@ -19,6 +19,7 @@ void Response::ft_free(std::vector<RequestBody *>& arr)
 
 std::string Response::build_response()
 {
+   
     if (this->status == 400)
         this->other_response("400", "Bad Request");
     else if (this->status == 505)
@@ -61,14 +62,14 @@ void Response::build_GET()
     std::string cgi_path = this->response_items.location->cgi_path;        // change path with valid path from config;
     std::string index;
     std::string autoIndexPage;
-    URI += this->response_items.Path;
+   URI += this->response_items.Path.substr(1);
     status = stat(URI.data(), &buffer);
     if (status != -1)
     {   
         if (this->response_items.Extension.empty())
         {
             if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
-                this->ft_redirect("301", this->response_items.Path);
+                this->ft_redirect("301", this->response_items.Path + "/");
             else
             {
                 index = check_index_file(URI);
@@ -184,7 +185,7 @@ void Response::build_DELETE()
     std::string get_auto_index = this->response_items.location->autoindex; // change by getter
     std::string cgi_path = this->response_items.location->cgi_path;        // change path with valid path from config;
 
-    URI += this->response_items.Path;
+   URI += this->response_items.Path.substr(1);
     status = stat(URI.c_str(), &buffer);
     if (status != -1)
     {
@@ -256,7 +257,7 @@ void Response::build_POST()
     std::vector<RequestBody *>::iterator tmp;
 
 
-    URI += this->response_items.Path;
+   URI += this->response_items.Path.substr(1);
     status = stat(URI.c_str(), &buffer);
     if (upload_enable == "off")
     {
@@ -426,8 +427,8 @@ void Response::ft_success_code(std::string status, std::string message, std::str
     response << "Content-length: " << message.length() << "\r\n";
     response << "Connection:" << connection  <<  "\r\n";
     response << "Content-Type: " << this->get_Content_type(URI) << "\r\n";
-    response << "Host: " << this->response_items.server << "\r\n";
-    response << "Set-Cookie: yummy_cookie=darkmod;  Path=/websites/;\r\n";
+    response << "Host: " << this->response_items.server_name << "\r\n";
+    response << "Set-Cookie: yummy_cookie=darkmod; domain=http://localhost/; Path=/websites/\r\n";
     response << "Date: " << this->get_Date() << "\r\n\r\n";
     response << message;
 }
@@ -437,13 +438,18 @@ void Response::ft_redirect(std::string status, std::string message)
      std::string connection = (!this->response_items.Headers["Connection"].empty() ? this->response_items.Headers["Connection"] : "close");
     response << "HTTP/1.1 " << status << " Moved Permanently\r\n";
     if (message.find("http", 0) == 0)
-        response << "Location: " <<message << "\r\n";
+        response << "Location: " << message << "\r\n";
     else
-        response << "Location: " << "/" <<message << "\r\n";
+    {
+        if(message[0] != '/')
+            response << "Location: " << "/" << message << "\r\n";
+        else
+             response << "Location: " << message << "\r\n";
+    }
     response << "Content-Length: 0\r\n";
     response << "Connection:" << connection <<  "\r\n";
     response << "Content-Type: "<< "text/html" << "\r\n";
-    response << "Host: " << this->response_items.server << "\r\n";
+    response << "Host: " << this->response_items.server_name << "\r\n";
     response << "Date: " << this->get_Date() << "\r\n\r\n";
 }
 
@@ -474,7 +480,7 @@ void Response::other_response(std::string status, std::string desc)
     response << "HTTP/1.1 " << status << " " << desc << "\r\n";
     response << "Content-Type: text/html\r\n";
     response << "Content-Length: " << body.length() << "\r\n";
-    response << "Server: " << this->response_items.server << "\r\n";
+    response << "Server: " << this->response_items.server_name << "\r\n";
     response << "Connection:" << connection  <<  "\r\n";
     response << "Date: " << this->get_Date() << "\r\n";
     response << "\r\n"; // Blank line to separate headers and body

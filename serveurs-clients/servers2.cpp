@@ -596,7 +596,6 @@ void request_inserer(char *buffer, int buff_size, int fd, std::map<int, std::str
         std::string request = std::string(buffer, buff_size);
         it->second += request;
       
-        // std::cout << it->second << " -- \n";
         size_t founds = it->second.find("\r\n\r\n");
         if (j == 1 || founds == std::string::npos)
         {
