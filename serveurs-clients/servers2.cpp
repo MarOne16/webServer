@@ -603,7 +603,7 @@ void request_inserer(char *buffer, int buff_size, int fd, std::map<int, std::str
             it_checker->second = content_lenght(it->second) + length_heder(it->second.substr(0, content_lenght(it->second)));
              if(  j && it->second == "\r\n")
                 stop = 1;
-            std::cout<< it_checker->second<<" \n";
+            
         }
         if(j && founds != std::string::npos   )
         {
@@ -775,7 +775,7 @@ int main(int ac, const char **av)
                             if (stop == 1)
                             {
                                 request = data(map_request, fds[i].fd);
-                            std::cout<<request.size()   << " \n";
+                           
                                 // std::cout<<request;
                                 stop = 0;
                                 std::string port, name_host, name_serveur;
@@ -785,7 +785,7 @@ int main(int ac, const char **av)
                                 feedRequest(serveur_id, data_conf.m_servers, request);
                                 // std::cout<<request<<" \n";
                                 respense = sendResponse(serveur_id, data_conf.m_servers);
-                                std::cout<<"   --  hi \n";
+                                
                                 connection.insert(std::make_pair(fds[i].fd, data_conf.m_servers.find(serveur_id)->second.connection));
                                 res.insert(std::make_pair(fds[i].fd, respense));
                                 fds[i].events = POLLOUT;

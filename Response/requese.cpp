@@ -52,8 +52,6 @@ void Requese::parser_uri(std::string& uri)
 
 Requese::Requese(std::string req, server& server_data):req(req),status_response_code(200)
 {
-
-    std::cout << req << std::endl;
     this->response_items.location = new s_location;
     this->response_items.lenghtbody = 0;
     this->response_items.error_pages = server_data.error_pages;
