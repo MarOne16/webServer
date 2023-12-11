@@ -232,6 +232,9 @@ std::string ConfigParser::getReturnCodeUrl(std::string location)
     if (!ifClosed(return_code_url))
         throw std::runtime_error("Return code url directive is not closed.");
     return_code_url.erase(return_code_url.length() - 1, 1);
+    std::list<std::string> list = split(return_code_url, " ");
+    if (list.size() != 2)
+        throw std::runtime_error("Return code url directive is not valid.");
     return return_code_url;
 }
 
