@@ -23,7 +23,7 @@ int main(int ac, const char **av)
         /////////////////////////////
         ConfigParser data_conf(av);       //
         data_conf.readConfigFile();       //
-        data_conf.checkBrackets();        ///            //
+        data_conf.checkBrackets();        ///
         checkServer(data_conf.m_servers); ///
         data_conf.closeDir();
         /////////////////////////////
@@ -53,14 +53,13 @@ int main(int ac, const char **av)
                 throw std::runtime_error("poll : : failed  \n");
             for (size_t i = 0; i < fds.size(); i++)
             {
-                if (fds[i].revents & POLLIN)
+                if (fds[i].revents == POLLIN)
                 {
                     if (!read_to_client(serveur, i, fds, client, map_request, checker, chunked, connection, data_conf, res))
                         break;
-                    else if(read_to_client(serveur, i, fds, client, map_request, checker, chunked, connection, data_conf, res) == 2 )
-                        continue;
+                   
                 }
-                if (fds[i].revents & POLLOUT)
+                if (fds[i].revents == POLLOUT)
                 {
                     int cheker = 0;
                     follow_responsive(cheker, len_requeste, fds[i].fd, res);

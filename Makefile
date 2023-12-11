@@ -23,6 +23,7 @@ OBJS   = $(FILES:.cpp=.o)
 HEADER = ./Response/webserver.hpp \
 		 ./cgi_bin/cgi.cpp \
 		 ./configParsing/configParsing.hpp \
+		 ./serveurs-clients/servers.hpp \
 
 all: $(NAME)
 

@@ -6,7 +6,7 @@
 /*   By: iedderqi <iedderqi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 20:12:38 by iedderqi          #+#    #+#             */
-/*   Updated: 2023/12/11 20:24:14 by iedderqi         ###   ########.fr       */
+/*   Updated: 2023/12/11 21:20:21 by iedderqi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -373,18 +373,16 @@ int read_to_client(std::vector<int> server, int i, std::vector<struct pollfd> &f
         if (!buf)
             throw std::runtime_error("malloc : : failed  \n");
         int rec = recv(fds[i].fd, buf, 1023, 0);
-        if (rec == 0)
+        if (rec <= 0)
         {
+            free(buf);
             stop = 0;
             map_request.erase(fds[i].fd);
             checker.erase(fds[i].fd);
             chunked.erase(fds[i].fd);
             close_fd(fds[i].fd, client, fds);
             return (0);
-            // break;
         }
-        else if (rec == -1)
-            return(2);
         else
         {
             request_inserer(buf, rec, fds[i].fd, map_request, checker, stop, chunked);
