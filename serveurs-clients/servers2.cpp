@@ -203,6 +203,7 @@ size_t content_lenght(std::string request)
 {
     std::string calcule;
 
+        // std::cout<<request<<"    ----  ---    \n";
     for (size_t i = 0; i < request.size(); i++)
     {
         //\r\n\r\n
@@ -221,7 +222,7 @@ size_t content_lenght(std::string request)
         calcule += request[i];
     }
 
-    return (calcule.size());
+    return (0);
 }
 
 size_t donner_flags(std::map<int, size_t> checker, int fd)
@@ -427,11 +428,9 @@ std::string check_complier_chunkerd(std::string request, std::map<int, int> &sat
         chunked = traitement_chunkde(i, state, request, satate, fd, numbers);
     }
 
-
     return (chunked);
 }
 
- 
 int digital(std::string number)
 {
     for (size_t i = 0; i < number.size(); i++)
@@ -455,7 +454,7 @@ std::string chunked_ramase(std::string request, std::map<int, size_t> &flags, in
         for (i = j; i < request.size() && request[i] != '\r'; i++)
             number += request[i];
         // number[i] = '\0';
-        
+
         if (!request[i] && request[i - 1] != '\r')
         {
 
@@ -536,7 +535,7 @@ std::string chunked_request(std::string request, std::map<int, size_t> &flags, i
             for (j = 0; j < request.size() && request[j] != '\r'; j++)
                 size += request[j];
             number += size;
-             
+
             if (lenght == 0)
             {
                 stop = 1;
@@ -595,27 +594,42 @@ void request_inserer(char *buffer, int buff_size, int fd, std::map<int, std::str
     if (it != map_request.end() && it_checker != checker.end())
     {
         std::string request = std::string(buffer, buff_size);
-        if (j == 1)
+        it->second += request;
+      
+        // std::cout << it->second << " -- \n";
+        size_t founds = it->second.find("\r\n\r\n");
+        if (j == 1 || founds == std::string::npos)
         {
-            it_checker->second = content_lenght(request) + length_heder(request.substr(0, content_lenght(request)));
-            if (is_chunked(request.substr(0, content_lenght(request))))
+            it_checker->second = content_lenght(it->second) + length_heder(it->second.substr(0, content_lenght(it->second)));
+             if(  j && it->second == "\r\n")
+                stop = 1;
+            std::cout<< it_checker->second<<" \n";
+        }
+        if(j && founds != std::string::npos   )
+        {
+
+             if (is_chunked(it->second.substr(0, content_lenght(it->second))))
                 chunked.insert(std::make_pair(fd, 1));
             else
                 chunked.insert(std::make_pair(fd, 0));
         }
 
-        if (chunked[fd] == 0)
+        
+         
+         if( founds != std::string::npos)
         {
-            it->second += request;
-            if (it->second.size() >= it_checker->second)
-                stop = 1;
-        }
-        else
-        {
-            it->second += request;
-            size_t founds = it->second.find("\r\n0\r\n\r\n");
-            if (founds != std::string::npos)
-                stop = 1;
+            
+            if (chunked[fd] == 0)
+            {
+                if (it->second.size() >= it_checker->second)
+                    stop = 1;
+            }
+            else
+            {
+                size_t founds = it->second.find("\r\n0\r\n\r\n");
+                if (founds != std::string::npos)
+                    stop = 1;
+            }
         }
 
         request.clear();
@@ -635,9 +649,9 @@ int main(int ac, const char **av)
         ConfigParser data_conf(av);       //
         data_conf.readConfigFile();       //
         data_conf.checkBrackets();        ///
-              //
+                                          //
         checkServer(data_conf.m_servers); ///
-        data_conf.closeDir();    
+        data_conf.closeDir();
         /////////////////////////////
         std::vector<int> port;
         std::vector<int> file;
@@ -746,16 +760,14 @@ int main(int ac, const char **av)
                             client.erase(std::find(client.begin(), client.end(), fds[i].fd));
                             close(fds[i].fd);
                             fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
-                                break;
-                            
-                             
+                            break;
                         }
                         else if (rec == -1)
-                         {
+                        {
                             free(buf);
                             continue;
-                         }
-                        
+                        }
+
                         else
                         {
                             request_inserer(buf, rec, fds[i].fd, map_request, checker, stop, chunked);
@@ -763,24 +775,28 @@ int main(int ac, const char **av)
                             if (stop == 1)
                             {
                                 request = data(map_request, fds[i].fd);
+                            std::cout<<request.size()   << " \n";
+                                // std::cout<<request;
                                 stop = 0;
                                 std::string port, name_host, name_serveur;
                                 geve_port_host(request, name_host, port);
                                 geve_port_serveur(request, name_serveur);
                                 int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur, name_host);
                                 feedRequest(serveur_id, data_conf.m_servers, request);
+                                // std::cout<<request<<" \n";
                                 respense = sendResponse(serveur_id, data_conf.m_servers);
+                                std::cout<<"   --  hi \n";
                                 connection.insert(std::make_pair(fds[i].fd, data_conf.m_servers.find(serveur_id)->second.connection));
                                 res.insert(std::make_pair(fds[i].fd, respense));
                                 fds[i].events = POLLOUT;
-                               
+
                                 break;
                             }
                         }
                     }
                 }
- 
-                if (   fds[i].revents & POLLOUT)
+
+                if (fds[i].revents & POLLOUT)
                 {
 
                     int cheker = 0;
@@ -814,7 +830,7 @@ int main(int ac, const char **av)
                     }
                     requ.clear();
                     if (!cheker)
-                    {
+                    { 
                         respons_find.clear();
                         len_requeste.erase(fds[i].fd);
                         map_request.erase(fds[i].fd);
@@ -825,7 +841,6 @@ int main(int ac, const char **av)
                         {
                             connection.erase(fds[i].fd);
 
-                             
                             close(fds[i].fd);
                             client.erase(std::find(client.begin(), client.end(), fds[i].fd));
                             fds.erase(fds.begin() + index_fds(fds, fds[i].fd));
