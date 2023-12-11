@@ -13,6 +13,24 @@ void debud_cgi_data(cgi_data &cgi)
     {
         std::cout << it->first << ": " << it->second << RESET<< std::endl;
     }
+    std::cout << YELLOW << cgi.env_server.SERVER_SOFTWARE << std::endl;
+    std::cout << cgi.env_server.REQUEST_METHOD << std::endl;
+    std::cout << cgi.env_server.QUERY_STRING << std::endl;
+    std::cout << cgi.env_server.CONTENT_TYPE << std::endl;
+    std::cout << cgi.env_server.CONTENT_LENGTH << std::endl;
+    std::cout << cgi.env_server.SCRIPT_FILENAME << std::endl;
+    std::cout << cgi.env_server.SCRIPT_NAME << std::endl;
+    std::cout << cgi.env_server.REQUEST_URI << std::endl;
+    std::cout << cgi.env_server.DOCUMENT_ROOT << std::endl;
+    std::cout << cgi.env_server.DOCUMENT_URI << std::endl;
+    std::cout << cgi.env_server.SERVER_PROTOCOL << std::endl;
+    std::cout << cgi.env_server.SERVER_ADDR << std::endl;
+    std::cout << cgi.env_server.SERVER_PORT << std::endl;
+    std::cout << cgi.env_server.SERVER_NAME << std::endl;
+    std::cout << cgi.env_server.PATH_INFO << std::endl;
+    std::cout << cgi.env_server.PATH_TRANSLATED << std::endl;
+    std::cout << cgi.env_server.REDIRECT_STATUS << std::endl;
+    std::cout << cgi.env_server.REDIRECT_STATUS_ << RESET<< std::endl;
 }
 
 cgi_data GET_CGI_DATA(http_items &response_items)
@@ -21,7 +39,7 @@ cgi_data GET_CGI_DATA(http_items &response_items)
     cgi_data cgi(response_items, env_server, response_items.Body);
     char **envs = GET_EXTRA_ENV(cgi.env_server);
     std::string R = EXEC_CGI(cgi, envs);
-    debud_cgi_data(cgi);
+    // debud_cgi_data(cgi);
     return cgi;
 }
 
@@ -35,10 +53,9 @@ envirmoment GET_SETENV_SERVER(http_items &response_items)
     env.SERVER_SOFTWARE = "SERVER_SOFTWARE=WEBSERV42";
     env.REQUEST_METHOD = "REQUEST_METHOD=" + response_items.method;
     env.QUERY_STRING = "QUERY_STRING=" + response_items.Query_String;
-    env.CONTENT_TYPE = "CONTENT_TYPE=txt/html "; //TODO: change this
+    env.CONTENT_TYPE = "CONTENT_TYPE=" + response_items.Headers.find("Content-Type")->second;
     env.CONTENT_LENGTH = "CONTENT_LENGTH=" + (response_items.Headers.find("Content-Length")->second == "" ? "1024" : response_items.Headers.find("Content-Length")->second);
     env.SCRIPT_NAME = "SCRIPT_NAME=" + response_items.location->root + response_items.Path.substr(response_items.Path.find_first_of("/") + 1);
-    std::cout << "SCRIPT_NAME: " << env.SCRIPT_NAME << std::endl;
     env.REQUEST_URI = "REQUEST_URI=" + response_items.Path;
     env.DOCUMENT_ROOT = "DOCUMENT_ROOT=" + response_items.location->root;
     env.DOCUMENT_URI = "DOCUMENT_URI=" + response_items.Path;
@@ -100,42 +117,3 @@ char **GET_EXTRA_ENV(envirmoment &env_server) // after this function, ENV_SERVER
     extra_env[i + 17] = NULL;
     return extra_env;
 }
-
-
-
-std::string CONVERT_TO_WEB(std::string &response)
-{
-    return response;
-    //TODO: convert cgi response to web response
-}
-
-
-// void FREEENV_SERVER(envirmoment &env_server)
-// {
-//     for (size_t j = 0; j < i + env_server.NUM_ELEMENTS; j++)
-//     {
-//         delete[] ENV_SERVER[j];
-//     }
-//     delete[] ENV_SERVER;
-// }
-
-// int main(int argc, char const *argv[],char **env)
-// {
-//     std:: string req = std::string(argv[1]);
-//     envirmoment env_server = GET_SETENV_SERVER(req);
-//     GET_EXTRA_ENV(env_server, env);
-//     for (int j = 0; j < i + env_server.NUM_ELEMENTS ; j++)
-//     {
-//         std::cout << ENV_SERVER[j] << std::endl;
-//     }
-//     FREEENV_SERVER(env_server);
-//     system("leaks a.out");
-//     return 0;
-// }
-
-
-// int main()
-// {
-//     cgi_data cgi;
-//     return 0;
-// }

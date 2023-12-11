@@ -1,35 +1,12 @@
 #include "./webserver.hpp"
 
 
-
-// void Response::parser_output_cgi(cgi_data& cgiData)
-// {
-//     int pos = 0;
-//     std::string token;
-//     // std::map<std::string, std::string>::it = cgiData.cgi_Headers.begin();
-//      while(pos != -1)
-//     {
-//         pos = cgiData.body.find("\r\n");
-//         token = cgiData.body.substr(0, pos);
-//         cgiData.body.substr(pos + 1);
-//         key = trim((*it).substr(0 , pos));
-//         value = trim((*it).substr(pos + 1));
-//         cgiData.cgi_Headers[key] = value;
-//     }
-// }
-
-
 void Response::responsecgi(const cgi_data& cgidata)
 {
-    // if(cgidata.cgi_headers.empty())
-    // {
-        std::cout << "here" << std::endl;
         if(cgidata.status_code == "200")
             this->ft_success_code(cgidata.status_code, cgidata.cgi_response, "");
         else
             this->other_response(cgidata.status_code, cgidata.status_message);
-
-    // }
 }
 
 
@@ -72,23 +49,24 @@ std::string Response::check_index_file(std::string &url)
 {
     DIR *dir = opendir(url.c_str());
     std::vector<std::string> files = split_v(this->response_items.location->index, " "); // change by value depends on location
-    if (dir == NULL)
-        return "";
     struct dirent *entity;
     unsigned int i = 0;
+    if (dir != NULL)
+    {
     while (i < files.size())
     {
         entity = readdir(dir);
         while (entity != NULL)
         {
-            std::cout << "|" << entity->d_name << "|"  << "|" << files[i] << "|" << std::endl;
             if (entity->d_name == files[i])
             {
-                return entity->d_name ;
+                closedir(dir);
+                return files[i];
             }
             entity = readdir(dir);
         }
         i++;
+    }
     }
     closedir(dir);
     return "";
@@ -113,9 +91,8 @@ int Response::remove_all_files(const char *dirname)
         {
             filename += entity->d_name;
             if (access(filename.c_str(), F_OK | W_OK) == -1)
-            {
                 return 1;
-            }
+        
             remove(filename.c_str());
         }
         entity = readdir(dir);
@@ -149,7 +126,6 @@ std::string Response::trim(std::string original)
 
 std::string  parserbody(std::string reqbody)
 {
-    // std::string reqbody="7\r\nMozilla\r\n0\r\n11\r\nDeveloper Network\r\n0\r\n\r\n";
 
 std::stringstream ss;
 std::stringstream body;

@@ -25,6 +25,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 extern unsigned int alarmCounter;
 
@@ -59,6 +61,7 @@ typedef struct s_server
 class ConfigParser
 {
     private:
+        bool isArgv;
         DIR *dir;           // for reading directory
         struct dirent *ent; // for reading directory
         char *m_fileName;
@@ -83,6 +86,8 @@ class ConfigParser
         void feedContent();
         bool ifOutsideLocation(std::string line);
         void globalUpload();
+        void closeDir();
+
 
         void setAlarm();
         // geters
@@ -101,7 +106,6 @@ class ConfigParser
         std::string getIndex(std::string location); // get index from location
         std::string getCgiPath(std::string location); // get cgi_path from location
         std::string getAutoindex(std::string location); // get autoindex from location
-        std::string getFastcgiPass(std::string location); // get fastcgi_pass from location
         std::string getCgiExtension(std::string location); // get cgi_extension from location
         std::string getAllowedMethods(std::string location); // get allowed_methods from location
         std::string getReturnCodeUrl(std::string location); // get return_code_url from location
@@ -126,3 +130,4 @@ void addElement(std::string &str, std::string element, size_t pos);
 void checkServer(std::map<unsigned int , server> &m_servers);
 std::string getDefault(std::string path);
 std::string getKey(std::string line);
+std::string convertDomainToIPv4(const std::string& domain);

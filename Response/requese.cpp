@@ -2,14 +2,56 @@
 
 void Requese::check_connection(server& server_data)
 {
-    // std::cout << "Checking connection : " <<   this->response_items.Headers["Connection"] << std::endl;
     std::string value = (!this->response_items.Headers["Connection"].empty() ? this->response_items.Headers["Connection"] : "close");
     server_data.connection = (value == "keep-alive") ? true : false;
 }
 
+
+void  Requese::is_path_outside_directoryy(std::string path, std::string directory) {
+    char abs_path[PATH_MAX];
+    char abs_directory[PATH_MAX];
+    // Get the absolute paths of the given path and directory
+    if (realpath(path.c_str(), abs_path) == NULL || realpath(directory.c_str(), abs_directory) == NULL) {
+       if(strncmp(realpath(path.substr(0, path.rfind('/')).c_str(), abs_path), realpath(directory.c_str(), abs_directory), strlen(abs_directory)) == 0) 
+            this->status_response_code = 404;
+        else
+            this->status_response_code = 400;
+        return;
+    }
+    if(strncmp(abs_path, abs_directory, strlen(abs_directory)) != 0)
+        this->status_response_code = 400;
+}
+
+void Requese::parser_uri(std::string& uri)
+{
+    std::string url_caracteres ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
+    std::string  new_path;
+    int number = 0;
+    int i = 0;
+    while(uri[i])
+    {
+        if(url_caracteres.find(uri[i])  == std::string::npos)
+        {
+            this->status_response_code = 400;
+            break;
+        }
+        else if(uri[i] == '%' && (isdigit(uri[i + 1]) || (uri[i  + 1 ] >= 'A' && uri[i + 1 ] <= 'F')) && (isdigit(uri[i + 2]) || (uri[i + 2] >= 'A' && uri[i + 2] <= 'F')))
+        {
+            number = std::stoi(uri.substr(i + 1 , 3), 0, 16);
+            new_path = uri.substr(0, i);
+            new_path += static_cast<unsigned char>(number);
+            new_path += uri.substr(i + 3);
+            uri = new_path;
+                    
+        }
+        i++;
+    }
+    uri = uri.substr(1);
+    is_path_outside_directoryy((this->response_items.location->root + uri).c_str(), this->response_items.location->root.c_str());
+}
+
 Requese::Requese(std::string req, server& server_data):req(req),status_response_code(200)
 {
-//   std::cout << req << std::endl;
     this->response_items.location = new s_location;
     this->response_items.lenghtbody = 0;
     this->response_items.error_pages = server_data.error_pages;
@@ -35,7 +77,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             token = req.substr(0, pos);
             req = req.substr(pos + 2, req.length());
             response_items.Req.push_back(token);
-            // std::cout  << token <<  std::endl;
             i++;
         } 
         if (response_items.Req.empty())
@@ -44,8 +85,16 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             return;
         }
         parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
-        find_location(server_data, this->response_items.Path);     
+        
+        if(this->status_response_code != 200)
+            return ; 
+        find_location(server_data, this->response_items.Path);
         parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
+        if(this->status_response_code != 200)
+            return ;
+        parser_uri(this->response_items.Path);
+        if(this->status_response_code != 200)
+            return ;
         //parser line-request 
      
         Headers_elements();
@@ -64,6 +113,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             // store body
             if(this->response_items.Headers["Transfer-Encoding"] == "chunked")
                 req =  parserbody(req);
+            this->response_items.Body =  req;
             if(response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
             {
                 pos = req.find("&");
@@ -86,7 +136,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                 
                 while (std::getline(os, token, '\n'))
                 {
-                    ele = new RequestBody;
+                        ele = new RequestBody;
                         token = token.substr(0, token.size() - 1);;
                         int i =0;
                         while(token.compare(this->response_items.bondary) != 0)
@@ -106,8 +156,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                             }
                             else
                             {
-
-                                
                                 ele->Content.append(token);
                                 if(!ele->Content.empty())
                                     ele->Content.append("\n");
@@ -127,9 +175,11 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                             this->response_items.lenghtbody +=  ele->Content.length();
                             ele->Content.pop_back();
                             this->response_items.ChunkedBody.push_back(ele);
-                        
                         }
+                        else
+                            delete ele;
                 }
+
         }
         else
         {
@@ -137,23 +187,25 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             this->response_items.lenghtbody +=  this->response_items.Body.length();
         }
     }
-   if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str())) // TODO: check size 
+   if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str()))
         this->status_response_code = 413;
    if(this->response_items.Path.length() > 2048)
         this->status_response_code = 414;
-    if(this->response_items.method !=  "POST" && this->response_items.lenghtbody != 0 )
+    if(this->response_items.method != "POST" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
     if(this->response_items.method ==  "POST" && this->response_items.lenghtbody == 0)
         this->status_response_code = 400;
     if(this->response_items.Headers.find("Transfer-Encoding")->second == "chunked" && this->response_items.lenghtbody == 0  )
         this->status_response_code = 400;
-    else if(this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end() && atoi((this->response_items.Headers.find("Content-Length")->second).data()) != (int)req.length())
+    else if(this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end() 
+            && atoi((this->response_items.Headers.find("Content-Length")->second).data()) != (int)req.length()
+            && atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody )
             this->status_response_code = 400;
-   
+  
     
     }catch(std::exception& e)
     {
-        //std::cout  << e.what() << std::endl;
+        std::cout  << e.what() << std::endl;
     }
 }
 
@@ -177,12 +229,11 @@ std::string trim(std::string original)
 }
 
 
-void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& methods )
+void Requese::parser_init_line(std::string Initial_Request_Line, std::string& methods )
 {
     std::stringstream line_init(Initial_Request_Line);
     std::string part;
     std::vector<std::string> line;
-    std::string url_caracteres ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
     std::string del = " ";
     std::string str = "POST GET DELETE";
     std::vector<std::string> Methode = split_v(methods, del);
@@ -192,6 +243,12 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
    
     while(line_init >> part)
         line.push_back(part);
+    if(line.size() != 3)
+    {
+        this->status_response_code = 400;
+        return ;
+    }
+        
     this->response_items.method = line[0];
     this->response_items.http_version = line[2];
      if(line[1].find("?") != std::string::npos && line[1].find("#") != std::string::npos)
@@ -222,8 +279,6 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
      }
     else
          this->response_items.Extension  = "";
-    if(line.size() != 3)
-        this->status_response_code = 400;
     i = 0;
     while(i < Methode.size())
     {
@@ -240,17 +295,6 @@ void Requese::parser_init_line(std::string  Initial_Request_Line, std::string& m
             this->status_response_code = 405;
     if(this->response_items.http_version != "HTTP/1.1")
          this->status_response_code = 505;
-    i = 0;
-    while(this->response_items.Path[i])
-    {
-        if(url_caracteres.find(this->response_items.Path[i])  == std::string::npos)
-        {
-            this->status_response_code = 400;
-            break;
-        }
-        i++;
-    }
-
 }
 
 
@@ -275,8 +319,6 @@ void Requese::Headers_elements()
         value = trim((*it).substr(pos + 1));
         if((*it).substr(pos + 1, 1).c_str()[0]  != 32)
             this->status_response_code = 400;
-        // this->trim(key);
-        // this->trim(value);
         this->response_items.Headers[key] = value;
         if(key.empty() || value.empty() || check_more_element(key, value) == 0 )
         {
@@ -523,7 +565,7 @@ const char *Requese::ErrorSyntax::what() const throw()
 }
 
 
-std::string Requese::find_location(server& server_data, std::string& PATH)
+void Requese::find_location(server& server_data, std::string& PATH)
 {
     std::map<std::string , s_location> location = server_data.locations;
     std::map<std::string , s_location>::iterator it;
@@ -538,10 +580,8 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         it = location.begin();
         while(it != location.end())
         {
-            std::cout << " location find " << it->first << std::endl;
             if(it->first.find(this->response_items.Extension) != std::string::npos)
             {
-                std::cout << "inside extension" << std::endl;
                 this->response_items.location->allowed_methods = it->second.allowed_methods;
                 this->response_items.location->root = it->second.root;
                 this->response_items.location->index = it->second.index;
@@ -551,7 +591,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
                 this->response_items.location->cgi_path = it->second.cgi_path;
                 this->response_items.location->upload_enable = it->second.upload_enable;
                 this->response_items.location->autoindex = it->second.autoindex;
-                return Path;
+                return ;
             }
             it++;
         }
@@ -563,7 +603,6 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         it = location.find(Path);
         if(it != location.end())
         {
-            std::cout << "location: " << it->second.index << " " << std::endl;
             this->response_items.location->allowed_methods = it->second.allowed_methods;
             this->response_items.location->root = it->second.root;
             this->response_items.location->index = it->second.index;
@@ -573,7 +612,7 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
             this->response_items.location->cgi_path = it->second.cgi_path;
             this->response_items.location->upload_enable = it->second.upload_enable;
             this->response_items.location->autoindex =it->second.autoindex;
-            return Path;
+            return ;
         }
         pos = Path.rfind("/"); 
         Path = Path.substr(0, pos);
@@ -591,9 +630,8 @@ std::string Requese::find_location(server& server_data, std::string& PATH)
         this->response_items.location->cgi_path = it->second.cgi_path;
         this->response_items.location->upload_enable = it->second.upload_enable;
         this->response_items.location->autoindex = it->second.autoindex;
-        
+        return ;
     }
     else
         this->status_response_code = 404;
-    return Path;
 }

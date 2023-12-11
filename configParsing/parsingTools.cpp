@@ -12,7 +12,7 @@ int toInt(std::string str)
         if (isdigit(str[i]))
             tmp = tmp * 10 + (str[i] - '0');
         else
-            throw std::runtime_error("Port is not a number.");
+            throw std::runtime_error("Invalid number in config file.");
     }
     return tmp;
 }
@@ -21,7 +21,6 @@ char *ConfigParser::getFileName(const char *extension)
 {
     char *fileName = NULL;
     int found = 0;
-
     dir = opendir(".");
     if (dir != NULL)
     {
@@ -33,11 +32,13 @@ char *ConfigParser::getFileName(const char *extension)
                 found++;
             }
         }
+        
     }
     if (found > 1)
         throw std::runtime_error("More than one .conf file found in the directory.");
     if (fileName == NULL)
         throw std::runtime_error("No .conf file found in the directory.");
+    
     return fileName;
 }
 
@@ -161,14 +162,15 @@ void checkServer(std::map<unsigned int , server> &m_servers)
     {
         int p = it->second.port;
         std::string s_n = it->second.server_name;
+        std::string host = it->second.host;
         if ((++it == m_servers.end()))
             break;
         --it;
         std::map<unsigned int , server>::iterator it2 = ++it;
         while (it2 != m_servers.end())
         {
-            if (it2->second.port == p)
-                throw std::runtime_error("Two servers have the same port");
+            if (it2->second.port == p && it2->second.server_name == s_n  && it2->second.host == host)
+                throw std::runtime_error("Two servers have the same port, server_name and host.");
             it2++;
         }
         it++;
@@ -179,23 +181,47 @@ std::string getDefault(std::string path)
 {
     if (path == "root")
     {
-        std::string current_path = getcwd(NULL, 0);
-        current_path += "/default_pages/";
+        char *current_path1 = getcwd(NULL, 0);
+        std::string current_path = current_path1 + std::string("/default_pages/");
+        free(current_path1);
         if (findFile(current_path))
             return current_path;
         else
         {
-            throw std::runtime_error("Default root.html file not found.");
+            throw std::runtime_error("Default root.html file not found create ./default_pages in the root of the project.");
         }
     }
     if (path == "upload_store_directory")
     {
-        std::string current_path = getcwd(NULL, 0);
-        current_path += "/default_pages/";
+        char *current_path1 = getcwd(NULL, 0);
+        std::string current_path = current_path1 + std::string("/default_pages/");
+        free(current_path1);
         if (findFile(current_path))
             return current_path;
         else
-            throw std::runtime_error("Default upload dir not found.");
+            throw std::runtime_error("Default upload dir not found create ./default_pages in the root of the project.");
     }
     return "get_default_error";
+}
+
+std::string convertDomainToIPv4(const std::string& domain)
+{
+    struct addrinfo hints, *result, *p;
+    char ipstr[INET_ADDRSTRLEN];
+    std::memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    if (getaddrinfo(domain.c_str(), nullptr, &hints, &result) != 0)
+        return "";
+
+    for (p = result; p != nullptr; p = p->ai_next) {
+        if (p->ai_family == AF_INET) {
+            struct sockaddr_in* ipv4 = reinterpret_cast<struct sockaddr_in*>(p->ai_addr);
+            inet_ntop(AF_INET, &(ipv4->sin_addr), ipstr, sizeof(ipstr));
+            freeaddrinfo(result);
+            return ipstr;
+        }
+    }
+    freeaddrinfo(result);
+    return "";
 }

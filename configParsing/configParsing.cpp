@@ -7,6 +7,7 @@ ConfigParser::ConfigParser(const char **argv)
     setConfKeys();
     if (argv[1])
     {
+        isArgv = true;
         std::ifstream file(argv[1]);
         if (!file.is_open())
             throw std::runtime_error("File not found.");
@@ -15,6 +16,7 @@ ConfigParser::ConfigParser(const char **argv)
     }
     else
     {
+        isArgv = false;
         m_fileName = getFileName(".conf");
         if (!m_fileName)
             throw std::runtime_error("No .conf file found in the directory.");
@@ -23,7 +25,7 @@ ConfigParser::ConfigParser(const char **argv)
 
 ConfigParser::~ConfigParser()
 {
-    closedir(dir);
+    // closedir(dir);
     // system("leaks a.out");
 }
 
@@ -46,6 +48,7 @@ void ConfigParser::readConfigFile()
         this->servers_content += line;
         this->servers_content += '\n';
     }
+    file.close();
 }
 
 void ConfigParser::feedContent()
@@ -64,8 +67,10 @@ void ConfigParser::feedContent()
         server += servers_content[i];
     }
     ereaseContent(this->servers_content, pos, '}');
+    this->content.clear();
     this->content = server;
     feedServers();
+
 }
 
 void ConfigParser::checkBrackets()
@@ -74,9 +79,9 @@ void ConfigParser::checkBrackets()
     int right = 0;
     for (size_t i = 0; i < this->servers_content.length(); i++)
     {
-        if (this->servers_content[i] == '{')
+        if (this->servers_content[i] == '{' || this->servers_content[i] == '(')
             left++;
-        if (this->servers_content[i] == '}')
+        if (this->servers_content[i] == '}' || this->servers_content[i] == ')')
             right++;
     }
     if (left != right)
@@ -113,6 +118,7 @@ void ConfigParser::feedServers()
     m_servers[i++] = server_tmp;
     if (this->servers_content.find("server") != std::string::npos)
         feedContent();
+    // closedir(dir);
 }
 
 bool ConfigParser::ifInside(std::string scope, std::string toFind)
@@ -176,54 +182,48 @@ int      ConfigParser::getPort()
 std::string ConfigParser::getServerName()
 {
     if (!ifInside("server", "server_name"))
-        return "localhost";
+        throw std::runtime_error("No server_name directive found.");
     size_t pos = this->content.find("server_name");
     std::string serverName = "";
-    for (size_t i = pos + 12; i < this->content.length(); i++)
+    for (size_t i = pos + 11; i < this->content.length(); i++)
     {
         if (content[i] == ';')
+        {
+            if (serverName.empty())
+                throw std::runtime_error("Server name is empty.");
+            serverName += content[i];
             break;
+        }
         serverName += content[i];
     }
-    for (size_t i = 0; i < serverName.length(); i++)
-    {
-        if (serverName[i] == ' ' || serverName[i] == '\t' || serverName[i] == '\n')
-            serverName.erase(i--, 1);
-    }
-    for (size_t i = 0; i < serverName.length(); i++)
-    {
-        if (isalnum(serverName[i]) || serverName[i] == '.' || serverName[i] == '-' || serverName[i] == '_')
-            continue;
-        else
-            throw std::runtime_error("Server name is not valid.");
-    }
+    if (!ifClosed(serverName))
+        throw std::runtime_error("Server name directive is not closed.");
+    serverName.erase(serverName.length() - 1, 1);
     return serverName;
 }
 
 std::string ConfigParser::getHost()
 {
     if (!ifInside("server", "host"))
-        return "localhost";
+        return "0.0.0.0";
     size_t pos = this->content.find("host");
     std::string host = "";
     for (size_t i = pos + 4; i < this->content.length(); i++)
     {
+        if (content[i] == ' ' || content[i] == '\t')
+            continue;
         if (content[i] == ';')
+        {
+            host += content[i];
             break;
+        }
         host += content[i];
     }
-    for (size_t i = 0; i < host.length(); i++)
-    {
-        if (host[i] == ' ' || host[i] == '\t' || host[i] == '\n')
-            host.erase(i--, 1);
-    }
-    for (size_t i = 0; i < host.length(); i++)
-    {
-        if (isalnum(host[i]) || host[i] == '.' || host[i] == '-' || host[i] == '_')
-            continue;
-        else
-            throw std::runtime_error("Host is not valid.");
-    }
+    if (!ifClosed(host))
+        throw std::runtime_error("Host directive is not closed.");
+    host = convertDomainToIPv4(host.erase(host.length() - 1, 1));
+    if (host.empty())
+        throw std::runtime_error("Host is not valid.");
     return host;
 }
 
@@ -413,4 +413,10 @@ void ConfigParser::setAlarm()
     alarmCounter = toInt(alarm);
     if (alarmCounter < 0)
         throw std::runtime_error("Alarm is negative.");
+}
+
+void ConfigParser::closeDir()
+{
+    if (isArgv == false)
+        closedir(dir);
 }
