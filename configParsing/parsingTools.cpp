@@ -188,7 +188,7 @@ std::string getDefault(std::string path)
             return current_path;
         else
         {
-            throw std::runtime_error("Default root.html file not found.");
+            throw std::runtime_error("Default root.html file not found create ./default_pages in the root of the project.");
         }
     }
     if (path == "upload_store_directory")
@@ -199,7 +199,7 @@ std::string getDefault(std::string path)
         if (findFile(current_path))
             return current_path;
         else
-            throw std::runtime_error("Default upload dir not found.");
+            throw std::runtime_error("Default upload dir not found create ./default_pages in the root of the project.");
     }
     return "get_default_error";
 }

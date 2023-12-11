@@ -106,7 +106,6 @@ class ConfigParser
         std::string getIndex(std::string location); // get index from location
         std::string getCgiPath(std::string location); // get cgi_path from location
         std::string getAutoindex(std::string location); // get autoindex from location
-        std::string getFastcgiPass(std::string location); // get fastcgi_pass from location
         std::string getCgiExtension(std::string location); // get cgi_extension from location
         std::string getAllowedMethods(std::string location); // get allowed_methods from location
         std::string getReturnCodeUrl(std::string location); // get return_code_url from location

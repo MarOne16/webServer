@@ -28,6 +28,7 @@ class http_items;
 
 typedef struct envirmoment
 {
+    // std::string HTTP_COOKIE;
     std::string  SERVER_SOFTWARE;
     std::string  REQUEST_METHOD;
     std::string  QUERY_STRING;

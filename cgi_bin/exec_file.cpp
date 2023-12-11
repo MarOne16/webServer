@@ -13,8 +13,8 @@ void FreeENV(char **env)
 
 void exec(cgi_data &cgi, char **extra_env, std::string method)
 {
-    int out = open("/goinfre/cgi_out", O_RDWR | O_CREAT | O_TRUNC, 0777);
-    int in = open("/goinfre/cgi_in", O_RDWR | O_CREAT | O_TRUNC, 0777);
+    int out = open("/tmp/cgi_out", O_RDWR | O_CREAT | O_TRUNC, 0777);
+    int in = open("/tmp/cgi_in", O_RDWR | O_CREAT | O_TRUNC , 0777);
     int status;
     int pid = fork();
     if (out == -1 || in == -1 || pid == -1)
@@ -24,10 +24,13 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
         cgi.status_message = "Internal Server Error";
         return ;
     }
-    else if (pid == 0)
+    if (pid == 0)
     {
         if (method == "REQUEST_METHOD=POST")
+        {
             write(in, cgi.body.c_str(), cgi.body.length());
+            lseek(in, 0, SEEK_SET);
+        }
         dup2(out, 1);
         dup2(in, 0);
         close(in);
@@ -45,7 +48,6 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
         close(in);
         waitpid(pid, &status, 0);
         FreeENV(extra_env);
-
         if (WIFEXITED(status))
         {
             if (WEXITSTATUS(status) != 0)
@@ -54,10 +56,10 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
                 {
                     if (WTERMSIG(status) == SIGALRM)
                     {
-                        cgi.status_code = "413";
-                        cgi.cgi_response = "Error: Request Entity Too Large";
-                        cgi.status_message = "Request Entity Too Large";
-                        remove("/goinfre/cgi_out");
+                        cgi.status_code = "504";
+                        cgi.cgi_response = "Error: Getaway Timeout";
+                        cgi.status_message = "Getaway Timeout";
+                        remove("/tmp/cgi_out");
                         return;
                     }
                 }
@@ -81,7 +83,7 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
                     cgi.status_code = "413";
                     cgi.cgi_response = "Error: Request Entity Too Large";
                     cgi.status_message = "Request Entity Too Large";
-                    remove("/goinfre/cgi_out");
+                    remove("/tmp/cgi_out");
                     return;
                 }
             }
@@ -90,7 +92,7 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
             cgi.status_message = "Internal Server Error";
             return;
         }
-        std::ifstream ifs("/goinfre/cgi_out");
+        std::ifstream ifs("/tmp/cgi_out");
         if (ifs)
         {
             std::stringstream buffer;
@@ -106,8 +108,8 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
         }
         ifs.close();
     }
-    remove("/goinfre/cgi_out");
-    remove("/goinfre/cgi_in");
+    remove("/tmp/cgi_out");
+    remove("/tmp/cgi_in");
 }
 
 

@@ -13,6 +13,24 @@ void debud_cgi_data(cgi_data &cgi)
     {
         std::cout << it->first << ": " << it->second << RESET<< std::endl;
     }
+    std::cout << YELLOW << cgi.env_server.SERVER_SOFTWARE << std::endl;
+    std::cout << cgi.env_server.REQUEST_METHOD << std::endl;
+    std::cout << cgi.env_server.QUERY_STRING << std::endl;
+    std::cout << cgi.env_server.CONTENT_TYPE << std::endl;
+    std::cout << cgi.env_server.CONTENT_LENGTH << std::endl;
+    std::cout << cgi.env_server.SCRIPT_FILENAME << std::endl;
+    std::cout << cgi.env_server.SCRIPT_NAME << std::endl;
+    std::cout << cgi.env_server.REQUEST_URI << std::endl;
+    std::cout << cgi.env_server.DOCUMENT_ROOT << std::endl;
+    std::cout << cgi.env_server.DOCUMENT_URI << std::endl;
+    std::cout << cgi.env_server.SERVER_PROTOCOL << std::endl;
+    std::cout << cgi.env_server.SERVER_ADDR << std::endl;
+    std::cout << cgi.env_server.SERVER_PORT << std::endl;
+    std::cout << cgi.env_server.SERVER_NAME << std::endl;
+    std::cout << cgi.env_server.PATH_INFO << std::endl;
+    std::cout << cgi.env_server.PATH_TRANSLATED << std::endl;
+    std::cout << cgi.env_server.REDIRECT_STATUS << std::endl;
+    std::cout << cgi.env_server.REDIRECT_STATUS_ << RESET<< std::endl;
 }
 
 cgi_data GET_CGI_DATA(http_items &response_items)
