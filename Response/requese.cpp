@@ -6,9 +6,54 @@ void Requese::check_connection(server& server_data)
     server_data.connection = (value == "keep-alive") ? true : false;
 }
 
+
+void  Requese::is_path_outside_directoryy(std::string path, std::string directory) {
+    char abs_path[PATH_MAX];
+    char abs_directory[PATH_MAX];
+    // Get the absolute paths of the given path and directory
+    if (realpath(path.c_str(), abs_path) == NULL || realpath(directory.c_str(), abs_directory) == NULL) {
+       if(strncmp(realpath(path.substr(0, path.rfind('/')).c_str(), abs_path), realpath(directory.c_str(), abs_directory), strlen(abs_directory)) == 0) 
+            this->status_response_code = 404;
+        else
+            this->status_response_code = 400;
+        return;
+    }
+    if(strncmp(abs_path, abs_directory, strlen(abs_directory)) != 0)
+        this->status_response_code = 400;
+}
+
+void Requese::parser_uri(std::string& uri)
+{
+    std::string url_caracteres ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
+    std::string  new_path;
+    int number = 0;
+    int i = 0;
+    while(uri[i])
+    {
+        if(url_caracteres.find(uri[i])  == std::string::npos)
+        {
+            this->status_response_code = 400;
+            break;
+        }
+        else if(uri[i] == '%' && (isdigit(uri[i + 1]) || (uri[i  + 1 ] >= 'A' && uri[i + 1 ] <= 'F')) && (isdigit(uri[i + 2]) || (uri[i + 2] >= 'A' && uri[i + 2] <= 'F')))
+        {
+            number = std::stoi(uri.substr(i + 1 , 3), 0, 16);
+            new_path = uri.substr(0, i);
+            new_path += static_cast<unsigned char>(number);
+            new_path += uri.substr(i + 3);
+            uri = new_path;
+                    
+        }
+        i++;
+    }
+    uri = uri.substr(1);
+    is_path_outside_directoryy((this->response_items.location->root + uri).c_str(), this->response_items.location->root.c_str());
+}
+
 Requese::Requese(std::string req, server& server_data):req(req),status_response_code(200)
 {
-//   std::cout << req << std::endl;
+
+
     this->response_items.location = new s_location;
     this->response_items.lenghtbody = 0;
     this->response_items.error_pages = server_data.error_pages;
@@ -34,7 +79,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             token = req.substr(0, pos);
             req = req.substr(pos + 2, req.length());
             response_items.Req.push_back(token);
-            // std::cout  << token <<  std::endl;
             i++;
         } 
         if (response_items.Req.empty())
@@ -47,6 +91,11 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         if(this->status_response_code == 404)
             return ; 
         parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
+        if(this->status_response_code != 200)
+            return ;
+        parser_uri(this->response_items.Path);
+        if(this->status_response_code != 200)
+            return ;
         //parser line-request 
      
         Headers_elements();
@@ -186,7 +235,6 @@ void Requese::parser_init_line(std::string Initial_Request_Line, std::string& me
     std::stringstream line_init(Initial_Request_Line);
     std::string part;
     std::vector<std::string> line;
-    std::string url_caracteres ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
     std::string del = " ";
     std::string str = "POST GET DELETE";
     std::vector<std::string> Methode = split_v(methods, del);
@@ -244,17 +292,6 @@ void Requese::parser_init_line(std::string Initial_Request_Line, std::string& me
             this->status_response_code = 405;
     if(this->response_items.http_version != "HTTP/1.1")
          this->status_response_code = 505;
-    i = 0;
-    while(this->response_items.Path[i])
-    {
-        if(url_caracteres.find(this->response_items.Path[i])  == std::string::npos)
-        {
-            this->status_response_code = 400;
-            break;
-        }
-        i++;
-    }
-
 }
 
 

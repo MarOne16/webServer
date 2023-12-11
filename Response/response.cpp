@@ -23,6 +23,8 @@ std::string Response::build_response()
         this->other_response("400", "Bad Request");
     else if (this->status == 505)
         this->other_response("505", "Version Not Supported");
+    else if (this->status == 500)
+        this->other_response("500", "Internal Server Error");
     else if (this->status == 405)
         this->other_response("405", "Method not allowed");
     else if (this->status == 414)
@@ -59,7 +61,7 @@ void Response::build_GET()
     std::string cgi_path = this->response_items.location->cgi_path;        // change path with valid path from config;
     std::string index;
     std::string autoIndexPage;
-    URI += this->response_items.Path.substr(1);
+    URI += this->response_items.Path;
     status = stat(URI.data(), &buffer);
     if (status != -1)
     {   
@@ -182,8 +184,7 @@ void Response::build_DELETE()
     std::string get_auto_index = this->response_items.location->autoindex; // change by getter
     std::string cgi_path = this->response_items.location->cgi_path;        // change path with valid path from config;
 
-    URI += this->response_items.Path.substr(1);
-    std::cout << URI << std::endl;
+    URI += this->response_items.Path;
     status = stat(URI.c_str(), &buffer);
     if (status != -1)
     {
@@ -216,7 +217,7 @@ void Response::build_DELETE()
         {
             if (cgi_path.empty())
             {
-                if(access(URI.c_str(), F_OK | X_OK | W_OK) == 0)
+                if(access(URI.c_str(), F_OK | W_OK) == 0)
                 {
                     remove(URI.c_str());
                     this->other_response("204", " NO Content");
@@ -255,7 +256,7 @@ void Response::build_POST()
     std::vector<RequestBody *>::iterator tmp;
 
 
-    URI += this->response_items.Path.substr(1);
+    URI += this->response_items.Path;
     status = stat(URI.c_str(), &buffer);
     if (upload_enable == "off")
     {

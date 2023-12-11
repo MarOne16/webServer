@@ -99,9 +99,10 @@ public:
     void Headers_elements();
     int check_elemens(std::string &key);
     int is_alpha(std::string value);
-    // int check_date(std::string &value);
+    void parser_uri(std::string &uri);
     int check_content_type(std::string &value);
     int check_more_element(std::string &key, std::string &value);
+    void is_path_outside_directoryy(std::string path, std::string directory);
    
     int check_host(std::string &value);
     int check_Transfer_Encoding(std::string &value);
