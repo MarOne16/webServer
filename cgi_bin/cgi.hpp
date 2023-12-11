@@ -20,15 +20,9 @@
 class http_items;
 
 
-// typedef struct cgi_data
-// {
-//     std::string body;
-//     unsigned int status_code;
-// }
-
 typedef struct envirmoment
 {
-    // std::string HTTP_COOKIE;
+    std::string  HTTP_COOKIE;
     std::string  SERVER_SOFTWARE;
     std::string  REQUEST_METHOD;
     std::string  QUERY_STRING;
@@ -47,7 +41,7 @@ typedef struct envirmoment
     std::string  PATH_TRANSLATED;
     std::string  REDIRECT_STATUS;
     std::string  REDIRECT_STATUS_;
-    static const size_t NUM_ELEMENTS = 17;
+    static const size_t NUM_ELEMENTS = 18;
 } envirmoment;
 
 typedef struct cgi_data
