@@ -33,6 +33,11 @@ std::string ConfigParser::getRootLocation(std::string location)
     }
     if (!ifClosed(root))
         throw std::runtime_error("Root Location directive is not closed.");
+    root = root.erase(root.length() - 1, 1);
+    if (root.find_last_of('/') != root.length() - 1)
+        root += '/';
+    if (findFile(root) == false)
+        throw std::runtime_error("Root Location is not valid.");
     return root.erase(root.length() - 1, 1);
 }
 
