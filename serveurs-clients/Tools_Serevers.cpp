@@ -345,7 +345,7 @@ void partient_request(int &stop, int fd, ConfigParser data_conf, std::map<int, s
 {
 
     std::string respense;
-    std::string request = data(map_request, fd);
+    std::string request = map_request[fd];
     stop = 0;
     std::string port, name_host, name_serveur;
     geve_port_host(request, name_host, port);
