@@ -324,6 +324,8 @@ std::string ConfigParser::getRootServ()
     }
     if (global_root.empty())
         throw std::runtime_error("Root is empty.");
+    if (findFile(global_root) == false)
+        throw std::runtime_error("Root is not valid.");
     return global_root;
 }
 

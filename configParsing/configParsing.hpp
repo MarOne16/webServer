@@ -38,11 +38,11 @@ typedef struct s_location
     std::string                         cgi_path;
     std::string                         autoindex;
     std::string                         fastcgi_pass;
+    std::string                         upload_enable;
     std::string                         cgi_extension;
     std::string                         allowed_methods;
     std::string                         return_code_url;
     std::string                         upload_store_directory;
-    std::string                         upload_enable;
 } location;
 
 typedef struct s_server

@@ -20,24 +20,6 @@
 #include <sstream>
 #include <string>
 #include "../serveurs-clients/servers.hpp"
-// #include "../cgi/cgi.hpp"
-
-
-// typedef struct cgi_data
-// {
-//     http_items &response_tools;
-//     envirmoment env_server;
-//     std::string body;
-//     std::string cgi_response;
-//     unsigned int status_code;
-//     std::string status_message;
-//     std::map<std::string, std::string> cgi_headers;
-
-//     // Constructor with initializer list to initialize the reference member
-//     cgi_data(http_items &rt, const envirmoment &es, const std::string &b)
-//         : response_tools(rt), env_server(es), body(b) {}
-// } cgi_data;
-
 
 struct RequestBody
 {
@@ -70,23 +52,12 @@ public:
     s_location *location;
     bool connection;
     std::map<std::string, std::string> error_pages;
-
-    // std::string root;
-    // std::string index;
-    // std::string cgi_path;
-    // std::string autoindex;
-    // std::string cgi_extension;
-    // std::string allowed_methods;
-    // std::string return_code_url;
-    // std::string upload_store_directory;
-    // std::string upload_enable;
 };
 
 
 class Requese
 {
 private:
-    // std::streamstring os;
     std::string req;
 
 public:
@@ -95,11 +66,11 @@ public:
 
     int status_response_code;
     Requese(std::string req, server &server_data);
-    void parser_init_line(std::string Initial_Request_Line, std::string &methods);
+    void parser_init_line(std::string Initial_Request_Line);
     void Headers_elements();
     int check_elemens(std::string &key);
     int is_alpha(std::string value);
-    void parser_uri(std::string &uri);
+    void parser_uri(std::string uri);
     int check_content_type(std::string &value);
     int check_more_element(std::string &key, std::string &value);
     void is_path_outside_directoryy(std::string path, std::string directory);
@@ -108,9 +79,8 @@ public:
     int check_Transfer_Encoding(std::string &value);
     int check_connection(std::string &value);
     void check_connection(server &server_data);
-    // std::string find_location(std::map<std::string , s_location>& location, std::string& PATH);
+    void  check_methods(std::string& method, std::string& methods);
     void find_location(server &server_data, std::string &PATH);
-    //    void  set_Initial_Request_line(std::string req)
     class ErrorSyntax : public std::exception
     {
     public:
@@ -134,7 +104,7 @@ private:
 public:
     Response(int status, std::vector<std::string> init_line, http_items &response_items);
     std::string  build_response();
-    // std::string get_Content_type();
+    void is_path_outside_directoryy(std::string path, std::string directory);
     std::string get_Content_type(std::string url);
     void  ft_free(std::vector<RequestBody *>& arr);
     std::string get_Date();
@@ -144,15 +114,12 @@ public:
     void build_DELETE();
     int get_permission(std::string &file);
     std::string read_file(const std::string &filename);
-    // void parser_output_cgi(cgi_data& cgiData);
     void responsecgi( const cgi_data& cgidata);
     int remove_all_files(const char *dirname);
     std::string trim(std::string original);
     void return_pages(std::string& pages_return, std::string& url);
     void ft_success_code(std::string status, std::string message,  std::string URI);
     void ft_redirect(std::string status, std::string message);
-    // void ft_bad_request(std::string status, std::string message);
-    // void ft_forbidden_request(std::string status, std::string message);
     void other_response(std::string status, std::string desc);
     void ft_default_pages(std::string status, std::string& message, std::string& path);
 

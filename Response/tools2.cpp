@@ -2,6 +2,26 @@
 
 
 
+void  Response::is_path_outside_directoryy(std::string path, std::string directory) {
+    char abs_path[PATH_MAX];
+    char abs_directory[PATH_MAX];
+    // char *new_path = NULL;
+    // Get the absolute paths of the given path and directory
+    while(findFile(path) == 0 && path != "/")
+    {
+        path = path.substr(0, path.rfind('/'));
+    }
+    if (realpath(path.c_str(), abs_path) == NULL || realpath(directory.c_str(), abs_directory) == NULL) {
+            this->status = 400;
+        return;
+    }
+    if(strncmp(abs_path, abs_directory, strlen(abs_directory)) != 0)
+    {
+        this->status = 400;
+    }
+}
+
+
 std::string Response::get_Content_type(std::string url)
 {
 

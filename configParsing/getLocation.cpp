@@ -33,12 +33,12 @@ std::string ConfigParser::getRootLocation(std::string location)
     }
     if (!ifClosed(root))
         throw std::runtime_error("Root Location directive is not closed.");
-    root.erase(root.length() - 1, 1);
+    root = root.erase(root.length() - 1, 1);
     if (root.find_last_of('/') != root.length() - 1)
-        root += "/";
+        root += '/';
     if (findFile(root) == false)
-        throw std::runtime_error("Root location is not valid.");
-    return root;
+        throw std::runtime_error("Root Location is not valid.");
+    return (root);
 }
 
 std::string ConfigParser::getAlias(std::string location)
@@ -90,8 +90,7 @@ std::string ConfigParser::getIndex(std::string location)
 
 std::string ConfigParser::getCgiPath(std::string location)
 {
-    std::string cgi_extension = getCgiExtension(location);
-    if (cgi_extension == "")
+    if (!isInsidLocation(location, "cgi_path"))
         return "";
     std::string cgi_path = "";
     size_t start = location.find("cgi_path");
@@ -211,6 +210,11 @@ std::string ConfigParser::getReturnCodeUrl(std::string location)
     if (!ifClosed(return_code_url))
         throw std::runtime_error("Return code url directive is not closed.");
     return_code_url.erase(return_code_url.length() - 1, 1);
+    std::list<std::string> list = split(return_code_url, " ");
+    if (list.size() != 2)
+        throw std::runtime_error("Return code url directive is not valid.");
+    if (list.begin()->length() != 3 || notIn(*list.begin(), "0123456789"))
+        throw std::runtime_error("Return code url directive is not valid.");
     return return_code_url;
 }
 

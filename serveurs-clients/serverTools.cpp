@@ -9,6 +9,20 @@ int getServerId(std::map<unsigned int, server> &serv, int port, std::string serv
             return (it->first);
         it++;
     }
+    it = serv.begin();
+    while (it != serv.end())
+    {
+        if ((it->second.port == port) && (it->second.server_name.find(server_name) != std::string::npos))
+            return (it->first);
+        it++;
+    }
+    it = serv.begin();
+    while (it != serv.end())
+    {
+        if (it->second.port == port)
+            return (it->first);
+        it++;
+    }
     return (0);
 }
 

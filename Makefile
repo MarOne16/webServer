@@ -14,13 +14,16 @@ FILES  = ./configParsing/getLocation.cpp \
 		./Response/tools.cpp \
 		./Response/tools2.cpp \
 		./serveurs-clients/serverTools.cpp \
-		./serveurs-clients/servers2.cpp 
+		./serveurs-clients/servers2.cpp \
+		./serveurs-clients/Tools_Serevers.cpp\
+		./serveurs-clients/Tols_Second.cpp\
 
 
 OBJS   = $(FILES:.cpp=.o)
 HEADER = ./Response/webserver.hpp \
-		 ./cgi_bin/cgi.cpp \
+		 ./cgi_bin/cgi.hpp \
 		 ./configParsing/configParsing.hpp \
+		 ./serveurs-clients/servers.hpp \
 
 all: $(NAME)
 

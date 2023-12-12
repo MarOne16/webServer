@@ -7,23 +7,50 @@ void Requese::check_connection(server& server_data)
 }
 
 
+void Requese::check_methods(std::string& method, std::string& methods)
+{
+    std::string del = " ";
+    std::vector<std::string> Methode = split_v(methods, del);
+    unsigned  int i = 0;
+    while(i < Methode.size())
+    {
+        if(Methode[i] == method)
+        {
+            this->status_response_code = 200;
+            break;
+        }
+        else
+            this->status_response_code = 405;
+        i++;
+    }
+
+}
+
 void  Requese::is_path_outside_directoryy(std::string path, std::string directory) {
     char abs_path[PATH_MAX];
     char abs_directory[PATH_MAX];
+    // char *new_path = NULL;
     // Get the absolute paths of the given path and directory
+    while(findFile(path) == 0 && path != "/")
+    {
+        path = path.substr(0, path.rfind('/'));
+    }
     if (realpath(path.c_str(), abs_path) == NULL || realpath(directory.c_str(), abs_directory) == NULL) {
-       if(strncmp(realpath(path.substr(0, path.rfind('/')).c_str(), abs_path), realpath(directory.c_str(), abs_directory), strlen(abs_directory)) == 0) 
+       if(strncmp(abs_path, realpath(directory.c_str(), abs_directory), strlen(abs_directory)) == 0) 
             this->status_response_code = 404;
         else
             this->status_response_code = 400;
         return;
     }
     if(strncmp(abs_path, abs_directory, strlen(abs_directory)) != 0)
+    {
         this->status_response_code = 400;
+    }
 }
 
-void Requese::parser_uri(std::string& uri)
+void Requese::parser_uri(std::string uri)
 {
+    
     std::string url_caracteres ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=%";
     std::string  new_path;
     int number = 0;
@@ -84,12 +111,11 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             this->status_response_code = 400;
             return;
         }
-        parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
-        
+        parser_init_line(response_items.Req[0]);
         if(this->status_response_code != 200)
             return ; 
         find_location(server_data, this->response_items.Path);
-        parser_init_line(response_items.Req[0], this->response_items.location->allowed_methods);
+        check_methods(this->response_items.method, this->response_items.location->allowed_methods);
         if(this->status_response_code != 200)
             return ;
         parser_uri(this->response_items.Path);
@@ -103,10 +129,17 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         // ckeck Headers and parser some special Headers
          if(this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
             (this->response_items.Headers.find("Transfer-Encoding"))->second != "chunked")
+            {
                 this->status_response_code = 501;
+                return ;
+            }
         if(this->response_items.method ==  "POST" && this->response_items.Headers.find("Transfer-Encoding") == this->response_items.Headers.end() &&
                 this->response_items.Headers.find("Content-Length") == this->response_items.Headers.end())
-                this->status_response_code = 411;    
+                {
+                    this->status_response_code = 411;    
+                    return ;
+
+                }
 
         if(!req.empty())
         {
@@ -194,15 +227,16 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     if(this->response_items.method != "POST" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
     if(this->response_items.method ==  "POST" && this->response_items.lenghtbody == 0)
+    {
         this->status_response_code = 400;
+        return ;
+    }
     if(this->response_items.Headers.find("Transfer-Encoding")->second == "chunked" && this->response_items.lenghtbody == 0  )
         this->status_response_code = 400;
     else if(this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end() 
             && atoi((this->response_items.Headers.find("Content-Length")->second).data()) != (int)req.length()
             && atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody )
             this->status_response_code = 400;
-  
-    
     }catch(std::exception& e)
     {
         std::cout  << e.what() << std::endl;
@@ -229,16 +263,14 @@ std::string trim(std::string original)
 }
 
 
-void Requese::parser_init_line(std::string Initial_Request_Line, std::string& methods )
+void Requese::parser_init_line(std::string Initial_Request_Line)
 {
     std::stringstream line_init(Initial_Request_Line);
     std::string part;
     std::vector<std::string> line;
-    std::string del = " ";
     std::string str = "POST GET DELETE";
-    std::vector<std::string> Methode = split_v(methods, del);
     std::vector<std::string> defaultMethods = split_v(str, " ");
-    unsigned int  i;
+    // unsigned int  i;
 
    
     while(line_init >> part)
@@ -279,19 +311,7 @@ void Requese::parser_init_line(std::string Initial_Request_Line, std::string& me
      }
     else
          this->response_items.Extension  = "";
-    i = 0;
-    while(i < Methode.size())
-    {
-        if(Methode[i] == line[0])
-        {
-            this->status_response_code = 200;
-            break;
-        }
-        else
-            this->status_response_code = 405;
-        i++;
-    }
-    if(i == Methode.size() || std::find(defaultMethods.begin(), defaultMethods.end(), line[0]) == defaultMethods.end())
+    if(std::find(defaultMethods.begin(), defaultMethods.end(), line[0]) == defaultMethods.end())
             this->status_response_code = 405;
     if(this->response_items.http_version != "HTTP/1.1")
          this->status_response_code = 505;
