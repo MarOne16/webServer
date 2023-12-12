@@ -335,10 +335,10 @@ void Requese::Headers_elements()
             break;
         }
         // break;
-        key = trim((*it).substr(0 , pos));
-        value = trim((*it).substr(pos + 1));
         if((*it).substr(pos + 1, 1).c_str()[0]  != 32)
             this->status_response_code = 400;
+        key = trim((*it).substr(0 , pos));
+        value = trim((*it).substr(pos + 1));
         this->response_items.Headers[key] = value;
         if(key.empty() || value.empty() || check_more_element(key, value) == 0 )
         {
