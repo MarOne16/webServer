@@ -40,7 +40,7 @@ cgi_data GET_CGI_DATA(http_items &response_items)
     cgi_data cgi(response_items, env_server, response_items.Body);
     char **envs = GET_EXTRA_ENV(cgi.env_server);
     std::string R = EXEC_CGI(cgi, envs);
-    // debud_cgi_data(cgi);
+    debud_cgi_data(cgi);
     return cgi;
 }
 

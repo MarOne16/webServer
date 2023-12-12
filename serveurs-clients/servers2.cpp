@@ -50,7 +50,7 @@ int main(int ac, const char **av)
         {
             int ret = poll(fds.data(), fds.size(), 0);
             if (ret == -1)
-                throw std::runtime_error("poll : : failed  \n");
+                throw std::runtime_error("poll error");
             for (size_t i = 0; i < fds.size(); i++)
             {
                 if (fds[i].revents == POLLIN)
