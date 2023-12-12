@@ -322,7 +322,7 @@ void ConfigParser::feedLocations()
         tmp.root = getRootLocation(this->content.substr(start2, end));
         tmp.alias = getAlias(this->content.substr(start2, end));
         tmp.index = getIndex(this->content.substr(start2, end));
-        tmp.cgi_path = getCgiPath(this->content.substr(start, end));
+        tmp.cgi_path = getCgiPath(this->content.substr(start2, end));
         tmp.autoindex = getAutoindex(this->content.substr(start2, end));
         tmp.cgi_extension = getCgiExtension(this->content.substr(start, end));
         tmp.return_code_url = getReturnCodeUrl(this->content.substr(start2, end));

@@ -61,6 +61,7 @@ int main(int ac, const char **av)
                 }
                 if (fds[i].revents == POLLOUT)
                 {
+                    
                     int cheker = 0;
                     follow_responsive(cheker, len_requeste, fds[i].fd, res);
                     if (!cheker)
