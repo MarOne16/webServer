@@ -307,6 +307,7 @@ std::string ConfigParser::getUploadEnable(std::string location)
 
 void ConfigParser::feedLocations()
 {
+    this->m_locations.clear();
     start:
     location tmp;
     if (!ifInside("server", "location"))
@@ -332,5 +333,7 @@ void ConfigParser::feedLocations()
     }
     this->m_locations[locationname] = tmp;
     ereaseContent(this->content, start, ')');
-    goto start;
+    
+    if (ifInside("server", "location"))
+        goto start;
 }

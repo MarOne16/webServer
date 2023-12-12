@@ -86,13 +86,13 @@ bool notIn(std::string str, std::string s)
     return false;
 }
 
-void ereaseContent(std::string &content, size_t pos, char dekimiter)
+void ereaseContent(std::string &content, size_t pos, char Delimiter)
 {
-    if (content.find(dekimiter) == std::string::npos)
+    if (content.find(Delimiter) == std::string::npos)
         throw std::runtime_error("No closing bracket found in server directive.");
     for (size_t i = pos; i < content.length(); i++)
     {
-        if (content[i] == dekimiter)
+        if (content[i] == Delimiter)
         {
             content.erase(i--, 1);
             break;

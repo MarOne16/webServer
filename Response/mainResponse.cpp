@@ -18,8 +18,8 @@ void show_data_server(server &server_data)
     std::map<std::string, location>::iterator it3 = server_data.locations.begin();
     while (it3 != server_data.locations.end())
     {
-        std::cout  << "locations: " << it3->first << std::endl;
-        std::cout  << "root: " << it3->second.root << std::endl;
+        std::cout << "locations: " << it3->first << std::endl;
+        std::cout << YELLOW  << "root: " << it3->second.root << std::endl;
         std::cout  << "index: " << it3->second.index << std::endl;
         std::cout  << "cgi_path: " << it3->second.cgi_path << std::endl;
         std::cout  << "autoindex: " << it3->second.autoindex << std::endl;
@@ -34,7 +34,7 @@ void show_data_server(server &server_data)
 
 std::string Get_response(server &server_data)
 {
-    // show_data_server(server_data);
+    show_data_server(server_data);
     Requese *req = new Requese (server_data.request_content, server_data);
     Response res(req->status_response_code, req->Initial_Request_Line, req->response_items);
     delete req;

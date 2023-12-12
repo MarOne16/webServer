@@ -121,7 +121,7 @@ int toInt(std::string str);
 std::list<std::string> split(std::string &str, std::string delimiter);
 bool isLast(std::string str, char delimiter);
 bool notIn(std::string str, std::string s);
-void ereaseContent(std::string &content, size_t pos, char dekimiter);
+void ereaseContent(std::string &content, size_t pos, char Delimiter);
 bool findFile(std::string path);
 bool ifClosed(std::string line);
 bool ifCgi(std::string location);

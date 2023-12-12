@@ -79,9 +79,20 @@ void ConfigParser::checkBrackets()
     int right = 0;
     for (size_t i = 0; i < this->servers_content.length(); i++)
     {
-        if (this->servers_content[i] == '{' || this->servers_content[i] == '(')
+        if (this->servers_content[i] == '{')
             left++;
-        if (this->servers_content[i] == '}' || this->servers_content[i] == ')')
+        if (this->servers_content[i] == '}')
+            right++;
+    }
+    if (left != right)
+        throw std::runtime_error("Brackets are not balanced.");
+    left = 0;
+    right = 0;
+    for (size_t i = 0; i < this->content.length(); i++)
+    {
+        if (this->servers_content[i] == '(')
+            left++;
+        if (this->servers_content[i] == ')')
             right++;
     }
     if (left != right)
@@ -314,18 +325,18 @@ std::string ConfigParser::getRootServ()
             root += content[i];
         }
         if (!ifClosed(root))
-            throw std::runtime_error("Root directive is not closed.");
+            throw std::runtime_error("Root server directive is not closed.");
         ereaseContent(content, pos, ';');
         if (!findFile(root.erase(root.length() - 1, 1)))
-            throw std::runtime_error("Root is not valid.");
+            throw std::runtime_error("Root server is not valid.");
         global_root = root;
         if (global_root.find_last_of('/') != global_root.length() - 1)
             global_root += '/';
     }
     if (global_root.empty())
-        throw std::runtime_error("Root is empty.");
+        throw std::runtime_error("Root server  is empty.");
     if (findFile(global_root) == false)
-        throw std::runtime_error("Root is not valid.");
+        throw std::runtime_error("Root server is not valid.");
     return global_root;
 }
 

@@ -601,7 +601,7 @@ void Requese::find_location(server& server_data, std::string& PATH)
         it2 = location.begin();
         while(it2 != location.end())
         {
-            if(it2->first.find(Path) != std::string::npos)
+            if(it2->first.find(this->response_items.Extension) != std::string::npos)
             {
                 this->response_items.location->allowed_methods = it2->second.allowed_methods;
                 this->response_items.location->root = it2->second.root;

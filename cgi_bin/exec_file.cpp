@@ -13,12 +13,14 @@ void FreeENV(char **env)
 
 void exec(cgi_data &cgi, char **extra_env, std::string method)
 {
+    puts("exec");
     int out = open("/tmp/cgi_out", O_RDWR | O_CREAT | O_TRUNC, 0777);
     int in = open("/tmp/cgi_in", O_RDWR | O_CREAT | O_TRUNC , 0777);
     int status;
     int pid = fork();
     if (out == -1 || in == -1 || pid == -1)
     {
+        std::cout << "Error: " << strerror(errno) << std::endl;
         cgi.status_code = "500";
         cgi.cgi_response = "Error: external program execution failed";
         cgi.status_message = "Internal Server Error";
@@ -63,7 +65,6 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
                         return;
                     }
                 }
-
                 cgi.status_code = "500";
                 cgi.cgi_response = "Error: external program execution failed";
                 cgi.status_message = "Internal Server Error";

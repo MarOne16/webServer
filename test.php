@@ -1,3 +1,3 @@
 <?php
-    echo "Error: Input file not found.\n";
+    echo "khadam\n";
 ?>
