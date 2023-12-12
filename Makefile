@@ -21,7 +21,7 @@ FILES  = ./configParsing/getLocation.cpp \
 
 OBJS   = $(FILES:.cpp=.o)
 HEADER = ./Response/webserver.hpp \
-		 ./cgi_bin/cgi.cpp \
+		 ./cgi_bin/cgi.hpp \
 		 ./configParsing/configParsing.hpp \
 		 ./serveurs-clients/servers.hpp \
 

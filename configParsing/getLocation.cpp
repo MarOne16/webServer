@@ -38,7 +38,7 @@ std::string ConfigParser::getRootLocation(std::string location)
         root += '/';
     if (findFile(root) == false)
         throw std::runtime_error("Root Location is not valid.");
-    return root.erase(root.length() - 1, 1);
+    return (root);
 }
 
 std::string ConfigParser::getAlias(std::string location)
@@ -90,8 +90,7 @@ std::string ConfigParser::getIndex(std::string location)
 
 std::string ConfigParser::getCgiPath(std::string location)
 {
-    std::string cgi_extension = getCgiExtension(location);
-    if (cgi_extension == "")
+    if (!isInsidLocation(location, "cgi_path"))
         return "";
     std::string cgi_path = "";
     size_t start = location.find("cgi_path");

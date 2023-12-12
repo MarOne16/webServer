@@ -19,7 +19,6 @@ void Response::ft_free(std::vector<RequestBody *>& arr)
 
 std::string Response::build_response()
 {
-   
     if (this->status == 400)
         this->other_response("400", "Bad Request");
     else if (this->status == 505)
@@ -62,12 +61,13 @@ void Response::build_GET()
     std::string cgi_path = this->response_items.location->cgi_path;        // change path with valid path from config;
     std::string index;
     std::string autoIndexPage;
-   URI += this->response_items.Path.substr(1);
+    URI += this->response_items.Path.substr(1);
     status = stat(URI.data(), &buffer);
     if (status != -1)
     {   
         if (this->response_items.Extension.empty())
         {
+        
             if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
                 this->ft_redirect("301", this->response_items.Path + "/");
             else
@@ -126,13 +126,14 @@ void Response::build_GET()
                 }
                 else
                 {
+                    
                     URI += index;
                     this->response_items.Path += index;
                     status = stat(URI.data(), &buffer);
                     if (status != -1)
                     {
                         this->response_items.Extension = URI.substr(URI.rfind('.') + 1);
-                        if (cgi_path != " " && (this->response_items.Extension == "php" || this->response_items.Extension == "py") )
+                        if (cgi_path != "" && (this->response_items.Extension == "php" || this->response_items.Extension == "py") )
                             responsecgi(GET_CGI_DATA(this->response_items));
                         else
                         {
@@ -169,7 +170,10 @@ void Response::build_GET()
                 else if (this->get_permission(URI) == -2)
                     this->other_response("403", " Forbidden");
                 else
+                {
                     this->ft_success_code("200", read_file(URI), URI);
+                    return;
+                }
             }
         }
     }
@@ -254,10 +258,15 @@ void Response::build_POST()
     time_t current_time;
     std::ofstream file;
     std::vector<RequestBody *>::iterator it;
-    std::vector<RequestBody *>::iterator tmp;
 
-
-   URI += this->response_items.Path.substr(1);
+  
+    is_path_outside_directoryy(upload_store_directory, URI);
+    if(this->status != 200)
+    {
+        this->other_response("400", " FORBIDDEN");
+        return;
+    }
+    URI += this->response_items.Path.substr(1);
     status = stat(URI.c_str(), &buffer);
     if (upload_enable == "off")
     {
@@ -407,9 +416,6 @@ void Response::return_pages(std::string &pages_return, std::string &url)
     case 500:
         this->other_response(pages[0], " Internal Server Error");
          break;
-    case 0:
-         this->ft_redirect("301", pages[0]);
-         break;
     default:
         this->other_response(pages[0], pages[1]);
         break;
@@ -428,9 +434,11 @@ void Response::ft_success_code(std::string status, std::string message, std::str
     response << "Connection:" << connection  <<  "\r\n";
     response << "Content-Type: " << this->get_Content_type(URI) << "\r\n";
     response << "Host: " << this->response_items.server_name << "\r\n";
-    response << "Set-Cookie: yummy_cookie=darkmod; domain=http://localhost/; Path=/websites/\r\n";
+    response << "Set-Cookie: yummy_cookie=darkmod;  Path=/websites/\r\n";
     response << "Date: " << this->get_Date() << "\r\n\r\n";
     response << message;
+   
+    
 }
 
 void Response::ft_redirect(std::string status, std::string message)

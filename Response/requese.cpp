@@ -44,7 +44,6 @@ void  Requese::is_path_outside_directoryy(std::string path, std::string director
     }
     if(strncmp(abs_path, abs_directory, strlen(abs_directory)) != 0)
     {
-        std::cout <<  "error " << std::endl;
         this->status_response_code = 400;
     }
 }
@@ -237,7 +236,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     else if(this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end() 
             && atoi((this->response_items.Headers.find("Content-Length")->second).data()) != (int)req.length()
             && atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody )
-            this->status_response_code = 400;  
+            this->status_response_code = 400;
     }catch(std::exception& e)
     {
         std::cout  << e.what() << std::endl;

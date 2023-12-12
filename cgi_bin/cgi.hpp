@@ -63,8 +63,8 @@ std::string EXEC_CGI(cgi_data &cgi, char **extra_env);
 cgi_data GET_CGI_DATA(http_items &response_items);
 envirmoment GET_SETENV_SERVER(http_items &response_items);
 char **GET_EXTRA_ENV(envirmoment &env_server);
-void FREEENV_SERVER(envirmoment &env_server);
-cgi_data &FINAL_RESPONSE(http_items &response_items);
 void debud_cgi_data(cgi_data &cgi);
+// void FREEENV_SERVER(envirmoment &env_server);
+// cgi_data &FREEENV_SERVER(http_items &response_items);
 
 #include "../Response/webserver.hpp"
