@@ -589,50 +589,55 @@ void Requese::find_location(server& server_data, std::string& PATH)
 {
     std::map<std::string , s_location> location = server_data.locations;
     std::map<std::string , s_location>::iterator it;
+    std::map<std::string , s_location>::iterator it2;
     int pos = 0;
     std::string Path = PATH;
 
 
     this->response_items.port = server_data.port;
     this->response_items.server_name = server_data.server_name;
-    if(!this->response_items.Extension.empty())
+    if(!this->response_items.Extension.empty() &&( this->response_items.Extension == "php" || this->response_items.Extension == "py"))
     {
-        it = location.begin();
-        while(it != location.end())
+        it2 = location.begin();
+        while(it2 != location.end())
         {
-            if(it->first.find(this->response_items.Extension) != std::string::npos)
+            if(it2->first.find(Path) != std::string::npos)
             {
-                this->response_items.location->allowed_methods = it->second.allowed_methods;
-                this->response_items.location->root = it->second.root;
-                this->response_items.location->index = it->second.index;
-                this->response_items.location->cgi_extension = it->second.cgi_extension;
-                this->response_items.location->return_code_url = it->second.return_code_url;
-                this->response_items.location->upload_store_directory = it->second.upload_store_directory;
-                this->response_items.location->cgi_path = it->second.cgi_path;
-                this->response_items.location->upload_enable = it->second.upload_enable;
-                this->response_items.location->autoindex = it->second.autoindex;
+                this->response_items.location->allowed_methods = it2->second.allowed_methods;
+                this->response_items.location->root = it2->second.root;
+                this->response_items.location->index = it2->second.index;
+                this->response_items.location->cgi_extension = it2->second.cgi_extension;
+                this->response_items.location->return_code_url = it2->second.return_code_url;
+                this->response_items.location->upload_store_directory = it2->second.upload_store_directory;
+                this->response_items.location->cgi_path = it2->second.cgi_path;
+                this->response_items.location->upload_enable = it2->second.upload_enable;
+                this->response_items.location->autoindex = it2->second.autoindex;
                 return ;
             }
-            it++;
+            it2++;
         }
     }
     // pos = Path.rfind("/");
     while(pos != -1)
     {
-       
         it = location.find(Path);
-        if(it != location.end())
+        it2 = location.begin();
+         while(it2 != location.end())
         {
-            this->response_items.location->allowed_methods = it->second.allowed_methods;
-            this->response_items.location->root = it->second.root;
-            this->response_items.location->index = it->second.index;
-            this->response_items.location->cgi_extension = it->second.cgi_extension;
-            this->response_items.location->return_code_url = it->second.return_code_url;
-            this->response_items.location->upload_store_directory = it->second.upload_store_directory;
-            this->response_items.location->cgi_path = it->second.cgi_path;
-            this->response_items.location->upload_enable = it->second.upload_enable;
-            this->response_items.location->autoindex =it->second.autoindex;
-            return ;
+            if(it2->first.find(Path) != std::string::npos)
+            {
+                this->response_items.location->allowed_methods = it2->second.allowed_methods;
+                this->response_items.location->root = it2->second.root;
+                this->response_items.location->index = it2->second.index;
+                this->response_items.location->cgi_extension = it2->second.cgi_extension;
+                this->response_items.location->return_code_url = it2->second.return_code_url;
+                this->response_items.location->upload_store_directory = it2->second.upload_store_directory;
+                this->response_items.location->cgi_path = it2->second.cgi_path;
+                this->response_items.location->upload_enable = it2->second.upload_enable;
+                this->response_items.location->autoindex = it2->second.autoindex;
+                return ;
+            }
+            it2++;
         }
         pos = Path.rfind("/"); 
         Path = Path.substr(0, pos);

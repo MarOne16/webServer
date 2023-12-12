@@ -434,7 +434,7 @@ void Response::ft_success_code(std::string status, std::string message, std::str
     response << "Connection:" << connection  <<  "\r\n";
     response << "Content-Type: " << this->get_Content_type(URI) << "\r\n";
     response << "Host: " << this->response_items.server_name << "\r\n";
-    response << "Set-Cookie: yummy_cookie=darkmod;  Path=/websites/\r\n";
+    response << "Set-Cookie: yummy_cookie=darkmod;  Path=/websites/;\r\n";
     response << "Date: " << this->get_Date() << "\r\n\r\n";
     response << message;
    
