@@ -61,7 +61,7 @@ void Response::build_GET()
     std::string cgi_path = this->response_items.location->cgi_path;        // change path with valid path from config;
     std::string index;
     std::string autoIndexPage;
-    URI += this->response_items.Path.substr(1);
+    URI += this->response_items.Path;
     status = stat(URI.data(), &buffer);
     if (status != -1)
     {   

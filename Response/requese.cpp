@@ -76,7 +76,9 @@ void Requese::parser_uri(std::string uri)
         }
         i++;
     }
-    uri = uri.substr(1);
+    if(uri[0] == '/' && uri.length() != 1)
+        uri = uri.substr(1);
+    this->response_items.Path = uri;
     is_path_outside_directoryy((this->response_items.location->root + uri).c_str(), this->response_items.location->root.c_str());
 }
 
@@ -143,7 +145,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                 {
                     this->status_response_code = 411;    
                     return ;
-
                 }
 
         if(!req.empty())
