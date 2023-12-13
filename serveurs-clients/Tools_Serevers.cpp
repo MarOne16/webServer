@@ -381,7 +381,6 @@ int read_to_client(std::vector<int> server, int i, std::vector<struct pollfd> &f
             checker.erase(fds[i].fd);
             chunked.erase(fds[i].fd);
             close_fd(fds[i].fd, client, fds);
-            return (0);
         }
         else
         {
@@ -390,7 +389,6 @@ int read_to_client(std::vector<int> server, int i, std::vector<struct pollfd> &f
             {
                 free(buf);
                 partient_request(stop, fds[i].fd, data_conf, res, connection, fds, i, map_request);
-                return (0);
             }
             else
                 free(buf);

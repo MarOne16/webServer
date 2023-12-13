@@ -121,8 +121,12 @@ void geve_port_host(std::string request, std::string &name_serveur, std::string 
         if (request[i] == '\n')
             i++;
         if (i + 4 < request.size() && is_Host(request.substr(i, 4)))
+        {
 
             port_name_serveur(inforamation(request, i + 5), port, name_serveur);
+            return;
+        }
+
     }
 }
 
@@ -144,6 +148,7 @@ void geve_port_serveur(std::string request, std::string &name_serveur)
                 name_serveur += request[i];
                 i++;
             }
+              return;
             //  ignore_espace(name_serveur);
         }
         // port_name_serveur(inforamation(request, i + 5), port, name_serveur);

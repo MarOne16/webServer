@@ -59,7 +59,7 @@ int main(int ac, const char **av)
                         break;
                    
                 }
-                if (fds[i].revents == POLLOUT)
+               else  if (  i < fds.size()   && fds[i].revents == POLLOUT)
                 {
                     
                     int cheker = 0;
@@ -76,7 +76,8 @@ int main(int ac, const char **av)
                         {
                             connection.erase(fds[i].fd);
                             fds[i].events = POLLIN;
-                            break;
+                            fds[i].revents = 0;
+                           
                         }
                     }
                 }
