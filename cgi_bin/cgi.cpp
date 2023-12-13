@@ -37,6 +37,7 @@ void debud_cgi_data(cgi_data &cgi)
 cgi_data GET_CGI_DATA(http_items &response_items)
 {
     envirmoment env_server = GET_SETENV_SERVER(response_items);
+    
     cgi_data cgi(response_items, env_server, response_items.Body);
     char **envs = GET_EXTRA_ENV(cgi.env_server);
     std::string R = EXEC_CGI(cgi, envs);
@@ -67,7 +68,8 @@ envirmoment GET_SETENV_SERVER(http_items &response_items)
     env.REDIRECT_STATUS = "REDIRECT_STATUS=200";
     env.PATH_INFO = "PATH_INFO=/" + response_items.Path.substr(response_items.Path.find_last_of("/") + 1);
     env.PATH_TRANSLATED = "PATH_TRANSLATED=" + response_items.location->root + response_items.Path.substr(response_items.Path.find_last_of("/") + 1);
-    env.HTTP_COOKIE = "HTTP_COOKIE=" + response_items.Headers.find("Cookie")->second;
+    if(response_items.Headers.find("Cookie") != response_items.Headers.end())
+        env.HTTP_COOKIE = "HTTP_COOKIE=" + response_items.Headers.find("Cookie")->second;
     return env;
 }
 

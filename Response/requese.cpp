@@ -14,13 +14,16 @@ void Requese::check_methods(std::string& method, std::string& methods)
     unsigned  int i = 0;
     while(i < Methode.size())
     {
-        if(Methode[i] == method)
+        if(Methode[i] == trim(method))
         {
             this->status_response_code = 200;
             break;
         }
         else
+        {
             this->status_response_code = 405;
+
+        }
         i++;
     }
 
@@ -114,6 +117,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         parser_init_line(response_items.Req[0]);
         if(this->status_response_code != 200)
             return ; 
+
         find_location(server_data, this->response_items.Path);
         check_methods(this->response_items.method, this->response_items.location->allowed_methods);
         if(this->status_response_code != 200)
@@ -125,6 +129,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
      
         Headers_elements();
         check_connection(server_data);
+        
         
         // ckeck Headers and parser some special Headers
          if(this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&

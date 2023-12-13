@@ -12,11 +12,13 @@ void  Response::is_path_outside_directoryy(std::string path, std::string directo
         path = path.substr(0, path.rfind('/'));
     }
     if (realpath(path.c_str(), abs_path) == NULL || realpath(directory.c_str(), abs_directory) == NULL) {
+        std::cout << "here" << std::endl;
             this->status = 400;
         return;
     }
     if(strncmp(abs_path, abs_directory, strlen(abs_directory)) != 0)
     {
+          std::cout << abs_path << " " <<  abs_directory << std::endl;
         this->status = 400;
     }
 }

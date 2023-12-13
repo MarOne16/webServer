@@ -30,7 +30,7 @@ std::string Response::build_response()
     else if (this->status == 414)
         this->other_response("414", "URI Too Long");
     else if (this->status == 413)
-        this->other_response("413", "Request-URI Too Long");
+        this->other_response("413", "Content Too Large");
     else if (this->status == 411)
         this->other_response("411", "Length Required");
     else if (this->status == 501)
@@ -183,13 +183,14 @@ void Response::build_GET()
 
 void Response::build_DELETE()
 {
+    
     struct stat buffer;
     int status;
     std::string URI = this->response_items.location->root;                 // change by value depends on location
     std::string get_auto_index = this->response_items.location->autoindex; // change by getter
     std::string cgi_path = this->response_items.location->cgi_path;        // change path with valid path from config;
 
-   URI += this->response_items.Path.substr(1);
+    URI += this->response_items.Path.substr(1);
     status = stat(URI.c_str(), &buffer);
     if (status != -1)
     {
@@ -197,8 +198,9 @@ void Response::build_DELETE()
         {
             if (this->response_items.Path[this->response_items.Path.size() - 1] == '/')
             {
-                if (cgi_path != " ")
+                if (cgi_path != "")
                 {
+                    
                     std::string index = check_index_file(URI);
                     this->response_items.Path += index;
                     if (index.empty())
@@ -220,6 +222,7 @@ void Response::build_DELETE()
         }
         else
         {
+           
             if (cgi_path.empty())
             {
                 if(access(URI.c_str(), F_OK | W_OK) == 0)
@@ -258,14 +261,6 @@ void Response::build_POST()
     time_t current_time;
     std::ofstream file;
     std::vector<RequestBody *>::iterator it;
-
-  
-    is_path_outside_directoryy(upload_store_directory, URI);
-    if(this->status != 200)
-    {
-        this->other_response("400", " FORBIDDEN");
-        return;
-    }
     URI += this->response_items.Path.substr(1);
     status = stat(URI.c_str(), &buffer);
     if (upload_enable == "off")
@@ -275,6 +270,7 @@ void Response::build_POST()
         {
             if (!this->response_items.Extension.empty())
             {
+     
                 if (!cgi_path.empty())
                     responsecgi(GET_CGI_DATA(this->response_items));
                 else
@@ -285,8 +281,8 @@ void Response::build_POST()
             }
             else
             {
-                if (this->response_items.Path[this->response_items.Path.size() - 1] == '/')
-                    this->ft_redirect("301", this->response_items.Path);
+                if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
+                    this->ft_redirect("301", this->response_items.Path + "/");
                 else
                 {
                     index = this->check_index_file(URI);
@@ -312,7 +308,12 @@ void Response::build_POST()
     }
     else
     {
-        
+        is_path_outside_directoryy(upload_store_directory, URI);
+        if(this->status != 200)
+        {
+            this->other_response("400", " FORBIDDEN");
+            return;
+        }
         if (this->response_items.Headers.find("Content-Type")->second.find("multipart/form-data") != std::string::npos)
         {
             it = this->response_items.ChunkedBody.begin();
@@ -369,7 +370,7 @@ void Response::build_POST()
             ss << static_cast<int>(current_time);
             namefile += ss.str();
             namefile += ".";
-            namefile += this->response_items.Headers.find("Content-Type")->second.substr(this->response_items.Headers.find("Content-Type")->second.rfind("/") + 1);
+            namefile += "txt";
             file.open(this->response_items.location->upload_store_directory + namefile, std::ios::out | std::ios::binary);
             namefile.clear();
             if (!file.is_open())
