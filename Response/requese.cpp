@@ -76,7 +76,7 @@ void Requese::parser_uri(std::string uri)
         }
         i++;
     }
-    if(uri[0] == '/' && uri.length() != 1)
+    if(uri[0] == '/')
         uri = uri.substr(1);
     this->response_items.Path = uri;
     is_path_outside_directoryy((this->response_items.location->root + uri).c_str(), this->response_items.location->root.c_str());

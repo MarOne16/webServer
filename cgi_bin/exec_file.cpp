@@ -13,7 +13,6 @@ void FreeENV(char **env)
 
 void exec(cgi_data &cgi, char **extra_env, std::string method)
 {
-    puts("exec");
     int out = open("/tmp/cgi_out", O_RDWR | O_CREAT | O_TRUNC, 0777);
     int in = open("/tmp/cgi_in", O_RDWR | O_CREAT | O_TRUNC , 0777);
     int status;

@@ -68,7 +68,7 @@ void Response::build_GET()
         if (this->response_items.Extension.empty())
         {
         
-            if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
+            if (URI[URI.size() - 1] != '/')
                 this->ft_redirect("301", this->response_items.Path + "/");
             else
             {
@@ -190,13 +190,13 @@ void Response::build_DELETE()
     std::string get_auto_index = this->response_items.location->autoindex; // change by getter
     std::string cgi_path = this->response_items.location->cgi_path;        // change path with valid path from config;
 
-    URI += this->response_items.Path.substr(1);
+    URI += this->response_items.Path;
     status = stat(URI.c_str(), &buffer);
     if (status != -1)
     {
         if (this->response_items.Extension.empty())
         {
-            if (this->response_items.Path[this->response_items.Path.size() - 1] == '/')
+            if (URI[URI.size() - 1] == '/')
             {
                 if (cgi_path != "")
                 {
@@ -261,7 +261,7 @@ void Response::build_POST()
     time_t current_time;
     std::ofstream file;
     std::vector<RequestBody *>::iterator it;
-    URI += this->response_items.Path.substr(1);
+    URI += this->response_items.Path;
     status = stat(URI.c_str(), &buffer);
     if (upload_enable == "off")
     {
@@ -281,7 +281,7 @@ void Response::build_POST()
             }
             else
             {
-                if (this->response_items.Path[this->response_items.Path.size() - 1] != '/')
+                if (URI[URI.size() - 1] != '/')
                     this->ft_redirect("301", this->response_items.Path + "/");
                 else
                 {
@@ -294,11 +294,7 @@ void Response::build_POST()
                         if (cgi_path.empty())
                             this->other_response("403", " Forbidden");
                         else
-                        {
-                            // URI += index;
                             responsecgi(GET_CGI_DATA(this->response_items));
-
-                        }
                     }
                 }
             }
@@ -308,6 +304,7 @@ void Response::build_POST()
     }
     else
     {
+        
         is_path_outside_directoryy(upload_store_directory, URI);
         if(this->status != 200)
         {
