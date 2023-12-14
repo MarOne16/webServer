@@ -14,7 +14,7 @@ FILES  = ./configParsing/getLocation.cpp \
 		./Response/tools.cpp \
 		./Response/tools2.cpp \
 		./serveurs-clients/serverTools.cpp \
-		./serveurs-clients/servers2.cpp \
+		./serveurs-clients/servers.cpp \
 		./serveurs-clients/Tools_Serevers.cpp\
 		./serveurs-clients/Tols_Second.cpp\
 

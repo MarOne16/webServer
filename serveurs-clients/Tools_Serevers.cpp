@@ -369,13 +369,14 @@ int read_to_client(std::vector<int> server, int i, std::vector<struct pollfd> &f
     }
     else if (std::find(client.begin(), client.end(), fds[i].fd) != client.end())
     {
-        char *buf = (char *)malloc(1024);
+        char *buf = new char[ 1024 ];
         if (!buf)
             throw std::runtime_error("malloc : : failed  \n");
         int rec = recv(fds[i].fd, buf, 1023, 0);
         if (rec <= 0)
         {
-            free(buf);
+            
+            delete [] buf;
             stop = 0;
             map_request.erase(fds[i].fd);
             checker.erase(fds[i].fd);
@@ -387,11 +388,11 @@ int read_to_client(std::vector<int> server, int i, std::vector<struct pollfd> &f
             request_inserer(buf, rec, fds[i].fd, map_request, checker, stop, chunked);
             if (stop == 1)
             {
-                free(buf);
+                 delete [] buf;
                 partient_request(stop, fds[i].fd, data_conf, res, connection, fds, i, map_request);
             }
             else
-                free(buf);
+                delete [] buf;
         }
     }
 
