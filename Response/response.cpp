@@ -166,7 +166,7 @@ void Response::build_GET()
             else
             {
                 if (this->get_permission(URI) == -1)
-                     this->other_response("404", " No Permission");
+                     this->other_response("403", " Forbidden");
                 else if (this->get_permission(URI) == -2)
                     this->other_response("403", " Forbidden");
                 else
