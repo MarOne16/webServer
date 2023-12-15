@@ -44,7 +44,7 @@ public:
     std::vector<std::string> Req;
     int lenghtbody;
     std::string Body;
-    std::vector<RequestBody *> ChunkedBody;
+    std::vector<RequestBody * > ChunkedBody;
     std::string bondary;
     std::map<std::string, std::string> EncodedFormbody;
     std::string Extension;

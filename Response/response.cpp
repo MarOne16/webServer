@@ -47,6 +47,7 @@ std::string Response::build_response()
         this->build_POST();
     delete this->response_items.location;
     ft_free(this->response_items.ChunkedBody);
+    std::cout << "OK Response is ready" << std::endl;
     return (response.str());
 }
 
@@ -54,6 +55,7 @@ std::string Response::build_response()
 
 void Response::build_GET()
 {
+    
     struct stat buffer;
     int status;
     std::string URI = this->response_items.location->root;                 // change by value depends on location
@@ -62,6 +64,7 @@ void Response::build_GET()
     std::string index;
     std::string autoIndexPage;
     URI += this->response_items.Path;
+    std::cout << "uri" << URI << std::endl;
     status = stat(URI.data(), &buffer);
     if (status != -1)
     {   
@@ -123,6 +126,7 @@ void Response::build_GET()
 
                         }
                     }
+                    return;
                 }
                 else
                 {
@@ -143,11 +147,11 @@ void Response::build_GET()
                                 this->other_response("403", " Forbidden");
                             else
                                 this->ft_success_code("200",  read_file(URI), URI);
+                            return ;
                         }
                     }
                     else
                     {
-                        
                         URI += "index.html";
                         if (access(URI.c_str(), F_OK | W_OK) != 0)
                         {
@@ -155,6 +159,7 @@ void Response::build_GET()
                             return;
                         }
                         this->ft_success_code("200", read_file(URI.c_str()), URI);
+                        return ;
                     }
                 }
             }
@@ -172,8 +177,8 @@ void Response::build_GET()
                 else
                 {
                     this->ft_success_code("200", read_file(URI), URI);
-                    return;
                 }
+                return;
             }
         }
     }
@@ -219,6 +224,7 @@ void Response::build_DELETE()
             }
             else
                 this->other_response("409", " Conflict");
+            return;
         }
         else
         {
@@ -237,14 +243,17 @@ void Response::build_DELETE()
             }
             else
                 this->other_response("405", "Method Not Allowed");
+            return ;
         }
     }
     else
         this->other_response("404", " Not Found");
+    return ;
 }
 
 void Response::build_POST()
 {
+    
     struct stat buffer;
     int status;
     std::string upload_enable = this->response_items.location->upload_enable;
@@ -256,12 +265,13 @@ void Response::build_POST()
     int pos = 0;
     unsigned int k = 0;
     std::stringstream ss;
-    const size_t BUFFER_SIZE = 3000;
+    // size_t BUFFER_SIZE = 8000;
     std::string namefile;
     time_t current_time;
     std::ofstream file;
     std::vector<RequestBody *>::iterator it;
     URI += this->response_items.Path;
+ 
     status = stat(URI.c_str(), &buffer);
     if (upload_enable == "off")
     {
@@ -343,18 +353,15 @@ void Response::build_POST()
                     }
                     if (!(*it)->Content.empty())
                     {
-                        size_t totalBytesWritten = 0;
-                        while (totalBytesWritten < (*it)->Content.size()) {
-                            size_t bytesToWrite = std::min(BUFFER_SIZE, (*it)->Content.size() - totalBytesWritten);
-                            file.write((*it)->Content.data() + totalBytesWritten, bytesToWrite);
-                            if (!file) {
-                                std::cerr << "Error writing to the output file." << std::endl;
-                                break;
-                            }
-                            totalBytesWritten += bytesToWrite;
+                        // BUFFER_SIZE = ;
+                        file.write((*it)->Content.data(), (*it)->Content.length());
+                        if (!file) {
+                            this->other_response("500", "Internal Server Error");
+                            break;
                         }
-                   }
+                    file << this->response_items.Body;
                     file.close();
+                   }
                 }
                 it++;
                 k++;
@@ -433,10 +440,10 @@ void Response::ft_success_code(std::string status, std::string message, std::str
     response << "Content-Type: " << this->get_Content_type(URI) << "\r\n";
     response << "Host: " << this->response_items.server_name << "\r\n";
     response << "Set-Cookie: yummy_cookie=darkmod;  Path=/websites/;\r\n";
+    // response << "Transfer-Encoding: Chunked\r\n"; 
+    // response << "Keep-Alive: timeout=5, max=1024\r\n";
     response << "Date: " << this->get_Date() << "\r\n\r\n";
     response << message;
-   
-    
 }
 
 void Response::ft_redirect(std::string status, std::string message)

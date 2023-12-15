@@ -223,23 +223,20 @@ std::string chunked_request(std::string request, std::map<int, size_t> &flags, i
     return (chunked);
 }
 
-void request_inserer(char *buffer, int buff_size, int fd, std::map<int, std::string> &map_request, std::map<int, size_t> &checker, int &stop, std::map<int, int> &chunked)
+void request_inserer(char *buffer, int buff_size, int fd,Servers &serveur  , int &stop    )
 {
     int j = 0;
-    if (map_request.find(fd) == map_request.end())
+    if (serveur.map_request.find(fd) == serveur.map_request.end())
     {
-        map_request.insert(std::make_pair(fd, ""));
-        checker.insert(std::make_pair(fd, 0));
+        serveur.map_request[fd]= "";
+        serveur.checker[fd]= 0;
         j = 1;
     }
-    std::map<int, std::string>::iterator it = map_request.find(fd);
-    std::map<int, size_t>::iterator it_checker = checker.find(fd);
-    if (it != map_request.end() && it_checker != checker.end())
+    std::map<int, std::string>::iterator it = serveur.map_request.find(fd);
+    std::map<int, size_t>::iterator it_checker = serveur.checker.find(fd);
+    if (it != serveur.map_request.end() && it_checker != serveur.checker.end())
     {
-        std::string request = std::string(buffer, buff_size);
-        it->second += request;
-
-        // std::cout << it->second << " -- \n";
+        it->second += std::string(buffer, buff_size);
         size_t founds = it->second.find("\r\n\r\n");
         if (j == 1 || founds == std::string::npos)
         {
@@ -251,15 +248,15 @@ void request_inserer(char *buffer, int buff_size, int fd, std::map<int, std::str
         {
 
             if (is_chunked(it->second.substr(0, content_lenght(it->second))))
-                chunked.insert(std::make_pair(fd, 1));
+                serveur.chunked.insert(std::make_pair(fd, 1));
             else
-                chunked.insert(std::make_pair(fd, 0));
+                serveur.chunked.insert(std::make_pair(fd, 0));
         }
 
         if (founds != std::string::npos)
         {
 
-            if (chunked[fd] == 0)
+            if (serveur.chunked[fd] == 0)
             {
                 if (it->second.size() >= it_checker->second)
                     stop = 1;
@@ -272,7 +269,7 @@ void request_inserer(char *buffer, int buff_size, int fd, std::map<int, std::str
             }
         }
 
-        request.clear();
+       
     }
     return;
 }
@@ -286,16 +283,16 @@ void delete_maps(std::map<int, std::string> &request, std::map<int, std::string>
     cheker.erase(fd);
 }
 
-void close_fd(int fd, std::vector<int> &client, std::vector<struct pollfd> &fds)
+void close_fd(int fd,Servers & serveur   )
 {
     close(fd);
-    client.erase(std::find(client.begin(), client.end(), fd));
-    fds.erase(fds.begin() + index_fds(fds, fd));
+    serveur.client.erase(std::find(serveur.client.begin(), serveur.client.end(), fd));
+    serveur.fds.erase(serveur.fds.begin() + index_fds(serveur.fds, fd));
 }
 
 
 
-void accepte_client(int fd, std::vector<int> &client, std::vector<struct pollfd> &fds)
+void accepte_client(int fd, Servers  &serveur )
 {
     int fd_client = accept(fd, NULL, NULL);
     fcntl(fd_client, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
@@ -304,92 +301,80 @@ void accepte_client(int fd, std::vector<int> &client, std::vector<struct pollfd>
         struct pollfd fl;
         fl.fd = fd_client;
         fl.events = POLLIN;
-        client.push_back(fd_client);
-        fds.push_back(fl);
-    }
-}
-void follow_responsive(int &cheker, std::map<int, size_t> &lenght, int fd, std::map<int, std::string> request)
-
-{
-
-    std::string response;
-    size_t lenght_response;
-    std::string respons_find = request[fd];
-    if (lenght.find(fd) == lenght.end())
-    {
-        cheker = 1;
-        response = respons_find.substr(0, 1000);
-        lenght_response = response.size() + 0;
-        lenght.insert(std::make_pair(fd, lenght_response));
-    }
-    else
-    {
-        response = respons_find.substr(lenght[fd], 1000);
-        lenght_response = response.size() + lenght[fd];
-        lenght.erase(fd);
-        lenght.insert(std::make_pair(fd, lenght_response));
-        cheker = 1;
-    }
-
-    if (cheker)
-    {
-        if (send(fd, response.c_str(), response.length(), 0) == -1)
-            cheker = 0;
-        if (lenght_response == respons_find.size())
-            cheker = 0;
+        serveur.client.push_back(fd_client);
+        serveur.fds.push_back(fl);
     }
 }
 
-void partient_request(int &stop, int fd, ConfigParser data_conf, std::map<int, std::string> &response_map,
-                      std::map<int, bool> &connection, std::vector<struct pollfd> &fds, int i, std::map<int, std::string> map_request)
+void follow_responsive(int &cheker, int fd,  Servers  &serveur )
+
+{
+   
+    
+    size_t sen = 0;
+    // serveur.response_map[fd] = serveur.response_map[fd].substr(0,50);
+//  std::cout<< serveur.response_map[fd] ;
+//                     exit(0); 
+    sen = send(fd, serveur.response_map[fd].c_str(), serveur.response_map[fd].length(), 0);
+      if (  sen <= 0 || serveur.response_map[fd].empty())
+    {
+          
+        cheker = 0;
+        return;
+    }
+ if(sen < serveur.response_map[fd].length())
+    serveur.response_map[fd] =  serveur.response_map[fd].substr(sen);
+    //                 exit(0); 
+    cheker = 1;
+}
+ 
+
+void partient_request(int &stop, int fd, ConfigParser data_conf, int i, Servers &sereur )
 {
 
-    std::string respense;
-    std::string request = map_request[fd];
+     
+  
     stop = 0;
     std::string port, name_host, name_serveur;
-    geve_port_host(request, name_host, port);
-    geve_port_serveur(request, name_serveur);
+    geve_port_host(sereur.map_request[fd], name_host, port);
+    geve_port_serveur(sereur.map_request[fd], name_serveur);
     int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur, name_host);
-    feedRequest(serveur_id, data_conf.m_servers, request);
-    respense = sendResponse(serveur_id, data_conf.m_servers);
-    connection.insert(std::make_pair(fd, data_conf.m_servers.find(serveur_id)->second.connection));
-    response_map.insert(std::make_pair(fd, respense));
-    fds[i].events = POLLOUT;
+    feedRequest(serveur_id, data_conf.m_servers,sereur.map_request[fd]);
+    sereur.connection[fd] = data_conf.m_servers.find(serveur_id)->second.connection ;   
+    sereur.response_map[fd] = sendResponse(serveur_id, data_conf.m_servers);
+    sereur.fds[i].events = POLLOUT;
 }
 
-int read_to_client(std::vector<int> server, int i, std::vector<struct pollfd> &fds, std::vector<int> &client,
-                   std::map<int, std::string> &map_request, std::map<int, size_t> &checker, std::map<int, int> &chunked, std::map<int, bool> &connection, ConfigParser data_conf, std::map<int, std::string> &res)
+int read_to_client( Servers &sereur , int i,ConfigParser data_conf)
 {
+     
     int stop = 0;
-    if (std::find(server.begin(), server.end(), fds[i].fd) != server.end())
+    if (std::find(sereur.serveur.begin(), sereur.serveur.end(), sereur.fds[i].fd) != sereur.serveur.end())
+        accepte_client( sereur.fds[i].fd,sereur);
+     
+    else if (std::find(sereur.client.begin(), sereur.client.end(), sereur.fds[i].fd) != sereur.client.end())
     {
-        accepte_client(fds[i].fd, client, fds);
-        return (0);
-    }
-    else if (std::find(client.begin(), client.end(), fds[i].fd) != client.end())
-    {
-        char *buf = new char[ 1024 ];
+        char *buf = new char[1048576];
         if (!buf)
             throw std::runtime_error("malloc : : failed  \n");
-        int rec = recv(fds[i].fd, buf, 1023, 0);
+        int rec = recv(sereur.fds[i].fd, buf, 1048576, 0);
         if (rec <= 0)
         {
             
             delete [] buf;
             stop = 0;
-            map_request.erase(fds[i].fd);
-            checker.erase(fds[i].fd);
-            chunked.erase(fds[i].fd);
-            close_fd(fds[i].fd, client, fds);
+            sereur.map_request.erase(sereur.fds[i].fd);
+            sereur.checker.erase(sereur.fds[i].fd);
+            sereur.chunked.erase(sereur.fds[i].fd);
+            close_fd(sereur.fds[i].fd, sereur);
         }
         else
         {
-            request_inserer(buf, rec, fds[i].fd, map_request, checker, stop, chunked);
+            request_inserer(buf, rec, sereur.fds[i].fd,sereur,stop);
             if (stop == 1)
             {
                  delete [] buf;
-                partient_request(stop, fds[i].fd, data_conf, res, connection, fds, i, map_request);
+                partient_request(stop, sereur.fds[i].fd, data_conf,   i , sereur);
             }
             else
                 delete [] buf;
@@ -399,18 +384,18 @@ int read_to_client(std::vector<int> server, int i, std::vector<struct pollfd> &f
     return (1);
 }
 
-void add_serveur(std::vector<struct pollfd> &fds, std::vector<int> serveur)
+void add_serveur(Servers & serveur)
 {
-    for (size_t i = 0; i < serveur.size(); i++)
+    for (size_t i = 0; i < serveur.serveur.size(); i++)
     {
         struct pollfd poll;
-        poll.fd = serveur[i];
+        poll.fd = serveur.serveur[i];
         poll.events = POLLIN;
-        fds.push_back(poll);
+         serveur.fds.push_back(poll);
     }
 }
 
-void create_soket(ConfigParser data_conf, std::vector<int> &serveur, std::vector<struct pollfd> &fds)
+void create_soket(ConfigParser data_conf,Servers & serveur  )
 {
     std::vector<int> port;
     ports(port, data_conf.m_servers);
@@ -445,7 +430,7 @@ void create_soket(ConfigParser data_conf, std::vector<int> &serveur, std::vector
             throw std::runtime_error("bind : : failed  \n");
         if (listen(fd, 1024) < 0)
             throw std::runtime_error("listen : : failed  \n");
-        serveur.push_back(fd);
+        serveur.serveur.push_back(fd);
     }
-    add_serveur(fds, serveur);
+    add_serveur(serveur );
 }

@@ -77,14 +77,17 @@ int Response::get_permission(std::string &file)
 std::string Response::read_file(const std::string &filename)
 {
     std::ifstream file(filename);
-    std::stringstream ss;
-    if (!file.is_open())
+    std::streampos fileSize = file.tellg();
+    std::ostringstream ss;
+    std::string  buffer;
+    if (file.is_open())
     {
-        return "not found";
+        // ss << file.rdbuf();
+            file.read(&buffer[0], fileSize);
+        file.close();
+        return buffer;
     }
-    ss << file.rdbuf();
-    file.close();
-    return ss.str();
+    return " ";
 }
 
 

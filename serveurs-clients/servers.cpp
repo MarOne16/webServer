@@ -27,67 +27,61 @@ int main(int ac, const char **av)
         checkServer(data_conf.m_servers); ///
         data_conf.closeDir();
         /////////////////////////////
-        std::vector<int> serveur;
-        std::map<int, std::string> num;
-        std::map<int, size_t> flags;
-        std::map<int, std::string> number;
-        std::vector<struct sockaddr_in> addresses;
-        std::vector<socklen_t> addresselent;
-        std::vector<int> new_cont;
-        std::string respense;
-        std::map<int, std::string> map_request;
-        std::map<int, size_t> checker;
-        std::map<int, std::string> res;
-        std::string request;
-        std::vector<int> client;
-        std::map<int, int> chunked;
-        std::map<int, size_t> len_requeste;
-        std::map<int, bool> connection;
-        std::vector<struct pollfd> fds;
+       Servers  serveur;
+          
         //////////////////////////////
-        create_soket(data_conf, serveur, fds);
+        create_soket(data_conf,  serveur);
         while (true)
         {
-            int ret = poll(fds.data(), fds.size(), 0);
+            size_t l = serveur.fds.size();
+             
+            int ret = poll(serveur.fds.data(), serveur.fds.size(), 0);
             if (ret == -1)
                 throw std::runtime_error("poll error");
-            for (size_t i = 0; i < fds.size(); i++)
+            for (size_t i = 0; i < l; i++)
             {
-                if (fds[i].revents == POLLIN)
+                if (serveur.fds[i].revents == POLLIN)
                 {
-                    if (!read_to_client(serveur, i, fds, client, map_request, checker, chunked, connection, data_conf, res))
+                    if (!read_to_client(serveur,i ,data_conf ))
                         break;
                    
                 }
-               else  if (  i < fds.size()   && fds[i].revents == POLLOUT)
+            
+               else  if (  i < serveur.fds.size()   && serveur.fds[i].revents == POLLOUT)
                 {
                     
                     int cheker = 0;
-                    follow_responsive(cheker, len_requeste, fds[i].fd, res);
-                    if (!cheker)
+                    
+
+                    follow_responsive(cheker, serveur.fds[i].fd, serveur);
+            
+                    if(!cheker)
                     {
-                        delete_maps(map_request, res, len_requeste, chunked, checker, fds[i].fd);
-                        if (connection.find(fds[i].fd) != connection.end() && connection[fds[i].fd] == 0)
+                         
+                        delete_maps(serveur.map_request,  serveur.response_map, serveur.len_requeste, serveur.chunked, serveur.checker, serveur.fds[i].fd);
+                        if (serveur.connection.find(serveur.fds[i].fd) != serveur.connection.end() && serveur.connection[serveur.fds[i].fd] == 0)
                         {
-                            connection.erase(fds[i].fd);
-                            close_fd(fds[i].fd, client, fds);
+                            serveur.connection.erase(serveur.fds[i].fd);
+                            close_fd(serveur.fds[i].fd, serveur );
                         }
                         else
                         {
-                            connection.erase(fds[i].fd);
-                            fds[i].events = POLLIN;
-                            fds[i].revents = 0;
+                            serveur.connection.erase(serveur.fds[i].fd);
+                            serveur.fds[i].events = POLLIN;
+                            serveur.fds[i].revents = 0;
                            
                         }
                     }
                 }
             }
-        }
-    }
+        
+            }
+            }
     catch (const std::exception &e)
     {
         std::cerr << e.what() << '\n';
     }
+    
 }
 
 // siege -b 127.0.0.1:8002
