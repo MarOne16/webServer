@@ -225,3 +225,16 @@ std::string convertDomainToIPv4(const std::string& domain)
     freeaddrinfo(result);
     return "";
 }
+
+size_t stosize_t(std::string str)
+{
+    size_t tmp = 0;
+    for (size_t i = 0; i < str.length(); i++)
+    {
+        if (str[i] == ' ' || str[i] == '\t')
+            continue;
+        if (isdigit(str[i]))
+            tmp = tmp * 10 + (str[i] - '0');
+    }
+    return tmp;
+}

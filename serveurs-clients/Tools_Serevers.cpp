@@ -6,7 +6,7 @@
 /*   By: iedderqi <iedderqi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 20:12:38 by iedderqi          #+#    #+#             */
-/*   Updated: 2023/12/11 21:20:21 by iedderqi         ###   ########.fr       */
+/*   Updated: 2023/12/16 15:12:04 by iedderqi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,16 +241,21 @@ void request_inserer(char *buffer, int buff_size, int fd,Servers &serveur  , int
         if (j == 1 || founds == std::string::npos)
         {
             it_checker->second = content_lenght(it->second) + length_heder(it->second.substr(0, content_lenght(it->second)));
+            
+           
             if (j && it->second == "\r\n")
                 stop = 1;
+            serveur.len_read[fd] = length_heder(it->second.substr(0, content_lenght(it->second)));
         }
         if (j && founds != std::string::npos)
         {
 
             if (is_chunked(it->second.substr(0, content_lenght(it->second))))
-                serveur.chunked.insert(std::make_pair(fd, 1));
+               
+                serveur.chunked[fd] = 1 ; 
             else
-                serveur.chunked.insert(std::make_pair(fd, 0));
+                  serveur.chunked[fd] = 0 ;  
+              
         }
 
         if (founds != std::string::npos)
@@ -312,9 +317,7 @@ void follow_responsive(int &cheker, int fd,  Servers  &serveur )
    
     
     size_t sen = 0;
-    // serveur.response_map[fd] = serveur.response_map[fd].substr(0,50);
-//  std::cout<< serveur.response_map[fd] ;
-//                     exit(0); 
+   
     sen = send(fd, serveur.response_map[fd].c_str(), serveur.response_map[fd].length(), 0);
       if (  sen <= 0 || serveur.response_map[fd].empty())
     {
@@ -324,24 +327,21 @@ void follow_responsive(int &cheker, int fd,  Servers  &serveur )
     }
  if(sen < serveur.response_map[fd].length())
     serveur.response_map[fd] =  serveur.response_map[fd].substr(sen);
-    //                 exit(0); 
     cheker = 1;
 }
  
 
 void partient_request(int &stop, int fd, ConfigParser data_conf, int i, Servers &sereur )
 {
-
-     
-  
     stop = 0;
+    sereur.len_read.erase(sereur.fds[i].fd); 
     std::string port, name_host, name_serveur;
     geve_port_host(sereur.map_request[fd], name_host, port);
     geve_port_serveur(sereur.map_request[fd], name_serveur);
-    int serveur_id = getServerId(data_conf.m_servers, atoi(port.c_str()), name_serveur, name_host);
+    int serveur_id = getServerId(data_conf.m_servers, stosize_t(port), name_serveur, name_host);
     feedRequest(serveur_id, data_conf.m_servers,sereur.map_request[fd]);
-    sereur.connection[fd] = data_conf.m_servers.find(serveur_id)->second.connection ;   
     sereur.response_map[fd] = sendResponse(serveur_id, data_conf.m_servers);
+    sereur.connection[fd] = data_conf.m_servers.find(serveur_id)->second.connection ;   
     sereur.fds[i].events = POLLOUT;
 }
 
@@ -349,20 +349,23 @@ int read_to_client( Servers &sereur , int i,ConfigParser data_conf)
 {
      
     int stop = 0;
+    size_t read_len   = 1048576; 
     if (std::find(sereur.serveur.begin(), sereur.serveur.end(), sereur.fds[i].fd) != sereur.serveur.end())
         accepte_client( sereur.fds[i].fd,sereur);
-     
     else if (std::find(sereur.client.begin(), sereur.client.end(), sereur.fds[i].fd) != sereur.client.end())
     {
-        char *buf = new char[1048576];
+        if(sereur.len_read.find(sereur.fds[i].fd) != sereur.len_read.end())
+                 read_len  = sereur.len_read[sereur.fds[i].fd];
+        char *buf = new char[read_len ];
         if (!buf)
             throw std::runtime_error("malloc : : failed  \n");
-        int rec = recv(sereur.fds[i].fd, buf, 1048576, 0);
+           
+        int rec = recv(sereur.fds[i].fd, buf, read_len, 0);
         if (rec <= 0)
         {
-            
             delete [] buf;
             stop = 0;
+           sereur.len_read.erase(sereur.fds[i].fd); 
             sereur.map_request.erase(sereur.fds[i].fd);
             sereur.checker.erase(sereur.fds[i].fd);
             sereur.chunked.erase(sereur.fds[i].fd);

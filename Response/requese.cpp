@@ -239,7 +239,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             this->response_items.lenghtbody +=  this->response_items.Body.length();
         }
     }
-   if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str()))
+   if(this->response_items.lenghtbody > stosize_t(server_data.max_body_size))
         this->status_response_code = 413;
    if(this->response_items.Path.length() > 2048)
         this->status_response_code = 414;
@@ -253,8 +253,8 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
     if(this->response_items.Headers.find("Transfer-Encoding")->second == "chunked" && this->response_items.lenghtbody == 0  )
         this->status_response_code = 400;
     else if(this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end() 
-            && atoi((this->response_items.Headers.find("Content-Length")->second).data()) != (int)req.length()
-            && atoi((this->response_items.Headers.find("Content-Length")->second).data()) != this->response_items.lenghtbody )
+            && stosize_t((this->response_items.Headers.find("Content-Length")->second)) != req.length()
+            && stosize_t((this->response_items.Headers.find("Content-Length")->second)) != this->response_items.lenghtbody )
             this->status_response_code = 400;
     
     }catch(std::exception& e)

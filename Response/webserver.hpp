@@ -42,7 +42,7 @@ public:
     std::string server_name;
     std::map<std::string, std::string> Headers;
     std::vector<std::string> Req;
-    int lenghtbody;
+    size_t lenghtbody;
     std::string Body;
     std::vector<RequestBody * > ChunkedBody;
     std::string bondary;

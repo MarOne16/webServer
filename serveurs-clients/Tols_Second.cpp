@@ -6,7 +6,7 @@
 /*   By: iedderqi <iedderqi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 20:24:25 by iedderqi          #+#    #+#             */
-/*   Updated: 2023/12/11 20:24:28 by iedderqi         ###   ########.fr       */
+/*   Updated: 2023/12/16 14:59:52 by iedderqi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -203,8 +203,6 @@ size_t length_heder(std::string request)
 size_t content_lenght(std::string request)
 {
     std::string calcule;
-
-    // std::cout<<request<<"    ----  ---    \n";
     for (size_t i = 0; i < request.size(); i++)
     {
         //\r\n\r\n

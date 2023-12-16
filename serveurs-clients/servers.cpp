@@ -52,6 +52,7 @@ int main(int ac, const char **av)
                     
                     int cheker = 0;
                     
+                    
 
                     follow_responsive(cheker, serveur.fds[i].fd, serveur);
             
@@ -61,11 +62,13 @@ int main(int ac, const char **av)
                         delete_maps(serveur.map_request,  serveur.response_map, serveur.len_requeste, serveur.chunked, serveur.checker, serveur.fds[i].fd);
                         if (serveur.connection.find(serveur.fds[i].fd) != serveur.connection.end() && serveur.connection[serveur.fds[i].fd] == 0)
                         {
+                           
                             serveur.connection.erase(serveur.fds[i].fd);
                             close_fd(serveur.fds[i].fd, serveur );
                         }
                         else
                         {
+                            
                             serveur.connection.erase(serveur.fds[i].fd);
                             serveur.fds[i].events = POLLIN;
                             serveur.fds[i].revents = 0;

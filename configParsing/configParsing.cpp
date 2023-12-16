@@ -241,7 +241,7 @@ std::string ConfigParser::getHost()
 std::string ConfigParser::getMaxBodySize()
 {
     if (!ifInside("server", "max_body_size"))
-        return "1000000";
+        return "9223372036854775806";
     size_t pos = this->content.find("max_body_size");
     std::string maxBodySize = "";
     for (size_t i = pos + 13; i < this->content.length(); i++)
@@ -257,8 +257,8 @@ std::string ConfigParser::getMaxBodySize()
     }
     if (notIn(maxBodySize, "0123456789 "))
         throw std::runtime_error("Max body size is not valid excepted only numbers.\nKeeping mind 1 = 1 byte.");
-    if (maxBodySize.length() > 10)
-        throw std::runtime_error("Max body size too big.");
+    if (maxBodySize.length() > 19)
+        throw std::runtime_error("Max body size too big.max body size is 9223372036854775806.");
     return maxBodySize;
 }
 

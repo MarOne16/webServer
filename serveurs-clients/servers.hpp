@@ -32,6 +32,7 @@ class Servers
         std::map<int, size_t> len_requeste;
         std::map<int, bool> connection;
         std::vector<struct pollfd> fds;
+        std::map<int , size_t > len_read ;
 
 
 };

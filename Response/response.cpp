@@ -402,7 +402,7 @@ void Response::return_pages(std::string &pages_return, std::string &url)
         return;
     }
     
-     switch (atoi(pages[0].c_str()))
+     switch (stosize_t(pages[0]))
     {
     case 200:
         this->ft_success_code(pages[0], read_file(pages[1]), url);

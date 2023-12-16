@@ -131,3 +131,4 @@ void checkServer(std::map<unsigned int , server> &m_servers);
 std::string getDefault(std::string path);
 std::string getKey(std::string line);
 std::string convertDomainToIPv4(const std::string& domain);
+size_t stosize_t(std::string str);
