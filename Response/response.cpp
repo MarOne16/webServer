@@ -47,7 +47,6 @@ std::string Response::build_response()
         this->build_POST();
     delete this->response_items.location;
     ft_free(this->response_items.ChunkedBody);
-    std::cout << "OK Response is ready" << std::endl;
     return (response.str());
 }
 
