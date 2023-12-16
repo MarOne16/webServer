@@ -19,7 +19,6 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
     int pid = fork();
     if (out == -1 || in == -1 || pid == -1)
     {
-        std::cout << "Error: " << strerror(errno) << std::endl;
         cgi.status_code = "500";
         cgi.cgi_response = "Error: external program execution failed";
         cgi.status_message = "Internal Server Error";

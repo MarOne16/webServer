@@ -19,7 +19,6 @@ void Response::ft_free(std::vector<RequestBody *>& arr)
 
 std::string Response::build_response()
 {
-     std::cout << "requese end" << std::endl;
     if (this->status == 400)
         this->other_response("400", "Bad Request");
     else if (this->status == 505)
