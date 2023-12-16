@@ -1,6 +1,6 @@
 NAME   = webserv
 
-FLAGS  = -Wall -Wextra -Werror -std=c++98
+FLAGS  = -Wall -Wextra -Werror -std=c++98 -Ofast
 CC     = c++
 FILES  = ./configParsing/getLocation.cpp \
 		./cgi_bin/cgi.cpp \
@@ -23,7 +23,7 @@ OBJS   = $(FILES:.cpp=.o)
 HEADER = ./Response/webserver.hpp \
 		 ./cgi_bin/cgi.hpp \
 		 ./configParsing/configParsing.hpp \
-		 ./serveurs-clients/servers.hpp \
+		 ./serveurs-clients/servers.hpp 
 
 all: $(NAME)
 

@@ -188,7 +188,7 @@ std::string getDefault(std::string path)
             return current_path;
         else
         {
-            throw std::runtime_error("Default root not found in creat /default_pages/ directory.");
+            throw std::runtime_error("/default_pages/ not found in current directory.");
         }
     }
     if (path == "upload_store_directory")
@@ -199,7 +199,7 @@ std::string getDefault(std::string path)
         if (findFile(current_path))
             return current_path;
         else
-            throw std::runtime_error("Default upload dir not found in creat /default_pages/ directory.");
+            throw std::runtime_error("/default_pages/ dir not found in current directory.");
     }
     return "get_default_error";
 }

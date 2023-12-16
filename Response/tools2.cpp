@@ -90,6 +90,7 @@ std::string Response::read_file(const std::string &filename)
         return fileContent;
     }
     this->status = 400;
+    file.close();
     return " ";
 }
 

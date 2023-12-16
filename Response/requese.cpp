@@ -173,7 +173,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         size_t EndPos = 0;
         size_t start = 0;
         std::string Headers;
-        std::cout << "requese begin" << std::endl;
         bondary_start = req.find(this->response_items.bondary + "--", bondary_start);
         if(bondary_start == std::string::npos)
         {
@@ -186,7 +185,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                 bondary_start = req.find(this->response_items.bondary , bondary_start);
                 if(bondary_start == std::string::npos)
                 {
-
                     break;
                 }
                 else

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <thread>
 #include <sys/socket.h> // For socket functions
 #include <netinet/in.h> // For sock=addr_in
 #include <cstdlib>      // For exit() and EXIT_FAILURE     // For cout
@@ -36,6 +37,7 @@ class Servers
 
 
 };
+void partient_request(int &stop, int fd, ConfigParser data_conf, int i, Servers &sereur );
 void feedRequest(unsigned int index, std::map<unsigned int, server> &serv, std::string content);
 int is_Host(std::string host);
 void ports(std::vector<int> &port, std::map<unsigned int, server> &data_serv);
