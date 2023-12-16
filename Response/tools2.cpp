@@ -76,17 +76,20 @@ int Response::get_permission(std::string &file)
 
 std::string Response::read_file(const std::string &filename)
 {
+
     std::ifstream file(filename);
+    file.seekg(0, std::ios::end);
     std::streampos fileSize = file.tellg();
-    std::ostringstream ss;
-    std::string  buffer;
+    file.seekg(0, std::ios::beg);
+    std::string fileContent;
+    fileContent.resize(static_cast<size_t>(fileSize), '\0');
     if (file.is_open())
     {
-        // ss << file.rdbuf();
-            file.read(&buffer[0], fileSize);
+       file.read(&fileContent[0], fileSize);
         file.close();
-        return buffer;
+        return fileContent;
     }
+    this->status = 400;
     return " ";
 }
 
@@ -96,10 +99,7 @@ void Response::ft_default_pages(std::string status, std::string &message, std::s
     struct stat buffer;
     std::string filename;
     if (stat(this->response_items.error_pages.find(status)->second.c_str(), &buffer) != -1)
-    {
-        // if (path[0] != '/')
-        //     path = "/" + path;
-        
+    {        
         filename = path;
         message = this->read_file(filename);
     }

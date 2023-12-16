@@ -84,6 +84,7 @@ void Requese::parser_uri(std::string uri)
 
 Requese::Requese(std::string req, server& server_data):req(req),status_response_code(200)
 {
+    std::cout << "here" << std::endl;
     this->response_items.location = new s_location;
     this->response_items.lenghtbody = 0;
     this->response_items.error_pages = server_data.error_pages;
@@ -146,12 +147,11 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                     this->status_response_code = 411;    
                     return ;
                 }
-
         if(!req.empty())
         {
             // store body
-            std::ofstream file("test.txt", std::ios::binary);
-            file <<  req ;
+            // std::ofstream file("test.txt", std::ios::binary);
+            // file <<  req ;
             if(this->response_items.Headers["Transfer-Encoding"] == "chunked")
                 req =  parserbody(req);
             this->response_items.Body =  req;
@@ -169,63 +169,69 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             }
             else if(response_items.Headers["Content-Type"].find("multipart/form-data") != std::string::npos)
             {
-                size_t bondary_start = 0;
-    size_t boundary_end = 0;
-    size_t EndPos = 0;
-    size_t start = 0;
-    std::string Headers;
-     bondary_start = req.find(this->response_items.bondary + "--", bondary_start);
-    if(bondary_start == std::string::npos)
-    {
-        this->status_response_code = 400;
-        return ;
-    }
-    while(bondary_start < req.length())
-    {
-            bondary_start = req.find(this->response_items.bondary , bondary_start);
-            if(bondary_start == std::string::npos)
-                break;
-            else
-            {
-                RequestBody *ele;
-                ele = new RequestBody;
-                start = bondary_start + this->response_items.bondary.length() + 2;
-            bondary_start = req.find("Content-Disposition", start);
-            if(bondary_start == std::string::npos)
-            {
-                delete ele;
-                break;
-            }
-            EndPos = req.find("\r\n\r\n", start);
-            Headers = req.substr(bondary_start, EndPos - bondary_start);
-            if(Headers.find("Content-Disposition") != std::string::npos)
-            {
-                start = Headers.find("\r\n");
-                if(bondary_start != std::string::npos)
-                        ele->ContentDisposition = Headers.substr(Headers.find("Content-Disposition"), start - Headers.find("Content-Disposition"));
-                start += 2;
-                if(Headers.find("Content-Type") != std::string::npos)
-                    ele->ContentType = Headers.substr(start, Headers.length() - start);
-                
-            }
+                    size_t bondary_start = 0;
+        size_t boundary_end = 0;
+        size_t EndPos = 0;
+        size_t start = 0;
+        std::string Headers;
+        std::cout << "requese begin" << std::endl;
+        bondary_start = req.find(this->response_items.bondary + "--", bondary_start);
+        if(bondary_start == std::string::npos)
+        {
+            this->status_response_code = 400;
+            return ;
+        }
+        bondary_start = 0;
+        while(bondary_start < req.length())
+        {
+                bondary_start = req.find(this->response_items.bondary , bondary_start);
+                if(bondary_start == std::string::npos)
+                {
 
-            EndPos += 4;
-            boundary_end = req.find(this->response_items.bondary, EndPos);
-            if(boundary_end == std::string::npos)
-                boundary_end = req.length();
-            ele->Content = req.substr(EndPos, boundary_end - EndPos - 2);
-            if(!ele->Content.empty() )
-            {
-                if(!ele->ContentDisposition.empty())
-                    this->response_items.lenghtbody +=  ele->ContentDisposition.length();
-                this->response_items.lenghtbody +=  ele->Content.length();
-                ele->Content.pop_back();
-                this->response_items.ChunkedBody.push_back(ele);
-            }
-            else
-                delete ele;
-            }
-    }
+                    break;
+                }
+                else
+                {
+                    RequestBody *ele;
+                    ele = new RequestBody;
+                    start = bondary_start + this->response_items.bondary.length() + 2;
+                    // std::cout << start << std::endl;
+                bondary_start = req.find("Content-Disposition", start);
+                if(bondary_start == std::string::npos)
+                {
+                // std::cout << "hereasd" << std::endl;
+                    delete ele;
+                    break;
+                }
+                EndPos = req.find("\r\n\r\n", start);
+                Headers = req.substr(bondary_start, EndPos - bondary_start);
+                if(Headers.find("Content-Disposition") != std::string::npos)
+                {
+                    start = Headers.find("\r\n");
+                    if(bondary_start != std::string::npos)
+                            ele->ContentDisposition = Headers.substr(Headers.find("Content-Disposition"), start - Headers.find("Content-Disposition"));
+                    start += 2;
+                    if(Headers.find("Content-Type") != std::string::npos)
+                        ele->ContentType = Headers.substr(start, Headers.length() - start);
+                    
+                }
+
+                EndPos += 4;
+                boundary_end = req.find(this->response_items.bondary, EndPos);
+                if(boundary_end == std::string::npos)
+                    boundary_end = req.length();
+                ele->Content = req.substr(EndPos, boundary_end - EndPos - 2);
+                if(!ele->Content.empty() )
+                {
+                    if(!ele->ContentDisposition.empty())
+                        this->response_items.lenghtbody +=  ele->ContentDisposition.length();
+                    this->response_items.lenghtbody +=  ele->Content.length();
+                    this->response_items.ChunkedBody.push_back(ele);
+                }
+                else
+                    delete ele;
+                }
+        }
     }
         else
         {
@@ -233,18 +239,17 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             this->response_items.lenghtbody +=  this->response_items.Body.length();
         }
     }
-    
    if(this->response_items.lenghtbody > atoi(server_data.max_body_size.c_str()))
         this->status_response_code = 413;
    if(this->response_items.Path.length() > 2048)
         this->status_response_code = 414;
-    // if(this->response_items.method != "POST" && this->response_items.lenghtbody != 0 )
-    //     this->status_response_code = 400;
-    // if(this->response_items.method ==  "POST" && this->response_items.lenghtbody == 0)
-    // {
-    //     this->status_response_code = 400;
-    //     return ;
-    // }
+    if(this->response_items.method != "POST" && this->response_items.lenghtbody != 0 )
+        this->status_response_code = 400;
+    if(this->response_items.method ==  "POST" && this->response_items.lenghtbody == 0)
+    {
+        this->status_response_code = 400;
+        return ;
+    }
     if(this->response_items.Headers.find("Transfer-Encoding")->second == "chunked" && this->response_items.lenghtbody == 0  )
         this->status_response_code = 400;
     else if(this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end() 

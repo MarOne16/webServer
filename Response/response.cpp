@@ -19,6 +19,7 @@ void Response::ft_free(std::vector<RequestBody *>& arr)
 
 std::string Response::build_response()
 {
+     std::cout << "requese end" << std::endl;
     if (this->status == 400)
         this->other_response("400", "Bad Request");
     else if (this->status == 505)
@@ -64,7 +65,7 @@ void Response::build_GET()
     std::string index;
     std::string autoIndexPage;
     URI += this->response_items.Path;
-    std::cout << "uri" << URI << std::endl;
+    // std::cout << "uri" << URI << std::endl;
     status = stat(URI.data(), &buffer);
     if (status != -1)
     {   
@@ -254,6 +255,7 @@ void Response::build_DELETE()
 void Response::build_POST()
 {
     
+   
     struct stat buffer;
     int status;
     std::string upload_enable = this->response_items.location->upload_enable;
@@ -324,6 +326,7 @@ void Response::build_POST()
         if (this->response_items.Headers.find("Content-Type")->second.find("multipart/form-data") != std::string::npos)
         {
             it = this->response_items.ChunkedBody.begin();
+            // std::cout << this->response_items.ChunkedBody.size() << std::endl;
             while (k < this->response_items.ChunkedBody.size())
             {
                 if (!(*it)->ContentType.empty())
@@ -351,6 +354,7 @@ void Response::build_POST()
                         this->other_response("500", "Internal Server Error");
                         return;
                     }
+                        
                     if (!(*it)->Content.empty())
                     {
                         // BUFFER_SIZE = ;
