@@ -148,6 +148,11 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                     this->status_response_code = 411;    
                     return ;
                 }
+        if(this->response_items.method ==  "POST" && this->response_items.Headers.find("Content-Type") == this->response_items.Headers.end())
+        {
+            this->status_response_code = 415;
+            return ;
+        }
         if(!req.empty())
         {
             // store body
@@ -242,11 +247,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         this->status_response_code = 414;
     if(this->response_items.method != "POST" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
-    if(this->response_items.method ==  "POST" && this->response_items.Headers.find("Content-Type")->second.empty())
-    {
-        this->status_response_code = 415;
-        return ;
-    }
     if(this->response_items.method ==  "POST" && this->response_items.lenghtbody == 0)
     {
         this->status_response_code = 400;
