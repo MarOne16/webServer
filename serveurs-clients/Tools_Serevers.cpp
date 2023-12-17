@@ -6,7 +6,7 @@
 /*   By: iedderqi <iedderqi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/11 20:12:38 by iedderqi          #+#    #+#             */
-/*   Updated: 2023/12/16 15:12:04 by iedderqi         ###   ########.fr       */
+/*   Updated: 2023/12/17 11:01:07 by iedderqi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -344,10 +344,10 @@ void partient_request(int &stop, int fd, ConfigParser data_conf, int i, Servers 
     geve_port_serveur(sereur.map_request[fd], name_serveur);
     int serveur_id = getServerId(data_conf.m_servers, stosize_t(port), name_serveur, name_host);
     feedRequest(serveur_id, data_conf.m_servers,sereur.map_request[fd]);
-    // std::thread t1(&sendResponse, serveur_id, data_conf.m_servers);
-    // t1.join();
+    
     sereur.response_map[fd] = sendResponse(serveur_id, data_conf.m_servers);
     sereur.connection[fd] = data_conf.m_servers.find(serveur_id)->second.connection ;   
+      
     sereur.fds[i].events = POLLOUT;
 }
 

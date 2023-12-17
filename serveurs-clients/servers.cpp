@@ -12,9 +12,8 @@
 // /*                                                                            */
 // /* ************************************************************************** */
 
- 
-#include"servers.hpp"
- 
+#include "servers.hpp"
+
 int main(int ac, const char **av)
 {
     (void)ac;
@@ -27,64 +26,49 @@ int main(int ac, const char **av)
         checkServer(data_conf.m_servers); ///
         data_conf.closeDir();
         /////////////////////////////
-       Servers  serveur;
-          
+        Servers serveur;
+
         //////////////////////////////
-        create_soket(data_conf,  serveur);
+        create_soket(data_conf, serveur);
         while (true)
         {
             size_t l = serveur.fds.size();
-             
+
             int ret = poll(serveur.fds.data(), serveur.fds.size(), 0);
             if (ret == -1)
                 throw std::runtime_error("poll error");
             for (size_t i = 0; i < l; i++)
             {
                 if (serveur.fds[i].revents == POLLIN)
+                    read_to_client(serveur, i, data_conf);
+                else if (i < serveur.fds.size() && serveur.fds[i].revents == POLLOUT)
                 {
-                    if (!read_to_client(serveur,i ,data_conf ))
-                        break;
-                   
-                }
-            
-               else  if (  i < serveur.fds.size()   && serveur.fds[i].revents == POLLOUT)
-                {
-                    
                     int cheker = 0;
-                    
-                    
-
                     follow_responsive(cheker, serveur.fds[i].fd, serveur);
-            
-                    if(!cheker)
+                    if (!cheker)
                     {
-                         
-                        delete_maps(serveur.map_request,  serveur.response_map, serveur.len_requeste, serveur.chunked, serveur.checker, serveur.fds[i].fd);
+                        delete_maps(serveur.map_request, serveur.response_map, serveur.len_requeste, serveur.chunked, serveur.checker, serveur.fds[i].fd);
                         if (serveur.connection.find(serveur.fds[i].fd) != serveur.connection.end() && serveur.connection[serveur.fds[i].fd] == 0)
                         {
-                           
+
                             serveur.connection.erase(serveur.fds[i].fd);
-                            close_fd(serveur.fds[i].fd, serveur );
+                            close_fd(serveur.fds[i].fd, serveur);
                         }
                         else
                         {
-                            
                             serveur.connection.erase(serveur.fds[i].fd);
                             serveur.fds[i].events = POLLIN;
                             serveur.fds[i].revents = 0;
-                           
                         }
                     }
                 }
             }
-        
-            }
-            }
+        }
+    }
     catch (const std::exception &e)
     {
         std::cerr << e.what() << '\n';
     }
-    
 }
 
 // siege -b 127.0.0.1:8002
