@@ -130,6 +130,8 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         //parser line-request 
      
         Headers_elements();
+        if(this->status_response_code != 200)
+            return ;
         check_connection(server_data);
         
         
@@ -149,8 +151,6 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         if(!req.empty())
         {
             // store body
-            // std::ofstream file("test.txt", std::ios::binary);
-            // file <<  req ;
             if(this->response_items.Headers["Transfer-Encoding"] == "chunked")
                 req =  parserbody(req);
             this->response_items.Body =  req;
@@ -185,6 +185,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                 bondary_start = req.find(this->response_items.bondary , bondary_start);
                 if(bondary_start == std::string::npos)
                 {
+                    this->status_response_code = 400;
                     break;
                 }
                 else
@@ -195,6 +196,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                 bondary_start = req.find("Content-Disposition", start);
                 if(bondary_start == std::string::npos)
                 {
+                    this->status_response_code = 400;
                     delete ele;
                     break;
                 }
@@ -240,7 +242,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
         this->status_response_code = 414;
     if(this->response_items.method != "POST" && this->response_items.lenghtbody != 0 )
         this->status_response_code = 400;
-    if(this->response_items.method ==  "POST" && this->response_items.Headers.find("Content-Type") == this->response_items.Headers.end())
+    if(this->response_items.method ==  "POST" && this->response_items.Headers.find("Content-Type")->second.empty())
     {
         this->status_response_code = 415;
         return ;
