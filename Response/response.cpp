@@ -24,7 +24,7 @@ std::string Response::build_response()
     else if (this->status == 505)
         this->other_response("505", "Version Not Supported");
     else if (this->status == 415)
-        this->other_response("505", "Unsupported Media Type");
+        this->other_response("415", "Unsupported Media Type");
     else if (this->status == 500)
         this->other_response("500", "Internal Server Error");
     else if (this->status == 405)
