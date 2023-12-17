@@ -6,5 +6,6 @@ webserver
 .vscode
 a.out
 *.txt
+file.conf
 # /Response
 # /serveurs-clients

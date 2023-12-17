@@ -23,6 +23,8 @@ std::string Response::build_response()
         this->other_response("400", "Bad Request");
     else if (this->status == 505)
         this->other_response("505", "Version Not Supported");
+    else if (this->status == 415)
+        this->other_response("505", "Unsupported Media Type");
     else if (this->status == 500)
         this->other_response("500", "Internal Server Error");
     else if (this->status == 405)
@@ -440,7 +442,7 @@ void Response::ft_success_code(std::string status, std::string message, std::str
     response << "Content-length: " << message.length() << "\r\n";
     response << "Connection:" << connection  <<  "\r\n";
     response << "Content-Type: " << this->get_Content_type(URI) << "\r\n";
-    response << "Host: " << this->response_items.server_name << "\r\n";
+    response << "Host: " << "webserv/1337" << "\r\n";
     response << "Set-Cookie: yummy_cookie=darkmod;  Path=/websites/;\r\n";
     // response << "Transfer-Encoding: Chunked\r\n"; 
     // response << "Keep-Alive: timeout=5, max=1024\r\n";
@@ -464,7 +466,7 @@ void Response::ft_redirect(std::string status, std::string message)
     response << "Content-Length: 0\r\n";
     response << "Connection:" << connection <<  "\r\n";
     response << "Content-Type: "<< "text/html" << "\r\n";
-    response << "Host: " << this->response_items.server_name << "\r\n";
+    response << "Host: " << "webserv/1337" << "\r\n";
     response << "Date: " << this->get_Date() << "\r\n\r\n";
 }
 
@@ -495,7 +497,7 @@ void Response::other_response(std::string status, std::string desc)
     response << "HTTP/1.1 " << status << " " << desc << "\r\n";
     response << "Content-Type: text/html\r\n";
     response << "Content-Length: " << body.length() << "\r\n";
-    response << "Server: " << this->response_items.server_name << "\r\n";
+    response << "Server: " << "webserv/1337" << "\r\n";
     response << "Connection:" << connection  <<  "\r\n";
     response << "Date: " << this->get_Date() << "\r\n";
     response << "\r\n"; // Blank line to separate headers and body

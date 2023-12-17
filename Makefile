@@ -30,7 +30,7 @@ all: $(NAME)
 $(NAME): $(OBJS) $(HEADER)
 	@$(CC) $(FLAGS) $(OBJS) -o $(NAME)
 
-%.o: %.cpp
+%.o: %.cpp 
 	@$(CC) $(FLAGS) -c $< -o $@
 
 clean:
