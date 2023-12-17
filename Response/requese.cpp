@@ -159,19 +159,19 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
             if(this->response_items.Headers["Transfer-Encoding"] == "chunked")
                 req =  parserbody(req);
             this->response_items.Body =  req;
-            if(response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
-            {
-                pos = req.find("&");
-                    this->response_items.lenghtbody += req.length();
-                while(pos != -1 && !req.empty())
-                {
-                    token = req.substr(0, pos);
-                    this->response_items.EncodedFormbody[token.substr(0, token.find("="))] = token.substr(token.find("=") + 1);
-                    token.clear();
-                    req = req.substr(pos + 1, req.length());
-                }
-            }
-            else if(response_items.Headers["Content-Type"].find("multipart/form-data") != std::string::npos)
+            // if(response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
+            // {
+            //     pos = req.find("&");
+            //         this->response_items.lenghtbody += req.length();
+            //     while(pos != -1 && !req.empty())
+            //     {
+            //         token = req.substr(0, pos);
+            //         this->response_items.EncodedFormbody[token.substr(0, token.find("="))] = token.substr(token.find("=") + 1);
+            //         token.clear();
+            //         req = req.substr(pos + 1, req.length());
+            //     }
+            // }
+            if(response_items.Headers["Content-Type"].find("multipart/form-data") != std::string::npos)
             {
                     size_t bondary_start = 0;
         size_t boundary_end = 0;
@@ -191,7 +191,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                 if(bondary_start == std::string::npos)
                 {
                     this->status_response_code = 400;
-                    break;
+                    return;
                 }
                 else
                 {
@@ -203,7 +203,7 @@ Requese::Requese(std::string req, server& server_data):req(req),status_response_
                 {
                     this->status_response_code = 400;
                     delete ele;
-                    break;
+                    return;
                 }
                 EndPos = req.find("\r\n\r\n", start);
                 Headers = req.substr(bondary_start, EndPos - bondary_start);

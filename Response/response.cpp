@@ -267,15 +267,15 @@ void Response::build_POST()
     int pos = 0;
     unsigned int k = 0;
     std::stringstream ss;
-    // size_t BUFFER_SIZE = 8000;
     std::string namefile;
     time_t current_time;
     std::ofstream file;
     std::vector<RequestBody *>::iterator it;
     URI += this->response_items.Path;
- 
+    
     status = stat(URI.c_str(), &buffer);
-    if (upload_enable == "off")
+   
+    if(upload_enable == "off")
     {
           
         if (status != -1)
@@ -323,7 +323,9 @@ void Response::build_POST()
             this->other_response("400", " FORBIDDEN");
             return;
         }
-        if (this->response_items.Headers.find("Content-Type")->second.find("multipart/form-data") != std::string::npos)
+        if(this->response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
+          responsecgi(GET_CGI_DATA(this->response_items));
+        else if (this->response_items.Headers.find("Content-Type")->second.find("multipart/form-data") != std::string::npos)
         {
             it = this->response_items.ChunkedBody.begin();
             // std::cout << this->response_items.ChunkedBody.size() << std::endl;
@@ -357,7 +359,6 @@ void Response::build_POST()
                         
                     if (!(*it)->Content.empty())
                     {
-                        // BUFFER_SIZE = ;
                         file.write((*it)->Content.data(), (*it)->Content.length());
                         if (!file) {
                             this->other_response("500", "Internal Server Error");
