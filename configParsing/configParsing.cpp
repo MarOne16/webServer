@@ -1,6 +1,6 @@
 #include "configParsing.hpp"
 
-unsigned int alarmCounter = INT_MAX;
+int alarmCounter = INT_MAX;
 
 ConfigParser::ConfigParser(const char **argv)
 {

@@ -26,8 +26,9 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <climits>
 
-extern unsigned int alarmCounter;
+extern int alarmCounter;
 
 typedef struct s_location
 {
