@@ -1,6 +1,5 @@
 #pragma once
 
-#include <thread>
 #include <sys/socket.h> // For socket functions
 #include <netinet/in.h> // For sock=addr_in
 #include <cstdlib>      // For exit() and EXIT_FAILURE     // For cout

@@ -28,7 +28,8 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
     {
         if (method == "REQUEST_METHOD=POST")
         {
-            write(in, cgi.body.c_str(), cgi.body.length());
+            if(write(in, cgi.body.c_str(), cgi.body.length()) < 0)
+                exit(1);
             lseek(in, 0, SEEK_SET);
         }
         dup2(out, 1);
@@ -38,7 +39,7 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
         alarm(alarmCounter);
         const char *file = strdup(cgi.env_server.SCRIPT_FILENAME.substr(cgi.env_server.SCRIPT_FILENAME.find_last_of("=") + 1).c_str());
         const char *script_name = strdup(cgi.env_server.SCRIPT_NAME.substr(cgi.env_server.SCRIPT_NAME.find_last_of("=") + 1).c_str());
-        char *const argv[] = {const_cast<char *>(file), const_cast<char *>(script_name), nullptr}; // Construct argv array
+        char *const argv[] = {const_cast<char *>(file), const_cast<char *>(script_name), NULL}; // Construct argv array
         execve(file, argv, extra_env);
         exit(1);
     }
