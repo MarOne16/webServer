@@ -25,7 +25,7 @@ ConfigParser::ConfigParser(const char **argv)
 
 ConfigParser::~ConfigParser()
 {
-    system("leaks webserv");
+    // system("leaks webserv");
 }
 
 void ConfigParser::readConfigFile()
@@ -128,7 +128,6 @@ void ConfigParser::feedServers()
     m_servers[i++] = server_tmp;
     if (this->servers_content.find("server") != std::string::npos)
         feedContent();
-    // closedir(dir);
 }
 
 bool ConfigParser::ifInside(std::string scope, std::string toFind)

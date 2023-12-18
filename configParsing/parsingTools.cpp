@@ -239,3 +239,12 @@ size_t stosize_t(std::string str)
     }
     return tmp;
 }
+
+std::string ntos(size_t number)
+{
+    std::string tmp = "";
+    std::stringstream ss;
+    ss << number;
+    tmp = ss.str();
+    return tmp;
+}

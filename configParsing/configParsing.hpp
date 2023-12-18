@@ -130,3 +130,4 @@ std::string getDefault(std::string path);
 std::string getKey(std::string line);
 std::string convertDomainToIPv4(const std::string &domain);
 size_t stosize_t(std::string str);
+std::string ntos(size_t number);

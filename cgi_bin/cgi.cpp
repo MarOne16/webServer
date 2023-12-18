@@ -63,7 +63,7 @@ envirmoment GET_SETENV_SERVER(http_items &response_items)
     env.DOCUMENT_URI = "DOCUMENT_URI=" + response_items.Path;
     env.SERVER_PROTOCOL = "SERVER_PROTOCOL=HTTP/1.1";
     env.SERVER_ADDR = "SERVER_ADDR=" + response_items.server_name;
-    env.SERVER_PORT = "SERVER_PORT=" + std::to_string(response_items.port);
+    env.SERVER_PORT = "SERVER_PORT=" + ntos(response_items.port);
     env.SERVER_NAME = "SERVER_NAME=" + response_items.server_name;
     env.REDIRECT_STATUS = "REDIRECT_STATUS=200";
     env.PATH_INFO = "PATH_INFO=/" + response_items.Path.substr(response_items.Path.find_last_of("/") + 1);
