@@ -8,7 +8,8 @@ a.out
 *.txt
 file.conf
 default_pages/*.py
-*.php
+*/*.py
+*/*.php
 # /Response
 # /serveurs-clients
 gi
