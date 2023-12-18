@@ -210,10 +210,10 @@ std::string convertDomainToIPv4(const std::string &domain)
     std::memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    if (getaddrinfo(domain.c_str(), nullptr, &hints, &result) != 0)
+    if (getaddrinfo(domain.c_str(), NULL, &hints, &result) != 0)
         return "";
 
-    for (p = result; p != nullptr; p = p->ai_next)
+    for (p = result; p != NULL; p = p->ai_next)
     {
         if (p->ai_family == AF_INET)
         {
