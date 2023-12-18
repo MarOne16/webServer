@@ -409,7 +409,7 @@ void create_soket(ConfigParser data_conf, Servers &serveur)
         adrese.sin_port = htons(port[i]);
         if (bind(fd, (struct sockaddr *)&adrese, sizeof(adrese)) < 0)
             throw std::runtime_error("bind : : failed  \n");
-        if (listen(fd, SOMAXCONN) < 0)
+        if (listen(fd, 1024) < 0)
             throw std::runtime_error("listen : : failed  \n");
         serveur.serveur.push_back(fd);
     }

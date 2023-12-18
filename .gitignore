@@ -10,6 +10,6 @@ file.conf
 */*.py
 */*.php
 */*.js
+./src/*
 # /Response
 # /serveurs-clients
-gi
