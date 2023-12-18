@@ -64,4 +64,5 @@ envirmoment GET_SETENV_SERVER(http_items &response_items);
 char **GET_EXTRA_ENV(envirmoment &env_server);
 void debud_cgi_data(cgi_data &cgi);
 
+
 #include "../Response/webserver.hpp"

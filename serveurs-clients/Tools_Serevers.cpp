@@ -126,7 +126,6 @@ std::string chunked_ramase(std::string request, std::map<int, size_t> &flags, in
             chunked += request[j];
             last += request[j];
         }
-        //         std::cout<<lengt<<" chek \n";
 
         if (!request[j])
         {

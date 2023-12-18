@@ -65,7 +65,7 @@ void Requese::parser_uri(std::string uri)
         }
         else if (uri[i] == '%' && (isdigit(uri[i + 1]) || (uri[i + 1] >= 'A' && uri[i + 1] <= 'F')) && (isdigit(uri[i + 2]) || (uri[i + 2] >= 'A' && uri[i + 2] <= 'F')))
         {
-            number = std::stoi(uri.substr(i + 1, 3), 0, 16);
+            number = std::stoi(uri.substr(i + 1, 2), 0, 16);
             new_path = uri.substr(0, i);
             new_path += static_cast<unsigned char>(number);
             new_path += uri.substr(i + 3);
@@ -94,160 +94,154 @@ Requese::Requese(std::string req, server &server_data) : req(req), status_respon
         this->status_response_code = 400;
         return;
     }
-    try
+
+    while (pos != -1)
     {
-        while (pos != -1)
+        pos = req.find("\r\n");
+        if ((req[0] == '\r' && req[1] == '\n'))
         {
-            pos = req.find("\r\n");
-            if ((req[0] == '\r' && req[1] == '\n'))
+            req = req.substr(2);
+            break;
+        }
+        token = req.substr(0, pos);
+        req = req.substr(pos + 2, req.length());
+        response_items.Req.push_back(token);
+        i++;
+    }
+    if (response_items.Req.empty())
+    {
+        this->status_response_code = 400;
+        return;
+    }
+    parser_init_line(response_items.Req[0]);
+    if (this->status_response_code != 200)
+        return;
+
+    find_location(server_data, this->response_items.Path);
+    check_methods(this->response_items.method, this->response_items.location->allowed_methods);
+    if (this->status_response_code != 200)
+        return;
+    parser_uri(this->response_items.Path);
+    if (this->status_response_code != 200)
+        return;
+    // parser line-request
+
+    Headers_elements();
+    if (this->status_response_code != 200)
+        return;
+    check_connection(server_data);
+
+    // ckeck Headers and parser some special Headers
+    if (this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
+        (this->response_items.Headers.find("Transfer-Encoding"))->second != "chunked")
+    {
+        this->status_response_code = 501;
+        return;
+    }
+    if (this->response_items.method == "POST" && this->response_items.Headers.find("Transfer-Encoding") == this->response_items.Headers.end() &&
+        this->response_items.Headers.find("Content-Length") == this->response_items.Headers.end())
+    {
+        this->status_response_code = 411;
+        return;
+    }
+    if (this->response_items.method == "POST" && this->response_items.Headers.find("Content-Type") == this->response_items.Headers.end())
+    {
+        this->status_response_code = 415;
+        return;
+    }
+    if (!req.empty())
+    {
+        if (this->response_items.Headers["Transfer-Encoding"] == "chunked")
+            req = parserbody(req);
+        this->response_items.Body = req;
+        if (response_items.Headers["Content-Type"].find("multipart/form-data") != std::string::npos)
+        {
+            size_t bondary_start = 0;
+            size_t boundary_end = 0;
+            size_t EndPos = 0;
+            size_t start = 0;
+            std::string Headers;
+            bondary_start = req.find(this->response_items.bondary + "--", bondary_start);
+            if (bondary_start == std::string::npos)
             {
-                req = req.substr(2);
-                break;
+                this->status_response_code = 400;
+                return;
             }
-            token = req.substr(0, pos);
-            req = req.substr(pos + 2, req.length());
-            response_items.Req.push_back(token);
-            i++;
-        }
-        if (response_items.Req.empty())
-        {
-            this->status_response_code = 400;
-            return;
-        }
-        parser_init_line(response_items.Req[0]);
-        if (this->status_response_code != 200)
-            return;
-
-        find_location(server_data, this->response_items.Path);
-        check_methods(this->response_items.method, this->response_items.location->allowed_methods);
-        if (this->status_response_code != 200)
-            return;
-        parser_uri(this->response_items.Path);
-        if (this->status_response_code != 200)
-            return;
-        // parser line-request
-
-        Headers_elements();
-        if (this->status_response_code != 200)
-            return;
-        check_connection(server_data);
-
-        // ckeck Headers and parser some special Headers
-        if (this->response_items.Headers.find("Transfer-Encoding") != this->response_items.Headers.end() &&
-            (this->response_items.Headers.find("Transfer-Encoding"))->second != "chunked")
-        {
-            this->status_response_code = 501;
-            return;
-        }
-        if (this->response_items.method == "POST" && this->response_items.Headers.find("Transfer-Encoding") == this->response_items.Headers.end() &&
-            this->response_items.Headers.find("Content-Length") == this->response_items.Headers.end())
-        {
-            this->status_response_code = 411;
-            return;
-        }
-        if (this->response_items.method == "POST" && this->response_items.Headers.find("Content-Type") == this->response_items.Headers.end())
-        {
-            this->status_response_code = 415;
-            return;
-        }
-        if (!req.empty())
-        {
-            if (this->response_items.Headers["Transfer-Encoding"] == "chunked")
-                req = parserbody(req);
-            this->response_items.Body = req;
-            if (response_items.Headers["Content-Type"].find("multipart/form-data") != std::string::npos)
+            bondary_start = 0;
+            while (bondary_start < req.length())
             {
-                size_t bondary_start = 0;
-                size_t boundary_end = 0;
-                size_t EndPos = 0;
-                size_t start = 0;
-                std::string Headers;
-                bondary_start = req.find(this->response_items.bondary + "--", bondary_start);
+                bondary_start = req.find(this->response_items.bondary, bondary_start);
                 if (bondary_start == std::string::npos)
                 {
                     this->status_response_code = 400;
                     return;
                 }
-                bondary_start = 0;
-                while (bondary_start < req.length())
+                else
                 {
-                    bondary_start = req.find(this->response_items.bondary, bondary_start);
+                    RequestBody *ele;
+                    ele = new RequestBody;
+                    start = bondary_start + this->response_items.bondary.length() + 2;
+                    bondary_start = req.find("Content-Disposition", start);
                     if (bondary_start == std::string::npos)
                     {
-                        this->status_response_code = 400;
+                        delete ele;
                         return;
                     }
-                    else
+                    EndPos = req.find("\r\n\r\n", start);
+                    Headers = req.substr(bondary_start, EndPos - bondary_start);
+                    if (Headers.find("Content-Disposition") != std::string::npos)
                     {
-                        RequestBody *ele;
-                        ele = new RequestBody;
-                        start = bondary_start + this->response_items.bondary.length() + 2;
-                        bondary_start = req.find("Content-Disposition", start);
-                        if (bondary_start == std::string::npos)
-                        {
-                            delete ele;
-                            return;
-                        }
-                        EndPos = req.find("\r\n\r\n", start);
-                        Headers = req.substr(bondary_start, EndPos - bondary_start);
-                        if (Headers.find("Content-Disposition") != std::string::npos)
-                        {
-                            start = Headers.find("\r\n");
-                            if (bondary_start != std::string::npos)
-                                ele->ContentDisposition = Headers.substr(Headers.find("Content-Disposition"), start - Headers.find("Content-Disposition"));
-                            start += 2;
-                            if (Headers.find("Content-Type") != std::string::npos)
-                                ele->ContentType = Headers.substr(start, Headers.length() - start);
-                        }
-
-                        EndPos += 4;
-                        boundary_end = req.find(this->response_items.bondary, EndPos);
-                        if (boundary_end == std::string::npos)
-                            boundary_end = req.length();
-                        ele->Content = req.substr(EndPos, boundary_end - EndPos - 2);
-                        if (!ele->Content.empty())
-                        {
-                            if (!ele->ContentDisposition.empty())
-                                this->response_items.lenghtbody += ele->ContentDisposition.length();
-                            this->response_items.lenghtbody += ele->Content.length();
-                            this->response_items.ChunkedBody.push_back(ele);
-                        }
-                        else
-                            delete ele;
+                        start = Headers.find("\r\n");
+                        if (bondary_start != std::string::npos)
+                            ele->ContentDisposition = Headers.substr(Headers.find("Content-Disposition"), start - Headers.find("Content-Disposition"));
+                        start += 2;
+                        if (Headers.find("Content-Type") != std::string::npos)
+                            ele->ContentType = Headers.substr(start, Headers.length() - start);
                     }
+
+                    EndPos += 4;
+                    boundary_end = req.find(this->response_items.bondary, EndPos);
+                    if (boundary_end == std::string::npos)
+                        boundary_end = req.length();
+                    ele->Content = req.substr(EndPos, boundary_end - EndPos - 2);
+                    if (!ele->Content.empty())
+                    {
+                        if (!ele->ContentDisposition.empty())
+                            this->response_items.lenghtbody += ele->ContentDisposition.length();
+                        this->response_items.lenghtbody += ele->Content.length();
+                        this->response_items.ChunkedBody.push_back(ele);
+                    }
+                    else
+                        delete ele;
                 }
             }
-            else
-            {
-                this->response_items.Body = req;
-                this->response_items.lenghtbody += this->response_items.Body.length();
-            }
         }
-        if (this->response_items.lenghtbody > stosize_t(server_data.max_body_size))
-            this->status_response_code = 413;
-        if (this->response_items.Path.length() > 2048)
-            this->status_response_code = 414;
-        if (this->response_items.method != "POST" && this->response_items.lenghtbody != 0)
+        else
         {
-            this->status_response_code = 400;
-        }
-        if (this->response_items.method == "POST" && this->response_items.lenghtbody == 0)
-        {
-            this->status_response_code = 400;
-            return;
-        }
-        if (this->response_items.Headers.find("Transfer-Encoding")->second == "chunked" && this->response_items.lenghtbody == 0)
-        {
-            this->status_response_code = 400;
-        }
-        else if (this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end() && stosize_t((this->response_items.Headers.find("Content-Length")->second)) != req.length() && stosize_t((this->response_items.Headers.find("Content-Length")->second)) != this->response_items.lenghtbody)
-        {
-            this->status_response_code = 400;
+            this->response_items.Body = req;
+            this->response_items.lenghtbody += this->response_items.Body.length();
         }
     }
-    catch (std::exception &e)
+    if (this->response_items.lenghtbody > stosize_t(server_data.max_body_size))
+        this->status_response_code = 413;
+    if (this->response_items.Path.length() > 2048)
+        this->status_response_code = 414;
+    if (this->response_items.method != "POST" && this->response_items.lenghtbody != 0)
     {
-        std::cout << e.what() << std::endl;
+        this->status_response_code = 400;
+    }
+    if (this->response_items.method == "POST" && this->response_items.lenghtbody == 0)
+    {
+        this->status_response_code = 400;
+        return;
+    }
+    if (this->response_items.Headers.find("Transfer-Encoding")->second == "chunked" && this->response_items.lenghtbody == 0)
+    {
+        this->status_response_code = 400;
+    }
+    else if (this->response_items.Headers.find("Content-Length") != this->response_items.Headers.end() && stosize_t((this->response_items.Headers.find("Content-Length")->second)) != req.length() && stosize_t((this->response_items.Headers.find("Content-Length")->second)) != this->response_items.lenghtbody)
+    {
+        this->status_response_code = 400;
     }
 }
 

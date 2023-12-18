@@ -264,13 +264,11 @@ void Response::build_POST()
     time_t current_time;
     std::ofstream file;
     std::vector<RequestBody *>::iterator it;
-    URI += this->response_items.Path;
 
     status = stat(URI.c_str(), &buffer);
-
     if (upload_enable == "off")
     {
-
+         URI += this->response_items.Path;
         if (status != -1)
         {
             if (!this->response_items.Extension.empty())
@@ -308,7 +306,6 @@ void Response::build_POST()
     }
     else
     {
-
         is_path_outside_directoryy(upload_store_directory, URI);
         if (this->status != 200)
         {
@@ -316,11 +313,13 @@ void Response::build_POST()
             return;
         }
         if (this->response_items.Headers["Content-Type"] == "application/x-www-form-urlencoded")
+        {
             responsecgi(GET_CGI_DATA(this->response_items));
+        
+        }
         else if (this->response_items.Headers.find("Content-Type")->second.find("multipart/form-data") != std::string::npos)
         {
             it = this->response_items.ChunkedBody.begin();
-            // std::cout << this->response_items.ChunkedBody.size() << std::endl;
             while (k < this->response_items.ChunkedBody.size())
             {
                 if (!(*it)->ContentType.empty())
