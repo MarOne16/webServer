@@ -1,26 +1,24 @@
 #include "./webserver.hpp"
 
-
-
-void  Response::is_path_outside_directoryy(std::string path, std::string directory) {
+void Response::is_path_outside_directoryy(std::string path, std::string directory)
+{
     char abs_path[PATH_MAX];
     char abs_directory[PATH_MAX];
-    // char *new_path = NULL;
     // Get the absolute paths of the given path and directory
-    while(findFile(path) == 0 && path != "/")
+    while (findFile(path) == 0 && path != "/")
     {
         path = path.substr(0, path.rfind('/'));
     }
-    if (realpath(path.c_str(), abs_path) == NULL || realpath(directory.c_str(), abs_directory) == NULL) {
-            this->status = 400;
+    if (realpath(path.c_str(), abs_path) == NULL || realpath(directory.c_str(), abs_directory) == NULL)
+    {
+        this->status = 400;
         return;
     }
-    if(strncmp(abs_path, abs_directory, strlen(abs_directory)) != 0)
+    if (strncmp(abs_path, abs_directory, strlen(abs_directory)) != 0)
     {
         this->status = 400;
     }
 }
-
 
 std::string Response::get_Content_type(std::string url)
 {
@@ -63,7 +61,6 @@ std::string Response::get_Content_type(std::string url)
     return "text/html;";
 }
 
-
 int Response::get_permission(std::string &file)
 {
     if (access(file.c_str(), F_OK) == -1)
@@ -72,7 +69,6 @@ int Response::get_permission(std::string &file)
         return -2;
     return 0;
 }
-
 
 std::string Response::read_file(const std::string &filename)
 {
@@ -85,7 +81,7 @@ std::string Response::read_file(const std::string &filename)
     fileContent.resize(static_cast<size_t>(fileSize), '\0');
     if (file.is_open())
     {
-       file.read(&fileContent[0], fileSize);
+        file.read(&fileContent[0], fileSize);
         file.close();
         return fileContent;
     }
@@ -94,13 +90,12 @@ std::string Response::read_file(const std::string &filename)
     return " ";
 }
 
-
 void Response::ft_default_pages(std::string status, std::string &message, std::string &path)
 {
     struct stat buffer;
     std::string filename;
     if (stat(this->response_items.error_pages.find(status)->second.c_str(), &buffer) != -1)
-    {        
+    {
         filename = path;
         message = this->read_file(filename);
     }

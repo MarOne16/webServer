@@ -10,8 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-
-#include"servers.hpp"
+#include "servers.hpp"
 void feedRequest(unsigned int index, std::map<unsigned int, server> &serv, std::string content)
 {
     std::map<unsigned int, server>::iterator it = serv.begin();
@@ -126,7 +125,6 @@ void geve_port_host(std::string request, std::string &name_serveur, std::string 
             port_name_serveur(inforamation(request, i + 5), port, name_serveur);
             return;
         }
-
     }
 }
 
@@ -148,7 +146,7 @@ void geve_port_serveur(std::string request, std::string &name_serveur)
                 name_serveur += request[i];
                 i++;
             }
-              return;
+            return;
             //  ignore_espace(name_serveur);
         }
         // port_name_serveur(inforamation(request, i + 5), port, name_serveur);

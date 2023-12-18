@@ -1,14 +1,12 @@
 #include "./webserver.hpp"
 
-
-void Response::responsecgi(const cgi_data& cgidata)
+void Response::responsecgi(const cgi_data &cgidata)
 {
-        if(cgidata.status_code == "200")
-            this->ft_success_code(cgidata.status_code, cgidata.cgi_response, "");
-        else
-            this->other_response(cgidata.status_code, cgidata.status_message);
+    if (cgidata.status_code == "200")
+        this->ft_success_code(cgidata.status_code, cgidata.cgi_response, "");
+    else
+        this->other_response(cgidata.status_code, cgidata.status_message);
 }
-
 
 std::vector<std::string> split_v(std::string &str, std::string delimiter)
 {
@@ -32,8 +30,6 @@ std::vector<std::string> split_v(std::string &str, std::string delimiter)
     return tokens;
 }
 
-
-
 std::string Response::get_Date()
 {
     time_t now = time(0);
@@ -44,7 +40,6 @@ std::string Response::get_Date()
     return str.str().substr(0, str.str().size() - 1);
 }
 
-
 std::string Response::check_index_file(std::string &url)
 {
     DIR *dir = opendir(url.c_str());
@@ -53,25 +48,24 @@ std::string Response::check_index_file(std::string &url)
     unsigned int i = 0;
     if (dir != NULL)
     {
-    while (i < files.size())
-    {
-        entity = readdir(dir);
-        while (entity != NULL)
+        while (i < files.size())
         {
-            if (entity->d_name == files[i])
-            {
-                closedir(dir);
-                return files[i];
-            }
             entity = readdir(dir);
+            while (entity != NULL)
+            {
+                if (entity->d_name == files[i])
+                {
+                    closedir(dir);
+                    return files[i];
+                }
+                entity = readdir(dir);
+            }
+            i++;
         }
-        i++;
-    }
     }
     closedir(dir);
     return "";
 }
-
 
 int Response::remove_all_files(const char *dirname)
 {
@@ -92,7 +86,7 @@ int Response::remove_all_files(const char *dirname)
             filename += entity->d_name;
             if (access(filename.c_str(), F_OK | W_OK) == -1)
                 return 1;
-        
+
             remove(filename.c_str());
         }
         entity = readdir(dir);
@@ -101,7 +95,6 @@ int Response::remove_all_files(const char *dirname)
     closedir(dir);
     return 0;
 }
-
 
 std::string Response::trim(std::string original)
 {
@@ -122,38 +115,34 @@ std::string Response::trim(std::string original)
     return original.substr(begin_index, i + 1);
 }
 
-
-
-std::string  parserbody(std::string reqbody)
+std::string parserbody(std::string reqbody)
 {
 
-std::stringstream ss;
-std::stringstream body;
-ss << reqbody;
+    std::stringstream ss;
+    std::stringstream body;
+    ss << reqbody;
 
-int pos = 0 ;
-std::string token;
-int hash = -1;
- while(pos != -1 && hash)
-{
-    pos = reqbody.find("\r\n");
-    if(reqbody[0] == '\r' && reqbody[1] == '\n')
+    int pos = 0;
+    std::string token;
+    int hash = -1;
+    while (pos != -1 && hash)
     {
-        reqbody = reqbody.substr(2);
-        break;
+        pos = reqbody.find("\r\n");
+        if (reqbody[0] == '\r' && reqbody[1] == '\n')
+        {
+            reqbody = reqbody.substr(2);
+            break;
+        }
+        token = reqbody.substr(0, pos);
+        hash = std::stoi(token, 0, 16);
+        if (hash != 0)
+        {
+            if (hash > (int)reqbody.length())
+                return "";
+            token = reqbody.substr(pos + 2, hash);
+            reqbody = reqbody.substr(pos + hash + 4);
+            body << token;
+        }
     }
-    token = reqbody.substr(0, pos);
-    hash = std::stoi(token, 0, 16);
-    if(hash != 0)
-    {
-        if(hash > (int)reqbody.length())
-            return "";
-        token = reqbody.substr(pos + 2 , hash);
-        reqbody = reqbody.substr(pos + hash + 4);
-        body << token;
-    }
-  
-} 
-return body.str();
-
+    return body.str();
 }

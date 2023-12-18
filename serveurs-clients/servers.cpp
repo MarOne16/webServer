@@ -19,16 +19,15 @@ int main(int ac, const char **av)
     (void)ac;
     try
     {
-        /////////////////////////////
-        ConfigParser data_conf(av);       //
-        data_conf.readConfigFile();       //
-        data_conf.checkBrackets();        ///
-        checkServer(data_conf.m_servers); ///
+        ////////////////////////////////
+        ConfigParser data_conf(av);
+        data_conf.readConfigFile();
+        data_conf.checkBrackets();
+        checkServer(data_conf.m_servers); 
         data_conf.closeDir();
-        /////////////////////////////
+        ///////////////////////////////
         Servers serveur;
-
-        //////////////////////////////
+        ///////////////////////////////
         create_soket(data_conf, serveur);
         while (true)
         {
@@ -50,7 +49,6 @@ int main(int ac, const char **av)
                         delete_maps(serveur.map_request, serveur.response_map, serveur.len_requeste, serveur.chunked, serveur.checker, serveur.fds[i].fd);
                         if (serveur.connection.find(serveur.fds[i].fd) != serveur.connection.end() && serveur.connection[serveur.fds[i].fd] == 0)
                         {
-
                             serveur.connection.erase(serveur.fds[i].fd);
                             close_fd(serveur.fds[i].fd, serveur);
                         }

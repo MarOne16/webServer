@@ -32,13 +32,12 @@ char *ConfigParser::getFileName(const char *extension)
                 found++;
             }
         }
-        
     }
     if (found > 1)
         throw std::runtime_error("More than one .conf file found in the directory.");
     if (fileName == NULL)
         throw std::runtime_error("No .conf file found in the directory.");
-    
+
     return fileName;
 }
 
@@ -106,7 +105,7 @@ bool findFile(std::string path)
     struct stat buffer;
     if (stat(path.c_str(), &buffer) == 0)
         return true;
-    else 
+    else
         return false;
 }
 
@@ -114,7 +113,7 @@ bool ifClosed(std::string line)
 {
     for (size_t i = 0; i < line.length(); i++)
     {
-        if(line[i] == ';' && line[i + 1] == '\0')
+        if (line[i] == ';' && line[i + 1] == '\0')
             return true;
     }
     return false;
@@ -150,14 +149,14 @@ bool notHas(std::string str, std::string s)
 void addElement(std::string &str, std::string element, size_t pos)
 {
     if (pos == std::string::npos)
-        return ;
+        return;
     std::string::iterator it = str.begin();
     str.insert(it + pos, element.begin(), element.end());
 }
 
-void checkServer(std::map<unsigned int , server> &m_servers)
+void checkServer(std::map<unsigned int, server> &m_servers)
 {
-    std::map<unsigned int , server>::iterator it = m_servers.begin();
+    std::map<unsigned int, server>::iterator it = m_servers.begin();
     while (it != m_servers.end())
     {
         int p = it->second.port;
@@ -166,10 +165,10 @@ void checkServer(std::map<unsigned int , server> &m_servers)
         if ((++it == m_servers.end()))
             break;
         --it;
-        std::map<unsigned int , server>::iterator it2 = ++it;
+        std::map<unsigned int, server>::iterator it2 = ++it;
         while (it2 != m_servers.end())
         {
-            if (it2->second.port == p && it2->second.server_name == s_n  && it2->second.host == host)
+            if (it2->second.port == p && it2->second.server_name == s_n && it2->second.host == host)
                 throw std::runtime_error("Two servers have the same port, server_name and host.");
             it2++;
         }
@@ -204,19 +203,21 @@ std::string getDefault(std::string path)
     return "get_default_error";
 }
 
-std::string convertDomainToIPv4(const std::string& domain)
+std::string convertDomainToIPv4(const std::string &domain)
 {
     struct addrinfo hints, *result, *p;
     char ipstr[INET_ADDRSTRLEN];
-    std::memset(&hints, 0, sizeof hints);
+    std::memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     if (getaddrinfo(domain.c_str(), nullptr, &hints, &result) != 0)
         return "";
 
-    for (p = result; p != nullptr; p = p->ai_next) {
-        if (p->ai_family == AF_INET) {
-            struct sockaddr_in* ipv4 = reinterpret_cast<struct sockaddr_in*>(p->ai_addr);
+    for (p = result; p != nullptr; p = p->ai_next)
+    {
+        if (p->ai_family == AF_INET)
+        {
+            struct sockaddr_in *ipv4 = reinterpret_cast<struct sockaddr_in *>(p->ai_addr);
             inet_ntop(AF_INET, &(ipv4->sin_addr), ipstr, sizeof(ipstr));
             freeaddrinfo(result);
             return ipstr;

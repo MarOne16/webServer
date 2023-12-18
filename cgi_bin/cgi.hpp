@@ -15,32 +15,31 @@
 #include <fcntl.h>
 #include <ctime>
 #include <dirent.h>
-#include  <fstream>
+#include <fstream>
 
 class http_items;
 
-
 typedef struct envirmoment
 {
-    std::string  HTTP_COOKIE;
-    std::string  SERVER_SOFTWARE;
-    std::string  REQUEST_METHOD;
-    std::string  QUERY_STRING;
-    std::string  CONTENT_TYPE;
-    std::string  CONTENT_LENGTH;
-    std::string  SCRIPT_FILENAME;
-    std::string  SCRIPT_NAME;
-    std::string  REQUEST_URI;
-    std::string  DOCUMENT_ROOT;
-    std::string  DOCUMENT_URI;
-    std::string  SERVER_PROTOCOL;
-    std::string  SERVER_ADDR;
-    std::string  SERVER_PORT;
-    std::string  SERVER_NAME;
-    std::string  PATH_INFO;
-    std::string  PATH_TRANSLATED;
-    std::string  REDIRECT_STATUS;
-    std::string  REDIRECT_STATUS_;
+    std::string HTTP_COOKIE;
+    std::string SERVER_SOFTWARE;
+    std::string REQUEST_METHOD;
+    std::string QUERY_STRING;
+    std::string CONTENT_TYPE;
+    std::string CONTENT_LENGTH;
+    std::string SCRIPT_FILENAME;
+    std::string SCRIPT_NAME;
+    std::string REQUEST_URI;
+    std::string DOCUMENT_ROOT;
+    std::string DOCUMENT_URI;
+    std::string SERVER_PROTOCOL;
+    std::string SERVER_ADDR;
+    std::string SERVER_PORT;
+    std::string SERVER_NAME;
+    std::string PATH_INFO;
+    std::string PATH_TRANSLATED;
+    std::string REDIRECT_STATUS;
+    std::string REDIRECT_STATUS_;
     static const size_t NUM_ELEMENTS = 18;
 } envirmoment;
 
@@ -64,7 +63,5 @@ cgi_data GET_CGI_DATA(http_items &response_items);
 envirmoment GET_SETENV_SERVER(http_items &response_items);
 char **GET_EXTRA_ENV(envirmoment &env_server);
 void debud_cgi_data(cgi_data &cgi);
-// void FREEENV_SERVER(envirmoment &env_server);
-// cgi_data &FREEENV_SERVER(http_items &response_items);
 
 #include "../Response/webserver.hpp"

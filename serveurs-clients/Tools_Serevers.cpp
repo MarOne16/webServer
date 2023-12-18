@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
- #include"servers.hpp"
+#include "servers.hpp"
 
 int index_fds(std::vector<struct pollfd> fds, int fd)
 {
@@ -72,8 +72,6 @@ int contente_second(std::map<int, int> &state, int fd)
     return (-1);
 }
 
-   
-
 int digital(std::string number)
 {
     for (size_t i = 0; i < number.size(); i++)
@@ -90,14 +88,11 @@ std::string chunked_ramase(std::string request, std::map<int, size_t> &flags, in
 
     while (state)
     {
-
         std::string number;
 
         size_t lengt = 0;
         for (i = j; i < request.size() && request[i] != '\r'; i++)
             number += request[i];
-        // number[i] = '\0';
-
         if (!request[i] && request[i - 1] != '\r')
         {
 
@@ -223,13 +218,13 @@ std::string chunked_request(std::string request, std::map<int, size_t> &flags, i
     return (chunked);
 }
 
-void request_inserer(char *buffer, int buff_size, int fd,Servers &serveur  , int &stop    )
+void request_inserer(char *buffer, int buff_size, int fd, Servers &serveur, int &stop)
 {
     int j = 0;
     if (serveur.map_request.find(fd) == serveur.map_request.end())
     {
-        serveur.map_request[fd]= "";
-        serveur.checker[fd]= 0;
+        serveur.map_request[fd] = "";
+        serveur.checker[fd] = 0;
         j = 1;
     }
     std::map<int, std::string>::iterator it = serveur.map_request.find(fd);
@@ -241,8 +236,7 @@ void request_inserer(char *buffer, int buff_size, int fd,Servers &serveur  , int
         if (j == 1 || founds == std::string::npos)
         {
             it_checker->second = content_lenght(it->second) + length_heder(it->second.substr(0, content_lenght(it->second)));
-            
-           
+
             if (j && it->second == "\r\n")
                 stop = 1;
             serveur.len_read[fd] = length_heder(it->second.substr(0, content_lenght(it->second)));
@@ -251,11 +245,9 @@ void request_inserer(char *buffer, int buff_size, int fd,Servers &serveur  , int
         {
 
             if (is_chunked(it->second.substr(0, content_lenght(it->second))))
-               
-                serveur.chunked[fd] = 1 ; 
+                serveur.chunked[fd] = 1;
             else
-                  serveur.chunked[fd] = 0 ;  
-              
+                serveur.chunked[fd] = 0;
         }
 
         if (founds != std::string::npos)
@@ -273,8 +265,6 @@ void request_inserer(char *buffer, int buff_size, int fd,Servers &serveur  , int
                     stop = 1;
             }
         }
-
-       
     }
     return;
 }
@@ -288,16 +278,14 @@ void delete_maps(std::map<int, std::string> &request, std::map<int, std::string>
     cheker.erase(fd);
 }
 
-void close_fd(int fd,Servers & serveur   )
+void close_fd(int fd, Servers &serveur)
 {
     close(fd);
     serveur.client.erase(std::find(serveur.client.begin(), serveur.client.end(), fd));
     serveur.fds.erase(serveur.fds.begin() + index_fds(serveur.fds, fd));
 }
 
-
-
-void accepte_client(int fd, Servers  &serveur )
+void accepte_client(int fd, Servers &serveur)
 {
     int fd_client = accept(fd, NULL, NULL);
     fcntl(fd_client, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
@@ -311,67 +299,62 @@ void accepte_client(int fd, Servers  &serveur )
     }
 }
 
-void follow_responsive(int &cheker, int fd,  Servers  &serveur )
-
+void follow_responsive(int &cheker, int fd, Servers &serveur)
 {
-   
-    
     size_t sen = 0;
-   
+
     sen = send(fd, serveur.response_map[fd].c_str(), serveur.response_map[fd].length(), 0);
-      if (  sen <= 0 || serveur.response_map[fd].empty())
+    if (sen <= 0 || serveur.response_map[fd].empty())
     {
-          
         cheker = 0;
         return;
     }
- if(sen < serveur.response_map[fd].length())
- {
-    serveur.response_map[fd] =  serveur.response_map[fd].substr(sen);
-    cheker = 1;
-
- }
+    if (sen < serveur.response_map[fd].length())
+    {
+        serveur.response_map[fd] = serveur.response_map[fd].substr(sen);
+        cheker = 1;
+    }
     else
-    cheker = 0;
+        cheker = 0;
 }
 
-void partient_request(int &stop, int fd, ConfigParser data_conf, int i, Servers &sereur )
+void partient_request(int &stop, int fd, ConfigParser data_conf, int i, Servers &sereur)
 {
     stop = 0;
-    sereur.len_read.erase(sereur.fds[i].fd); 
+    sereur.len_read.erase(sereur.fds[i].fd);
     std::string port, name_host, name_serveur;
     geve_port_host(sereur.map_request[fd], name_host, port);
     geve_port_serveur(sereur.map_request[fd], name_serveur);
     int serveur_id = getServerId(data_conf.m_servers, stosize_t(port), name_serveur, name_host);
-    feedRequest(serveur_id, data_conf.m_servers,sereur.map_request[fd]);
-    
+    feedRequest(serveur_id, data_conf.m_servers, sereur.map_request[fd]);
+
     sereur.response_map[fd] = sendResponse(serveur_id, data_conf.m_servers);
-    sereur.connection[fd] = data_conf.m_servers.find(serveur_id)->second.connection ;   
-      
+    sereur.connection[fd] = data_conf.m_servers.find(serveur_id)->second.connection;
+
     sereur.fds[i].events = POLLOUT;
 }
 
-int read_to_client( Servers &sereur , int i,ConfigParser data_conf)
+int read_to_client(Servers &sereur, int i, ConfigParser data_conf)
 {
-     
+
     int stop = 0;
-    size_t read_len   = 1048576; 
+    size_t read_len = 1048576;
     if (std::find(sereur.serveur.begin(), sereur.serveur.end(), sereur.fds[i].fd) != sereur.serveur.end())
-        accepte_client( sereur.fds[i].fd,sereur);
+        accepte_client(sereur.fds[i].fd, sereur);
     else if (std::find(sereur.client.begin(), sereur.client.end(), sereur.fds[i].fd) != sereur.client.end())
     {
-        if(sereur.len_read.find(sereur.fds[i].fd) != sereur.len_read.end())
-                 read_len  = sereur.len_read[sereur.fds[i].fd];
-        char *buf = new char[read_len ];
+        if (sereur.len_read.find(sereur.fds[i].fd) != sereur.len_read.end())
+            read_len = sereur.len_read[sereur.fds[i].fd];
+        char *buf = new char[read_len + 1];
         if (!buf)
             throw std::runtime_error("malloc : : failed  \n");
-           
+
         int rec = recv(sereur.fds[i].fd, buf, read_len, 0);
         if (rec <= 0)
         {
-            delete [] buf;
+            delete[] buf;
             stop = 0;
-           sereur.len_read.erase(sereur.fds[i].fd); 
+            sereur.len_read.erase(sereur.fds[i].fd);
             sereur.map_request.erase(sereur.fds[i].fd);
             sereur.checker.erase(sereur.fds[i].fd);
             sereur.chunked.erase(sereur.fds[i].fd);
@@ -379,67 +362,57 @@ int read_to_client( Servers &sereur , int i,ConfigParser data_conf)
         }
         else
         {
-            request_inserer(buf, rec, sereur.fds[i].fd,sereur,stop);
+            request_inserer(buf, rec, sereur.fds[i].fd, sereur, stop);
             if (stop == 1)
             {
-                 delete [] buf;
-                partient_request(stop, sereur.fds[i].fd, data_conf,   i , sereur);
+                delete[] buf;
+                partient_request(stop, sereur.fds[i].fd, data_conf, i, sereur);
             }
             else
-                delete [] buf;
+                delete[] buf;
         }
     }
 
     return (1);
 }
 
-void add_serveur(Servers & serveur)
+void add_serveur(Servers &serveur)
 {
     for (size_t i = 0; i < serveur.serveur.size(); i++)
     {
         struct pollfd poll;
         poll.fd = serveur.serveur[i];
         poll.events = POLLIN;
-         serveur.fds.push_back(poll);
+        serveur.fds.push_back(poll);
     }
 }
 
-void create_soket(ConfigParser data_conf,Servers & serveur  )
+void create_soket(ConfigParser data_conf, Servers &serveur)
 {
     std::vector<int> port;
     ports(port, data_conf.m_servers);
     for (unsigned int i = 0; i < data_conf.getNumber_ofServers(); i++)
     {
         struct sockaddr_in adrese;
-        // int sockfd = socket(domain, type, protocol)
         int fd = socket(AF_INET, SOCK_STREAM, 0);
         if (fd < 0)
             throw std::runtime_error("socket : : failed  \n");
         int opt = 1;
-        ///  sgv send
         if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(int)) == -1)
             throw std::runtime_error("setsockopt : : failed  \n");
         if (setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(int)) == -1)
             throw std::runtime_error("setsockopt : : failed  \n");
         fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-        /// non-blocking file descriptors
-        //   host
-
-        //  server_address.sin_family = AF_INET;
-
-        // Convert the loopback address "127.0.0.1" to binary format and store it in sin_addr.s_addr
         adrese.sin_family = AF_INET;
         std::map<unsigned int, server>::iterator it = data_conf.m_servers.find(i);
-
         if (inet_pton(AF_INET, it->second.host.c_str(), &adrese.sin_addr) <= 0)
             throw std::runtime_error("inet_pton : : failed  \n");
-        // adrese.sin_addr.s_addr = INADDR_ANY;
         adrese.sin_port = htons(port[i]);
         if (bind(fd, (struct sockaddr *)&adrese, sizeof(adrese)) < 0)
             throw std::runtime_error("bind : : failed  \n");
-        if (listen(fd, 1024) < 0)
+        if (listen(fd, SOMAXCONN) < 0)
             throw std::runtime_error("listen : : failed  \n");
         serveur.serveur.push_back(fd);
     }
-    add_serveur(serveur );
+    add_serveur(serveur);
 }

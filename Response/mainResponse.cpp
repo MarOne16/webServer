@@ -12,7 +12,6 @@ void show_data_server(server &server_data)
     std::map<std::string, std::string>::iterator it2 = server_data.error_pages.begin();
     while (it2 != server_data.error_pages.end())
     {
-        /*std::cout  << it2->first << ": " << it2->second << std::endl;*/
         it2++;
     }
     std::map<std::string, location>::iterator it3 = server_data.locations.begin();

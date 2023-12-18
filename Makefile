@@ -1,6 +1,6 @@
 NAME   = webserv
 
-FLAGS  = -Wall -Wextra -Werror -std=c++98 -Ofast
+FLAGS = -Wall -Wextra -Werror -std=c++98 -O2
 CC     = c++
 FILES  = ./configParsing/getLocation.cpp \
 		./cgi_bin/cgi.cpp \

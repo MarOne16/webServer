@@ -14,7 +14,7 @@ void FreeENV(char **env)
 void exec(cgi_data &cgi, char **extra_env, std::string method)
 {
     int out = open("/tmp/cgi_out", O_RDWR | O_CREAT | O_TRUNC, 0777);
-    int in = open("/tmp/cgi_in", O_RDWR | O_CREAT | O_TRUNC , 0777);
+    int in = open("/tmp/cgi_in", O_RDWR | O_CREAT | O_TRUNC, 0777);
     int status;
     int pid = fork();
     if (out == -1 || in == -1 || pid == -1)
@@ -22,7 +22,7 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
         cgi.status_code = "500";
         cgi.cgi_response = "Error: external program execution failed";
         cgi.status_message = "Internal Server Error";
-        return ;
+        return;
     }
     if (pid == 0)
     {
@@ -38,8 +38,8 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
         alarm(alarmCounter);
         const char *file = strdup(cgi.env_server.SCRIPT_FILENAME.substr(cgi.env_server.SCRIPT_FILENAME.find_last_of("=") + 1).c_str());
         const char *script_name = strdup(cgi.env_server.SCRIPT_NAME.substr(cgi.env_server.SCRIPT_NAME.find_last_of("=") + 1).c_str());
-        char *const argv[] = {const_cast<char*>(file), const_cast<char*>(script_name), nullptr};  // Construct argv array
-        execve(file , argv, extra_env);
+        char *const argv[] = {const_cast<char *>(file), const_cast<char *>(script_name), nullptr}; // Construct argv array
+        execve(file, argv, extra_env);
         exit(1);
     }
     else
@@ -110,7 +110,6 @@ void exec(cgi_data &cgi, char **extra_env, std::string method)
     remove("/tmp/cgi_out");
     remove("/tmp/cgi_in");
 }
-
 
 std::string EXEC_CGI(cgi_data &cgi, char **extra_env)
 {

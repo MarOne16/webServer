@@ -1,6 +1,6 @@
 #include "configParsing.hpp"
 
-bool ConfigParser::isInsidLocation(std::string location ,std::string toFind)
+bool ConfigParser::isInsidLocation(std::string location, std::string toFind)
 {
     size_t start = location.find(toFind);
     size_t firstbracket = location.find('(');
@@ -194,7 +194,7 @@ std::string ConfigParser::getReturnCodeUrl(std::string location)
 {
     if (!isInsidLocation(location, "return"))
         return "";
-    std::string return_code_url  = "";
+    std::string return_code_url = "";
     size_t start = location.find("return");
     for (size_t i = start + 6; i < location.length(); i++)
     {
@@ -308,7 +308,7 @@ std::string ConfigParser::getUploadEnable(std::string location)
 void ConfigParser::feedLocations()
 {
     this->m_locations.clear();
-    start:
+start:
     location tmp;
     if (!ifInside("server", "location"))
         return;
@@ -318,7 +318,7 @@ void ConfigParser::feedLocations()
     if (start2 == std::string::npos || end == std::string::npos)
         throw std::runtime_error("No closing bracket found in location directive.");
     std::string locationname = getLocationName(this->content.substr(start, end));
-    for (size_t i = start2 ; i < end; i++)
+    for (size_t i = start2; i < end; i++)
     {
         tmp.root = getRootLocation(this->content.substr(start2, end));
         tmp.alias = getAlias(this->content.substr(start2, end));
@@ -333,7 +333,7 @@ void ConfigParser::feedLocations()
     }
     this->m_locations[locationname] = tmp;
     ereaseContent(this->content, start, ')');
-    
+
     if (ifInside("server", "location"))
         goto start;
 }

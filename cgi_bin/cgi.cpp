@@ -11,7 +11,7 @@ void debud_cgi_data(cgi_data &cgi)
     std::cout << "cgi.cgi_headers: " << std::endl;
     for (std::map<std::string, std::string>::iterator it = cgi.cgi_headers.begin(); it != cgi.cgi_headers.end(); it++)
     {
-        std::cout << it->first << ": " << it->second << RESET<< std::endl;
+        std::cout << it->first << ": " << it->second << RESET << std::endl;
     }
     std::cout << YELLOW << cgi.env_server.SERVER_SOFTWARE << std::endl;
     std::cout << cgi.env_server.REQUEST_METHOD << std::endl;
@@ -31,13 +31,13 @@ void debud_cgi_data(cgi_data &cgi)
     std::cout << cgi.env_server.PATH_TRANSLATED << std::endl;
     std::cout << cgi.env_server.REDIRECT_STATUS << std::endl;
     std::cout << cgi.env_server.REDIRECT_STATUS_ << std::endl;
-    std::cout << cgi.env_server.HTTP_COOKIE << RESET<< std::endl;
+    std::cout << cgi.env_server.HTTP_COOKIE << RESET << std::endl;
 }
 
 cgi_data GET_CGI_DATA(http_items &response_items)
 {
     envirmoment env_server = GET_SETENV_SERVER(response_items);
-    
+
     cgi_data cgi(response_items, env_server, response_items.Body);
     char **envs = GET_EXTRA_ENV(cgi.env_server);
     std::string R = EXEC_CGI(cgi, envs);
@@ -68,7 +68,7 @@ envirmoment GET_SETENV_SERVER(http_items &response_items)
     env.REDIRECT_STATUS = "REDIRECT_STATUS=200";
     env.PATH_INFO = "PATH_INFO=/" + response_items.Path.substr(response_items.Path.find_last_of("/") + 1);
     env.PATH_TRANSLATED = "PATH_TRANSLATED=" + response_items.location->root + response_items.Path.substr(response_items.Path.find_last_of("/") + 1);
-    if(response_items.Headers.find("Cookie") != response_items.Headers.end())
+    if (response_items.Headers.find("Cookie") != response_items.Headers.end())
         env.HTTP_COOKIE = "HTTP_COOKIE=" + response_items.Headers.find("Cookie")->second;
     return env;
 }
@@ -77,8 +77,9 @@ char **GET_EXTRA_ENV(envirmoment &env_server) // after this function, ENV_SERVER
 {
     extern char **environ;
     char **extra_env;
-    for (i = 0; environ[i] != NULL; i++);
-    extra_env = new char*[i + env_server.NUM_ELEMENTS + 1];
+    for (i = 0; environ[i] != NULL; i++)
+        ;
+    extra_env = new char *[i + env_server.NUM_ELEMENTS + 1];
     for (int j = 0; j < i; j++)
     {
         extra_env[j] = new char[strlen(environ[j]) + 1];
