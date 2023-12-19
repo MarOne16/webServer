@@ -386,12 +386,24 @@ void add_serveur(Servers &serveur)
     }
 }
 
+
+
 void create_soket(ConfigParser data_conf, Servers &serveur)
 {
     std::vector<int> port;
     ports(port, data_conf.m_servers);
+    std::map<int , std::string> db;
     for (unsigned int i = 0; i < data_conf.getNumber_ofServers(); i++)
     {
+        std::map<unsigned int, server>::iterator it = data_conf.m_servers.find(i);
+        db.insert(std::make_pair(port[i], it->second.host));
+        for(std::map<int , std::string>::iterator it2 = db.begin() ; it2 != db.end(); it2++)
+        {
+            if((i <  data_conf.getNumber_ofServers() - 1) && (it2->first == port[i]) && (it2->second ==  it->second.host))
+            {
+                i++;
+            }
+        }
         struct sockaddr_in adrese;
         int fd = socket(AF_INET, SOCK_STREAM, 0);
         if (fd < 0)
@@ -402,8 +414,8 @@ void create_soket(ConfigParser data_conf, Servers &serveur)
         if (setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &opt, sizeof(int)) == -1)
             throw std::runtime_error("setsockopt : : failed  \n");
         fcntl(fd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
+
         adrese.sin_family = AF_INET;
-        std::map<unsigned int, server>::iterator it = data_conf.m_servers.find(i);
         if (inet_pton(AF_INET, it->second.host.c_str(), &adrese.sin_addr) <= 0)
             throw std::runtime_error("inet_pton : : failed  \n");
         adrese.sin_port = htons(port[i]);

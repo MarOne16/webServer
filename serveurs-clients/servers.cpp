@@ -33,7 +33,7 @@ int main(int ac, const char **av)
         {
             size_t l = serveur.fds.size();
 
-            int ret = poll(serveur.fds.data(), serveur.fds.size(), 0);
+            int ret = poll(&serveur.fds[0], serveur.fds.size(), 0);
             if (ret == -1)
                 throw std::runtime_error("poll error");
             for (size_t i = 0; i < l; i++)
